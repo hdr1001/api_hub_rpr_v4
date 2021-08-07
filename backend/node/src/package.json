@@ -1,0 +1,40 @@
+{
+  "name": "apihubrprv4",
+  "version": "1.0.0",
+  "description": "Node code for API Hub - Request Persist Respond (v4)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index",
+    "dev": "nodemon index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hdr1001/api_hub_rpr_v4.git"
+  },
+  "keywords": [
+    "API",
+    "Hub",
+    "request",
+    "persist",
+    "respond",
+    "D&B",
+    "Direct+",
+    "DUNS",
+    "GLEIF",
+    "LEI"
+  ],
+  "author": "Hans de Rooij",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hdr1001/api_hub_rpr_v4/issues"
+  },
+  "homepage": "https://github.com/hdr1001/api_hub_rpr_v4#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
