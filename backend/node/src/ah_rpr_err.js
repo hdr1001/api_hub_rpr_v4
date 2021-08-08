@@ -1,7 +1,7 @@
 // *********************************************************************
 //
-// API Hub request, persist and respond API routes
-// JavaScript code file: ./routes/api.js
+// API Hub request, persist and respond custom error object
+// JavaScript code file: ah_rpr_err.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -20,12 +20,23 @@
 //
 // *********************************************************************
 
-import express from 'express';
+import { ahErrMsgs, ahErrCodes } from './ah_rpr_globs.js';
 
-const router = express.Router();
+export default class ApiHubErr {
+   constructor(errCode) {
+      if(Number.isInteger(errCode) && ahErrMsgs[errCode]) {
+         this.errCode = errCode
+      }
+      else {
+         this.errCode = ahErrCodes.generic
+      }
 
-router.get('/', (req, resp) => {
-    resp.send('APIs here')
-});
+      this.errMsg = ahErrMsgs[this.errCode].shrtDesc;
 
-export default router;
+      this.httpStatus = ahErrMsgs[this.errCode].httpStatus;
+   }
+
+   toString() {
+      return `${this.errMsg.shrtDesc} (${this.errCode})`
+   }
+}

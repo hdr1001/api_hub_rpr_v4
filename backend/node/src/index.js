@@ -23,6 +23,8 @@
 // *********************************************************************
 
 import express from 'express';
+import { ahErrCodes } from './ah_rpr_globs.js';
+import ApiHubErr from './ah_rpr_err.js';
 import hub from './routes/hub.js';
 
 const app = express();
@@ -32,7 +34,11 @@ const port = process.env.PORT || 3000;
 app.use('/hub', hub);
 
 app.use((req, resp) => {
-   resp.send(`The requested resource ${req.path} can not be located`)
+   const ahErr = new ApiHubErr(ahErrCodes.unableToLocate);
+
+   resp
+      .status(ahErr.httpStatus)
+      .json(ahErr)
 })
 
 const server = app.listen(port, err => {

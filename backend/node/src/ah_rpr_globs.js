@@ -1,7 +1,7 @@
 // *********************************************************************
 //
-// API Hub request, persist and respond API routes
-// JavaScript code file: ./routes/api.js
+// API Hub request, persist and respond globals
+// JavaScript code file: ah_rpr_globs.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -20,12 +20,27 @@
 //
 // *********************************************************************
 
-import express from 'express';
+//HTTP status codes
+const httpStatusCodes = {
+   okay: 200,
+   notFound: 404,
+   genericErr: 500
+};
 
-const router = express.Router();
+//API Hub errors
+const ahErrMsgs = [
+   {shrtDesc: 'Error occurred in API HUB', httpStatus: httpStatusCodes.genericErr},
+   {shrtDesc: 'Unable to locate the requested resource', httpStatus: httpStatusCodes.notFound}
+];
 
-router.get('/', (req, resp) => {
-    resp.send('APIs here')
-});
+//Error type codes
+const ahErrCodes = {
+   generic: 0,
+   unableToLocate: 1,
+};
 
-export default router;
+export {
+   httpStatusCodes,
+   ahErrMsgs,
+   ahErrCodes
+};
