@@ -23,13 +23,23 @@
 // *********************************************************************
 
 import express from 'express';
+import hub from './routes/hub.js';
 
 const app = express();
 
-app.get('/', (req, res) => {
-   res.send('Hello World, API Hub RPR (v4) remote container! 🙂👋')
-});
+const port = process.env.PORT || 3000;
 
-const server = app.listen(3000, () => {
-   console.log(`Now listening on port ${server.address().port}`)
+app.use('/hub', hub);
+
+app.use((req, resp) => {
+   resp.send(`The requested resource ${req.path} can not be located`)
+})
+
+const server = app.listen(port, err => {
+   if(err) {
+      console.log(`Error occurred initializing Express server, ${err.message}`)
+   }
+   else {
+      console.log(`Now listening on port ${server.address().port}`)
+   }
 });

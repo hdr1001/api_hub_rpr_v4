@@ -23,7 +23,13 @@
 	"settings": {},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": []
+	"extensions": [
+		"dbaeumer.vscode-eslint",
+		"esbenp.prettier-vscode",
+		"mgmcdermott.vscode-language-babel",
+		"eamodio.gitlens",
+		"donjayamanne.githistory"
+	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -35,6 +41,7 @@
 	// "shutdownAction": "none",
 
 	// Uncomment the next line to run commands after the container is created - for example installing curl.
+	"postCreateCommand": "apk add --quiet --no-cache git"
 	// "postCreateCommand": "apt-get update && apt-get install -y curl",
 
 	// Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
