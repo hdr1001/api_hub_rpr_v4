@@ -1,7 +1,7 @@
 // *********************************************************************
 //
-// API Hub request, persist and respond API routes
-// JavaScript code file: ./routes/api.js
+// API Hub request, persist and respond API routes to D&B
+// JavaScript code file: ./routes/dnb.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -21,17 +21,11 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahProviders, ahProviderCodes } from '../ah_rpr_globs.js';
-import gleif from './gleif.js';
-import dnb from './dnb.js';
 
 const router = express.Router();
 
-router.use(`/${ahProviders[ahProviderCodes.gleif]}`, gleif);
-router.use(`/${ahProviders[ahProviderCodes.dnb]}`, dnb);
-
-router.get(`/apis`, (req, resp) => {
-    resp.json(ahProviders)
+router.get('/', (req, resp) => {
+    resp.json({api: 'D&B'})
 });
 
 export default router;

@@ -20,6 +20,18 @@
 //
 // *********************************************************************
 
+//API providers
+const ahProviders = [
+   'gleif',
+   'dnb'
+];
+
+//API provider codes
+const ahProviderCodes = {
+   gleif: 0,
+   dnb: 1
+}
+
 //HTTP status codes
 const httpStatusCodes = {
    okay: 200,
@@ -40,6 +52,8 @@ const ahErrCodes = {
 };
 
 export {
+   ahProviders,
+   ahProviderCodes,
    httpStatusCodes,
    ahErrMsgs,
    ahErrCodes

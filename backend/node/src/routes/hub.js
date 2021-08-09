@@ -21,7 +21,6 @@
 // *********************************************************************
 
 import express from 'express';
-import { httpStatusCodes } from '../ah_rpr_globs.js';
 import api from './api.js';
 
 const router = express.Router();
@@ -29,14 +28,12 @@ const router = express.Router();
 router.use('/api', api);
 
 router.get('/about', (req, resp) => {
-   resp
-      .status(httpStatusCodes.okay)
-      .json({
+   resp.json({
          description: 'API Hub for requesting, persisting & passing on 3rd party API data (v3)',
          license: 'Apache license, v2.0',
          licenseDetails: 'http://www.apache.org/licenses/LICENSE-2.0',
          copyright: 'Hans de Rooij, 2021'         
-      });
+   });
 });
 
 export default router;
