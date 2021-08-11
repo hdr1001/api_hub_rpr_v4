@@ -21,7 +21,8 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahProviders, ahProviderCodes } from '../ah_rpr_globs.js';
+import { ahProviders, ahProviderCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import ApiHubErr from '../ah_rpr_err.js';
 import gleif from './gleif.js';
 import dnb from './dnb.js';
 
@@ -30,8 +31,24 @@ const router = express.Router();
 router.use(`/${ahProviders[ahProviderCodes.gleif]}`, gleif);
 router.use(`/${ahProviders[ahProviderCodes.dnb]}`, dnb);
 
-router.get(`/apis`, (req, resp) => {
-    resp.json(ahProviders)
+router.get(`/providers`, (req, resp) => {
+   const id = req.query.id;
+
+   if(typeof id === 'undefined') {
+      resp.json(ahProviders)
+   }
+   else {
+      const provider = ahProviders[id];
+
+      if(typeof provider === 'string') {
+         resp.json({id: parseInt(id), provider})
+      }
+      else {
+         const ahErr = new ApiHubErr(ahErrCodes.unableToLocate, `The value of parameter id, ${id}, is not valid`);
+
+         resp.status(ahErr.httpStatus).json(ahErr)
+      }
+   }
 });
 
 export default router;

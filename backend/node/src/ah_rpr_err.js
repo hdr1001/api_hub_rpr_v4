@@ -20,23 +20,32 @@
 //
 // *********************************************************************
 
-import { ahErrMsgs, ahErrCodes } from './ah_rpr_globs.js';
+import { ahHttpErrMsgs, ahErrCodes } from './ah_rpr_globs.js';
 
 export default class ApiHubErr {
-   constructor(errCode) {
-      if(Number.isInteger(errCode) && ahErrMsgs[errCode]) {
+   constructor(errCode, appErrMsg) {
+      if(Number.isInteger(errCode) && ahHttpErrMsgs[errCode]) {
          this.errCode = errCode
       }
       else {
          this.errCode = ahErrCodes.generic
       }
 
-      this.errMsg = ahErrMsgs[this.errCode].shrtDesc;
+      if(appErrMsg) {
+         this.appErrMsg = appErrMsg
+      }
 
-      this.httpStatus = ahErrMsgs[this.errCode].httpStatus;
+      this.httpErrMsg = ahHttpErrMsgs[this.errCode].errDesc;
+
+      this.httpStatus = ahHttpErrMsgs[this.errCode].status;
    }
 
    toString() {
-      return `${this.errMsg.shrtDesc} (${this.errCode})`
+      if(this.appErrMsg) {
+         return `${this.appErrMsg.errDesc} (${this.errCode})`
+      }
+      else {
+         return `${this.httpErrMsg.errDesc} (${this.errCode})`
+      }
    }
 }

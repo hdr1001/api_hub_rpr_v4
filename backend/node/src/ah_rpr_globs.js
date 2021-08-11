@@ -40,9 +40,9 @@ const httpStatusCodes = {
 };
 
 //API Hub errors
-const ahErrMsgs = [
-   {shrtDesc: 'Error occurred in API HUB', httpStatus: httpStatusCodes.genericErr},
-   {shrtDesc: 'Unable to locate the requested resource', httpStatus: httpStatusCodes.notFound}
+const ahHttpErrMsgs = [
+   {errDesc: 'Error occurred in API HUB', status: httpStatusCodes.genericErr},
+   {errDesc: 'Unable to locate the requested resource', status: httpStatusCodes.notFound}
 ];
 
 //Error type codes
@@ -55,6 +55,6 @@ export {
    ahProviders,
    ahProviderCodes,
    httpStatusCodes,
-   ahErrMsgs,
+   ahHttpErrMsgs,
    ahErrCodes
 };
