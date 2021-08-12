@@ -20,32 +20,42 @@
 //
 // *********************************************************************
 
-import { ahHttpErrMsgs, ahErrCodes } from './ah_rpr_globs.js';
+import { ahErrCodes } from './ah_rpr_globs.js';
+
+//HTTP status codes
+const httpStatusCodes = {
+   okay: { errDesc: 'Request succeeded', status: 200 },
+   notFound: { errDesc: 'Unable to locate', status: 404 },
+   genericErr: { errDesc: 'Server Error', status: 500 }
+};
+
+//Error specifics
+const ahErrors = [
+   { errDesc: 'Error occurred in API HUB', httpStatusCode: httpStatusCodes.genericErr },
+   { errDesc: 'Unable to locate the requested resource', httpStatusCode: httpStatusCodes.notFound },
+   { errDesc: 'Invalid parameter', httpStatusCode: httpStatusCodes.notFound }
+];
 
 export default class ApiHubErr {
-   constructor(errCode, appErrMsg) {
-      if(Number.isInteger(errCode) && ahHttpErrMsgs[errCode]) {
-         this.errCode = errCode
+   constructor(errCode, addtlErrMsg) {
+      if(ahErrors[errCode]) {
+         this.errorCode = errCode
       }
       else {
-         this.errCode = ahErrCodes.generic
+         this.errorCode = ahErrCodes.generic
       }
 
-      if(appErrMsg) {
-         this.appErrMsg = appErrMsg
+      this.errorMessage = ahErrors[this.errorCode].errDesc;
+
+      if(addtlErrMsg) {
+         this.addtlErrorMessage = addtlErrMsg
       }
 
-      this.httpErrMsg = ahHttpErrMsgs[this.errCode].errDesc;
-
-      this.httpStatus = ahHttpErrMsgs[this.errCode].status;
+      this.httpStatus = ahErrors[this.errorCode].httpStatusCode.status;
+      this.httpMessage = ahErrors[this.errorCode].httpStatusCode.errDesc;
    }
 
    toString() {
-      if(this.appErrMsg) {
-         return `${this.appErrMsg.errDesc} (${this.errCode})`
-      }
-      else {
-         return `${this.httpErrMsg.errDesc} (${this.errCode})`
-      }
+      return `${this.errorMessage} (${this.errCode})`
    }
 }

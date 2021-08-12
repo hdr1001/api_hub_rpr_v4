@@ -32,29 +32,15 @@ const ahProviderCodes = {
    dnb: 1
 }
 
-//HTTP status codes
-const httpStatusCodes = {
-   okay: 200,
-   notFound: 404,
-   genericErr: 500
-};
-
 //API Hub errors
-const ahHttpErrMsgs = [
-   {errDesc: 'Error occurred in API HUB', status: httpStatusCodes.genericErr},
-   {errDesc: 'Unable to locate the requested resource', status: httpStatusCodes.notFound}
-];
-
-//Error type codes
 const ahErrCodes = {
    generic: 0,
    unableToLocate: 1,
-};
+   invalidParameter: 2
+}
 
 export {
    ahProviders,
    ahProviderCodes,
-   httpStatusCodes,
-   ahHttpErrMsgs,
    ahErrCodes
 };

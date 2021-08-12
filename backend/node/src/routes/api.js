@@ -44,7 +44,7 @@ router.get(`/providers`, (req, resp) => {
          resp.json({id: parseInt(id), provider})
       }
       else {
-         const ahErr = new ApiHubErr(ahErrCodes.unableToLocate, `The value of parameter id, ${id}, is not valid`);
+         const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, `The value of parameter id, ${id}, is not valid`);
 
          resp.status(ahErr.httpStatus).json(ahErr)
       }
