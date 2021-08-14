@@ -32,6 +32,17 @@ const ahProviderCodes = {
    dnb: 1
 }
 
+//Identifying keys
+const ahKeys = [
+   'lei',
+   'duns'
+];
+
+const ahKeyCodes = {
+   lei: 0, //GLEIF Legal Entity Identifier
+   duns: 1, //D&B (i.e. DUNS)
+};
+
 //API Hub errors
 const ahErrCodes = {
    generic: 0,
@@ -42,5 +53,7 @@ const ahErrCodes = {
 export {
    ahProviders,
    ahProviderCodes,
+   ahKeys,
+   ahKeyCodes,
    ahErrCodes
 };

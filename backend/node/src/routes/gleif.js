@@ -21,11 +21,49 @@
 // *********************************************************************
 
 import express from 'express';
+import https from 'https';
+import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes } from '../ah_rpr_globs.js';
+import ApiHubErr from '../ah_rpr_err.js';
 
 const router = express.Router();
 
-router.get('/:lei', (req, resp) => {
-    resp.json({api: 'GLEIF', key: req.params.lei})
+router.get('/', (req, resp) => {
+   resp.json({api: ahProviders[ahProviderCodes.gleif] , key: ahKeys[ahKeyCodes.lei]})
+});
+
+router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
+
+   new Promise((resolve, reject) => {
+      const httpAttr = {
+         host: 'api.gleif.org',
+         path: `/api/v1/lei-records/${req.params.key}`,
+         method: 'GET',
+         headers: {
+            'Accept': 'application/vnd.api+json'
+         }
+      }
+
+      https.request(httpAttr, apiResp => {
+         const body = [];
+
+         apiResp.on('error', err => reject(err));
+
+         apiResp.on('data', chunk => body.push(chunk));
+
+         apiResp.on('end', () => { //The data product is now available in full
+            console.log('HTTP status code ' + apiResp.statusCode);
+
+            resolve(body + '');
+         });
+      }).end();
+   })
+   
+   .then(body => {
+      resp.setHeader('Content-Type', 'application/json'); 
+      resp.send(body);
+   })
+   
+   .catch(err => new ApiHubErr);
 });
 
 export default router;

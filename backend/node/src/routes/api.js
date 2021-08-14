@@ -40,7 +40,7 @@ router.get(`/providers`, (req, resp) => {
    else {
       const provider = ahProviders[id];
 
-      if(typeof provider === 'string') {
+      if(provider) {
          resp.json({id: parseInt(id), provider})
       }
       else {
