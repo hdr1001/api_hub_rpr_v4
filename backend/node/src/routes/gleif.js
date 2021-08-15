@@ -21,48 +21,33 @@
 // *********************************************************************
 
 import express from 'express';
-import https from 'https';
-import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes } from '../ah_rpr_globs.js';
+import { ahEndpoints, ahProviderCodes, ahKeys, ahKeyCodes } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
+import getHttpRespPromise from '../ah_rpr_http.js';
 
 const router = express.Router();
 
 router.get('/', (req, resp) => {
-   resp.json({api: ahProviders[ahProviderCodes.gleif] , key: ahKeys[ahKeyCodes.lei]})
+   resp.json({api: ahEndpoints[ahProviderCodes.gleif].provider , key: ahKeys[ahKeyCodes.lei]})
 });
 
 router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
 
-   new Promise((resolve, reject) => {
-      const httpAttr = {
-         host: 'api.gleif.org',
-         path: `/api/v1/lei-records/${req.params.key}`,
-         method: 'GET',
-         headers: {
-            'Accept': 'application/vnd.api+json'
-         }
-      }
+   const lei = req.params.key;
 
-      https.request(httpAttr, apiResp => {
-         const body = [];
+   if(!lei) {
+      const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, `LEI specified is not valid`);
 
-         apiResp.on('error', err => reject(err));
+      resp.status(ahErr.httpStatus).json(ahErr); return;
+   }
 
-         apiResp.on('data', chunk => body.push(chunk));
+   getHttpRespPromise(ahProviderCodes.gleif, ahEndpoints[ahProviderCodes.gleif].endpointCodes.lei, lei)
+   .then(apiResp => {
+      console.log(`Status code returned by the external API ${apiResp.extnlApiStatusCode}`);
 
-         apiResp.on('end', () => { //The data product is now available in full
-            console.log('HTTP status code ' + apiResp.statusCode);
-
-            resolve(body + '');
-         });
-      }).end();
-   })
-   
-   .then(body => {
       resp.setHeader('Content-Type', 'application/json'); 
-      resp.send(body);
-   })
-   
+      resp.send(apiResp.body);
+   })  
    .catch(err => new ApiHubErr);
 });
 
