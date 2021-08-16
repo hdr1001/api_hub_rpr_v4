@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahEndpoints, ahProviderCodes, ahKeys, ahKeyCodes } from '../ah_rpr_globs.js';
+import { ahEndpoints, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
 import getHttpRespPromise from '../ah_rpr_http.js';
 
@@ -36,9 +36,9 @@ router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
    const lei = req.params.key;
 
    if(!lei) {
-      const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, `LEI specified is not valid`);
+      const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, 'LEI specified is not valid');
 
-      resp.status(ahErr.httpStatus).json(ahErr); return;
+      resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
    getHttpRespPromise(ahProviderCodes.gleif, ahEndpoints[ahProviderCodes.gleif].endpointCodes.lei, lei)
