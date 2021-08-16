@@ -24,9 +24,9 @@ import { ahErrCodes } from './ah_rpr_globs.js';
 
 //HTTP status codes
 const httpStatusCodes = {
-   okay: { errDesc: 'Request succeeded', status: 200 },
-   notFound: { errDesc: 'Unable to locate', status: 404 },
-   genericErr: { errDesc: 'Server Error', status: 500 }
+   okay: { description: 'Request succeeded', status: 200 },
+   notFound: { description: 'Unable to locate', status: 404 },
+   genericErr: { description: 'Server Error', status: 500 }
 };
 
 //Error specifics
@@ -37,26 +37,33 @@ const ahErrors = [
    { errDesc: 'External API returned an error', httpStatusCode: httpStatusCodes.genericErr }
 ];
 
-export default class ApiHubErr {
+export default class ApiHubErr extends Error {
    constructor(errCode, addtlErrMsg) {
+      let errorCode;
+
       if(ahErrors[errCode]) {
-         this.errorCode = errCode
+         errorCode = errCode
       }
       else {
-         this.errorCode = ahErrCodes.generic
+         errorCode = ahErrCodes.generic
       }
 
-      this.errorMessage = ahErrors[this.errorCode].errDesc;
+      super(ahErrors[errorCode].errDesc);
+      this.name = 'ApiHubError';
+
+      this.apiHubErr = {
+         message: this.message,
+         code: errorCode
+      };
 
       if(addtlErrMsg) {
-         this.addtlErrorMessage = addtlErrMsg
+         this.apiHubErr.addtlErrorMessage = addtlErrMsg
       }
 
-      this.httpStatus = ahErrors[this.errorCode].httpStatusCode.status;
-      this.httpMessage = ahErrors[this.errorCode].httpStatusCode.errDesc;
+      this.apiHubErr.http = ahErrors[errorCode].httpStatusCode;
    }
 
    toString() {
-      return `${this.errorMessage} (${this.errCode})`
+      return `${this.message} (${this.apiHubErr.code})`
    }
 }

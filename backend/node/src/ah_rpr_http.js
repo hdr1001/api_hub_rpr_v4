@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import https from 'https';
-import { ahEndpoints } from './ah_rpr_globs.js'
+import { ahEndpoints, ahErrCodes } from './ah_rpr_globs.js'
 import ApiHubErr from './ah_rpr_err.js';
 
 export default function getHttpRespPromise(provider, endpoint, path, oQryStr) {

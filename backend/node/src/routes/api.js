@@ -46,7 +46,7 @@ router.get('/providers', (req, resp) => {
       else {
          const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, `The value of parameter id, ${id}, is not valid`);
 
-         resp.status(ahErr.httpStatus).json(ahErr)
+         resp.status(ahErr.apiHubErr.http.status).json(ahErr)
       }
    }
 });

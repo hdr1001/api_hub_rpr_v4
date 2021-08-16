@@ -36,7 +36,7 @@ app.use('/hub', hub);
 app.use((req, resp) => {
    const ahErr = new ApiHubErr(ahErrCodes.unableToLocate);
 
-   resp.status(ahErr.httpStatus).json(ahErr)
+   resp.status(ahErr.apiHubErr.http.status).json(ahErr);
 })
 
 const server = app.listen(port, err => {
