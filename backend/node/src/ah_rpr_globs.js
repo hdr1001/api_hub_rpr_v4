@@ -67,7 +67,8 @@ const ahErrCodes = {
    generic: 0,
    unableToLocate: 1,
    invalidParameter: 2,
-   extnlApiErr: 3
+   extnlApiErr: 3,
+   httpErrReturn: 4
 }
 
 export {

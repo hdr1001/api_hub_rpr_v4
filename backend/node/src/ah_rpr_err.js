@@ -34,11 +34,12 @@ const ahErrors = [
    { errDesc: 'Error occurred in API HUB', httpStatusCode: httpStatusCodes.genericErr },
    { errDesc: 'Unable to locate the requested resource', httpStatusCode: httpStatusCodes.notFound },
    { errDesc: 'Invalid parameter', httpStatusCode: httpStatusCodes.notFound },
-   { errDesc: 'External API returned an error', httpStatusCode: httpStatusCodes.genericErr }
+   { errDesc: 'External API returned an error', httpStatusCode: httpStatusCodes.genericErr },
+   { errDesc: 'External API returned an HTTP error status', httpStatusCode: httpStatusCodes.genericErr }
 ];
 
 export default class ApiHubErr extends Error {
-   constructor(errCode, addtlErrMsg) {
+   constructor(errCode, addtlErrMsg, extnlApiReturn) {
       let errorCode;
 
       if(ahErrors[errCode]) {
@@ -61,6 +62,10 @@ export default class ApiHubErr extends Error {
       }
 
       this.apiHubErr.http = ahErrors[errorCode].httpStatusCode;
+
+      if(extnlApiReturn) {
+         this.extnlApiErr = JSON.parse(extnlApiReturn)
+      }
    }
 
    toString() {

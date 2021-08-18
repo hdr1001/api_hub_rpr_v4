@@ -64,12 +64,21 @@ router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
 
    getHttpRespPromise(ahProviderCodes.gleif, ahEndpoints[ahProviderCodes.gleif].endpointCodes.lei, lei)
    .then(apiResp => {
-      console.log(`Status code returned by the external API ${apiResp.extnlApiStatusCode}`);
+      const sMsg = `Request for LEI ${lei} returned with HTTP status code ${apiResp.extnlApiStatusCode}`; 
+      console.log(sMsg);
 
-      resp.setHeader('Content-Type', 'application/json'); 
-      resp.send(apiResp.body);
-   })  
-   .catch(err => new ApiHubErr);
+      if(apiResp.extnlApiStatusCode === 200) {
+         resp.setHeader('Content-Type', 'application/json').send(apiResp.body);
+      }
+      else {
+         resp
+            .status(apiResp.extnlApiStatusCode)
+            .json(new ApiHubErr(ahErrCodes.httpErrReturn, sMsg, apiResp.body)); 
+      }
+   })
+   .catch(err => {
+      resp.status(err.apiHubErr.http.status).json(err);
+   });
 });
 
 export default router;
