@@ -10,3 +10,17 @@ services:
       NODE_ENV: production
     ports:
       - 3000:3000
+
+  apihubpg:
+    image: apihubpg
+    build:
+      context: backend/postgres
+      dockerfile: ./Dockerfile
+    environment:
+      POSTGRES_USER: ${pg_usr}
+      POSTGRES_PASSWORD: ${pg_pwd}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: unless-stopped

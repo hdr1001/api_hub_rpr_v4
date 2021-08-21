@@ -12,3 +12,17 @@ services:
       - 3000:3000
       - 9229:9229
     command: ["node", "--inspect=0.0.0.0:9229", "index.js"]
+
+  apihubpg:
+    image: apihubpg
+    build:
+      context: backend/postgres
+      dockerfile: ./Dockerfile
+    environment:
+      POSTGRES_USER: ${pg_usr}
+      POSTGRES_PASSWORD: ${pg_pwd}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: unless-stopped

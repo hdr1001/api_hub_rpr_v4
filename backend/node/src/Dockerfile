@@ -1,5 +1,6 @@
 FROM node:14-alpine
 ENV NODE_ENV=production
+RUN apk --update --no-cache add postgresql-client
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent && mv node_modules ../
