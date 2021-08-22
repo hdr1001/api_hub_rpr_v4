@@ -6,10 +6,13 @@ services:
     build:
       context: backend/node/src
       dockerfile: ./Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV}
     environment:
-      NODE_ENV: production
+      APP_PORT: ${APP_PORT}
     ports:
-      - 3000:3000
+      - ${APP_PORT}:${APP_PORT}
+    command: npm start
 
   apihubpg:
     image: apihubpg
