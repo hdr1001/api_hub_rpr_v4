@@ -5,7 +5,7 @@ services:
     image: apihubrprv4
     build:
       context: backend/node/src
-      dockerfile: ./Dockerfile
+      dockerfile: ../Dockerfile
       args:
         NODE_ENV: development
     environment:
