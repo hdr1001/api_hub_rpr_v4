@@ -10,6 +10,11 @@ services:
         NODE_ENV: development
     environment:
       APP_PORT: 3000
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGHOST: ${PGHOST}
+      PGDATABASE: ${PGUSER}
+      PGPORT: ${PGPORT}
     ports:
       - 3000:3000
       - 9229:9229
@@ -21,10 +26,10 @@ services:
       context: backend/postgres
       dockerfile: ./Dockerfile
     environment:
-      POSTGRES_USER: ${pg_usr}
-      POSTGRES_PASSWORD: ${pg_pwd}
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${PGPORT}:${PGPORT}
     restart: unless-stopped

@@ -24,6 +24,7 @@ import express from 'express';
 import { ahEndpoints, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
 import getHttpRespPromise from '../ah_rpr_http.js';
+import db from '../db/index.js';
 
 const router = express.Router();
 
@@ -49,6 +50,10 @@ function isKeyValid(sKey) {
 }
 
 router.get('/', (req, resp) => {
+   db.query('SELECT lei_ref FROM products_gleif')
+      .then(ret => console.log(`Results SQL query ${ret.rows.length}`))
+      .catch(err => console.log(err));
+
    resp.json({api: ahEndpoints[ahProviderCodes.gleif].provider , key: ahKeys[ahKeyCodes.lei]})
 });
 
