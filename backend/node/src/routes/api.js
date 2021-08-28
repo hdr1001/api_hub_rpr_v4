@@ -21,27 +21,27 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahEndpoints, ahProviderCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import { ahProviders, ahProviderCodes, ahErrCodes } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
 import gleif from './gleif.js';
 import dnb from './dnb.js';
 
 const router = express.Router();
 
-router.use(`/${ahEndpoints[ahProviderCodes.gleif].provider}`, gleif);
-router.use(`/${ahEndpoints[ahProviderCodes.dnb].provider}`, dnb);
+router.use(`/${ahProviders[ahProviderCodes.gleif]}`, gleif);
+router.use(`/${ahProviders[ahProviderCodes.dnb]}`, dnb);
 
 router.get('/providers', (req, resp) => {
    const id = req.query.id;
 
    if(typeof id === 'undefined') {
-      resp.json(ahEndpoints.map(elem => elem.provider))
+      resp.json(ahProviders)
    }
    else {
-      const endpoint = ahEndpoints[id];
+      const provider = ahProviders[id];
 
-      if(endpoint) {
-         resp.json({id: parseInt(id), provider: endpoint.provider})
+      if(provider) {
+         resp.json({id: parseInt(id), provider})
       }
       else {
          const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, `The value of parameter id, ${id}, is not valid`);

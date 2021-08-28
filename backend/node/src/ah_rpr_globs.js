@@ -21,34 +21,16 @@
 // *********************************************************************
 
 //API providers
-const ahEndpoints = [
-   {
-      provider: 'gleif',
-      attr: {
-         method: 'GET',
-         host: 'api.gleif.org'
-      },
-      headers: {
-         'Accept': 'application/vnd.api+json'
-      },
-      endpoints: [
-         { //Attributes specifically for endpoint lei
-            path: '/api/v1/lei-records'
-         }
-      ],
-      endpointCodes: {
-         lei: 0
-      }
-   }, {
-      provider: 'dnb',
-   }
+const ahProviders = [
+   'gleif',
+   'dnb'
 ];
 
 //API provider codes
 const ahProviderCodes = {
    gleif: 0,
    dnb: 1
-}
+};
 
 //Identifying keys
 const ahKeys = [
@@ -72,7 +54,7 @@ const ahErrCodes = {
 }
 
 export {
-   ahEndpoints,
+   ahProviders,
    ahProviderCodes,
    ahKeys,
    ahKeyCodes,

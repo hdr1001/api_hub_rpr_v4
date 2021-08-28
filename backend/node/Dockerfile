@@ -17,3 +17,5 @@ fi
 COPY ./*.js ./
 RUN mkdir ./routes
 COPY ./routes/*.js ./routes/
+RUN mkdir ./db
+COPY ./db/*.js ./db/

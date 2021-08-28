@@ -21,32 +21,16 @@
 // *********************************************************************
 
 import https from 'https';
-import { ahEndpoints, ahErrCodes } from './ah_rpr_globs.js'
+import { ahErrCodes } from './ah_rpr_globs.js'
 import ApiHubErr from './ah_rpr_err.js';
 
-export default function getHttpRespPromise(provider, endpoint, path, oQryStr) {
-   const httpAttr = {
-      ...ahEndpoints[provider].attr,
-      headers: { ...ahEndpoints[provider].headers },
-      path: ahEndpoints[provider].endpoints[endpoint].path
-   };
-
-   if(path && typeof path === 'string') {
-      httpAttr.path += '/' + path;
-   }
-   else if (Array.isArray(path) && path.length > 0) {
-      httpAttr.path += '/' + path.join('/');
-   }
-
-   if(oQryStr && typeof oQryStr === 'object' && oQryStr.keys.length > 0) {
-
-   }
-
+export default function getHttpRespPromise(ahReq) {
    return new Promise((resolve, reject) => {
-      https.request(httpAttr, resp => {
+
+      https.request(ahReq.http, resp => {
          const body = [];
 
-         resp.on('error', err => reject(new ApiHubErr(ahErrCodes.extnlApiErr, 'External API emitted an error')));
+         resp.on('error', err => reject(new ApiHubErr(ahErrCodes.extnlApiErr, 'External API emitted an error', err)));
 
          resp.on('data', chunk => body.push(chunk));
 
@@ -57,5 +41,6 @@ export default function getHttpRespPromise(provider, endpoint, path, oQryStr) {
             })
          });
       }).end()
+
    });
 }

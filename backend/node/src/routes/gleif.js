@@ -21,12 +21,30 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahEndpoints, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import ahReqPersistResp from '../ah_rpr_core.js';
 import ApiHubErr from '../ah_rpr_err.js';
-import getHttpRespPromise from '../ah_rpr_http.js';
-import db from '../db/index.js';
 
 const router = express.Router();
+
+const ahEndpoint = {
+   provider: ahProviders[ahProviderCodes.gleif],
+   attr: {
+      method: 'GET',
+      host: 'api.gleif.org'
+   },
+   headers: {
+      'Accept': 'application/vnd.api+json'
+   },
+   endpoints: [
+      { //Attributes specifically for endpoint lei
+         path: '/api/v1/lei-records'
+      }
+   ],
+   endpointCodes: {
+      lei: 0
+   }
+};
 
 function isKeyValid(sKey) {
    let m = 0, charCode;
@@ -50,40 +68,26 @@ function isKeyValid(sKey) {
 }
 
 router.get('/', (req, resp) => {
-   db.query('SELECT lei_ref FROM products_gleif')
-      .then(ret => console.log(`Results SQL query ${ret.rows.length}`))
-      .catch(err => console.log(err));
-
-   resp.json({api: ahEndpoints[ahProviderCodes.gleif].provider , key: ahKeys[ahKeyCodes.lei]})
+   resp.json({api: ahProviders[ahProviderCodes.gleif] , key: ahKeys[ahKeyCodes.lei]})
 });
 
 router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
 
-   const lei = req.params.key;
-
-   if(!isKeyValid(lei)) {
+   if(!isKeyValid(req.params.key)) {
       const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, 'LEI submitted is not valid');
 
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
-   getHttpRespPromise(ahProviderCodes.gleif, ahEndpoints[ahProviderCodes.gleif].endpointCodes.lei, lei)
-   .then(apiResp => {
-      const sMsg = `Request for LEI ${lei} returned with HTTP status code ${apiResp.extnlApiStatusCode}`; 
-      console.log(sMsg);
+   const ahReq = { key: req.params.key };
 
-      if(apiResp.extnlApiStatusCode === 200) {
-         resp.setHeader('Content-Type', 'application/json').send(apiResp.body);
-      }
-      else {
-         resp
-            .status(apiResp.extnlApiStatusCode)
-            .json(new ApiHubErr(ahErrCodes.httpErrReturn, sMsg, apiResp.body)); 
-      }
-   })
-   .catch(err => {
-      resp.status(err.apiHubErr.http.status).json(err);
-   });
+   ahReq.http = {
+      ...ahEndpoint.attr,
+      headers: { ...ahEndpoint.headers },
+      path: ahEndpoint.endpoints[ahEndpoint.endpointCodes.lei].path + '/' + ahReq.key
+   };
+
+   ahReqPersistResp(req, resp, ahReq);
 });
 
 export default router;
