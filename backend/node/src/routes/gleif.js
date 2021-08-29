@@ -46,6 +46,11 @@ const ahEndpoint = {
    }
 };
 
+const ahSql = {
+   select: 'SELECT lei AS key, lei_ref AS product, lei_ref_obtained_at AS poa FROM products_gleif WHERE lei = $1;',
+   insert: 'INSERT INTO product_gleif (lei, lei_ref, lei_ref_obtained_at) VALUES ($1, $2, $3) ON CONFLICT (lei) DO UPDATE SET lei_ref = $2, lei_ref_obtained_at = $3;'
+};
+
 function isKeyValid(sKey) {
    let m = 0, charCode;
 
@@ -79,7 +84,13 @@ router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
-   const ahReq = { key: req.params.key };
+   const ahReq = { key: req.params.key, forceNew: false, sql: ahSql };
+
+   //Irregardless of the value assigned, if forceNew is specified as a query parameter,
+   //the forceNew flag will be considered set
+   if(req.query.forceNew !== undefined) {
+      ahReq.forceNew = true;
+   }
 
    ahReq.http = {
       ...ahEndpoint.attr,

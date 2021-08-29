@@ -1,7 +1,7 @@
 // *********************************************************************
 //
 // API Hub request, persist and respond, Postgres objects
-// JavaScript code file: index.js
+// JavaScript code file: ah_rpr_pg.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -37,10 +37,5 @@ pool.on('error', (err, client) => {
 })
   
 export default {
-   query: (text, params) => {
-
-      return pool.query(text, params);
-//      return new Promise((resolve, reject) => {
-//         setTimeout(() => resolve('foo'), 300);
-   }
+   query: (text, params) => pool.query(text, params)
 }

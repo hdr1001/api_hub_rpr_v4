@@ -21,30 +21,60 @@
 // *********************************************************************
 
 import { ahErrCodes } from './ah_rpr_globs.js';
+import db from './ah_rpr_pg.js';
 import getHttpRespPromise from './ah_rpr_http.js';
-//import db from './db/index.js';
 import ApiHubErr from './ah_rpr_err.js';
 
-export default function ahReqPersistResp(req, resp, ahReq) {
-/*   db.query('SELECT lei_ref FROM products_gleif')
-      .then(ret => console.log(`Results SQL query ${ret.rows.length}`))
-      .catch(err => console.log(err));
-*/
-   getHttpRespPromise(ahReq)
-      .then(apiResp => {
-         const sMsg = `Request for LEI ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`; 
-         console.log(sMsg);
+function getProductDb(ahReq) {
+   if(ahReq.forceNew) {
+      return Promise.resolve(null)
+   }
+   else {
+      return db.query(ahReq.sql.select, [ahReq.key])
+   }
+}
 
-         if(apiResp.extnlApiStatusCode === 200) {
-            resp.setHeader('Content-Type', 'application/json').send(apiResp.body);
+export default function ahReqPersistResp(req, resp, ahReq) {
+   getProductDb(ahReq)
+      .then(dbResp => {
+         if(dbResp) {
+            if(dbResp.rowCount > 0) { //Available on the database
+               ahReq.productDb = true;
+   
+               resp
+                  .setHeader('X-AHRPR-Cache', 'true')
+                  .json(dbResp.rows[0].product);
+   
+               return Promise.resolve(null);
+            }
+            else { //rowCount === 0 (i.e. not available from database)
+               ahReq.productDb = false;
+            }
          }
-         else {
-            resp
-               .status(apiResp.extnlApiStatusCode)
-               .json(new ApiHubErr(ahErrCodes.httpErrReturn, sMsg, apiResp.body)); 
+
+         //Not on database or forceNew flag set
+         return getHttpRespPromise(ahReq);
+      })
+      .then(apiResp => {
+         if(apiResp === null) { //Product delivered out of the database
+            return Promise.resolve(null)
+         }
+         else { //Get the product from the external API
+            const sMsg = `Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`; 
+            console.log(sMsg);
+   
+            if(apiResp.extnlApiStatusCode === 200) {
+               resp.setHeader('Content-Type', 'application/json').send(apiResp.body);
+            }
+            else {
+               resp
+                  .status(apiResp.extnlApiStatusCode)
+                  .json(new ApiHubErr(ahErrCodes.httpErrReturn, sMsg, apiResp.body)); 
+            }
          }
       })
       .catch(err => {
-         resp.status(err.apiHubErr.http.status).json(err);
+         const ahErr = new ApiHubErr(ahErrCodes.generic, 'Error occurred');
+         resp.status(ahErr.apiHubErr.http.status).json(ahErr);
       });
 }

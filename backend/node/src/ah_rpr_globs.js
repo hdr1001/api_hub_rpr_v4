@@ -51,7 +51,7 @@ const ahErrCodes = {
    invalidParameter: 2,
    extnlApiErr: 3,
    httpErrReturn: 4
-}
+};
 
 export {
    ahProviders,
