@@ -35,6 +35,8 @@ function getProductDb(ahReq) {
 }
 
 export default function ahReqPersistResp(req, resp, ahReq) {
+   ahReq.msg = [];
+
    getProductDb(ahReq)
       .then(dbResp => {
          if(dbResp) {
@@ -44,11 +46,15 @@ export default function ahReqPersistResp(req, resp, ahReq) {
                resp
                   .setHeader('X-AHRPR-Cache', 'true')
                   .json(dbResp.rows[0].product);
-   
+
+               ahReq.msg.push(`Request for key ${ahReq.key} delivered from database`);
+
                return Promise.resolve(null);
             }
             else { //rowCount === 0 (i.e. not available from database)
                ahReq.productDb = false;
+
+               ahReq.msg.push(`Key ${ahReq.key} is not available on the database`);
             }
          }
 
@@ -60,18 +66,22 @@ export default function ahReqPersistResp(req, resp, ahReq) {
             return Promise.resolve(null)
          }
          else { //Get the product from the external API
-            const sMsg = `Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`; 
-            console.log(sMsg);
-   
+            ahReq.msg.push(`Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`); 
+
             if(apiResp.extnlApiStatusCode === 200) {
-               resp.setHeader('Content-Type', 'application/json').send(apiResp.body);
+               resp.set('Content-Type', 'application/json').send(apiResp.body);
+
+               return db.query(ahReq.sql.insert, [ahReq.key, apiResp.body, null]);
             }
             else {
                resp
                   .status(apiResp.extnlApiStatusCode)
-                  .json(new ApiHubErr(ahErrCodes.httpErrReturn, sMsg, apiResp.body)); 
+                  .json(new ApiHubErr(ahErrCodes.httpErrReturn, ahReq.msg, apiResp.body));
             }
          }
+      })
+      .then(dbPersist => {
+         ahReq.msg.forEach(elem => console.log(elem))
       })
       .catch(err => {
          const ahErr = new ApiHubErr(ahErrCodes.generic, 'Error occurred');
