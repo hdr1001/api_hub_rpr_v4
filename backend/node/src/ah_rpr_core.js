@@ -27,6 +27,8 @@ import ApiHubErr from './ah_rpr_err.js';
 
 function getProductDb(ahReq) {
    if(ahReq.forceNew) {
+      ahReq.msg.push('forceNew flag is set on the request');
+
       return Promise.resolve(null)
    }
    else {
@@ -35,16 +37,20 @@ function getProductDb(ahReq) {
 }
 
 export default function ahReqPersistResp(req, resp, ahReq) {
-   ahReq.msg = [];
+   ahReq.msg = [`➡️ ahReqPersistResp for ${ahReq.key}`];
 
    getProductDb(ahReq)
       .then(dbResp => {
          if(dbResp) {
             if(dbResp.rowCount > 0) { //Available on the database
                ahReq.productDb = true;
+               ahReq.productObtainedAt = dbResp.rows[0].poa;
+               ahReq.productHttpStatus = dbResp.rows[0].api_http_status;
    
                resp
-                  .setHeader('X-AHRPR-Cache', 'true')
+                  .setHeader('X-AHRPR-Cache', ahReq.productDb)
+                  .setHeader('X-AHRPR-Obtained-At', new Date(ahReq.productObtainedAt))
+                  .setHeader('X-AHRPR-API-HTTP-Status', ahReq.productHttpStatus)
                   .json(dbResp.rows[0].product);
 
                ahReq.msg.push(`Request for key ${ahReq.key} delivered from database`);
@@ -68,10 +74,19 @@ export default function ahReqPersistResp(req, resp, ahReq) {
          else { //Get the product from the external API
             ahReq.msg.push(`Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`); 
 
-            if(apiResp.extnlApiStatusCode === 200) {
-               resp.set('Content-Type', 'application/json').send(apiResp.body);
+            ahReq.productDb = false;
+            ahReq.productObtainedAt = Date.now();
 
-               return db.query(ahReq.sql.insert, [ahReq.key, apiResp.body, null]);
+            if(apiResp.extnlApiStatusCode === 200) {
+               resp
+                  .setHeader('X-AHRPR-Cache', ahReq.productDb)
+                  .setHeader('X-AHRPR-Obtained-At', new Date(ahReq.productObtainedAt))
+                  .setHeader('X-AHRPR-API-HTTP-Status', apiResp.extnlApiStatusCode)
+                  .set('Content-Type', 'application/json')
+                  .send(apiResp.body);
+
+               return db.query(ahReq.sql.insert, [ahReq.key, apiResp.body, 
+                                    ahReq.productObtainedAt, apiResp.extnlApiStatusCode]);
             }
             else {
                resp

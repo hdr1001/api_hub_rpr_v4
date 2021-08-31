@@ -47,8 +47,8 @@ const ahEndpoint = {
 };
 
 const ahSql = {
-   select: 'SELECT lei AS key, lei_ref AS product, lei_ref_obtained_at AS poa FROM products_gleif WHERE lei = $1;',
-   insert: 'INSERT INTO products_gleif (lei, lei_ref, lei_ref_obtained_at) VALUES ($1, $2, $3) ON CONFLICT (lei) DO UPDATE SET lei_ref = $2, lei_ref_obtained_at = $3;'
+   select: 'SELECT lei AS key, lei_ref AS product, lei_ref_obtained_at AS poa, lei_ref_http_status AS api_http_status FROM products_gleif WHERE lei = $1;',
+   insert: 'INSERT INTO products_gleif (lei, lei_ref, lei_ref_obtained_at, lei_ref_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (lei) DO UPDATE SET lei_ref = $2, lei_ref_obtained_at = $3, lei_ref_http_status = $4;'
 };
 
 function isKeyValid(sKey) {

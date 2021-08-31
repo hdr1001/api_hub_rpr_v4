@@ -21,6 +21,7 @@
 // *********************************************************************
 
 import pg from 'pg';
+pg.defaults.parseInt8 = true;
 
 const { Pool } = pg;
 const pool = new Pool();
