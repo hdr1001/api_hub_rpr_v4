@@ -37,20 +37,16 @@ function getProductDb(ahReq) {
 }
 
 export default function ahReqPersistResp(req, resp, ahReq) {
-   ahReq.msg = [`➡️ ahReqPersistResp for ${ahReq.key}`];
+   ahReq.msg = [`\n➡️ ahReqPersistResp for ${ahReq.key}`];
 
    getProductDb(ahReq)
       .then(dbResp => {
          if(dbResp) {
             if(dbResp.rowCount > 0) { //Available on the database
-               ahReq.productDb = true;
-               ahReq.productObtainedAt = dbResp.rows[0].poa;
-               ahReq.productHttpStatus = dbResp.rows[0].api_http_status;
-   
                resp
-                  .setHeader('X-AHRPR-Cache', ahReq.productDb)
-                  .setHeader('X-AHRPR-Obtained-At', new Date(ahReq.productObtainedAt))
-                  .setHeader('X-AHRPR-API-HTTP-Status', ahReq.productHttpStatus)
+                  .setHeader('X-AHRPR-Cache', true)
+                  .setHeader('X-AHRPR-Obtained-At', new Date(dbResp.rows[0].poa))
+                  .setHeader('X-AHRPR-API-HTTP-Status', dbResp.rows[0].api_http_status)
                   .json(dbResp.rows[0].product);
 
                ahReq.msg.push(`Request for key ${ahReq.key} delivered from database`);
@@ -58,8 +54,6 @@ export default function ahReqPersistResp(req, resp, ahReq) {
                return Promise.resolve(null);
             }
             else { //rowCount === 0 (i.e. not available from database)
-               ahReq.productDb = false;
-
                ahReq.msg.push(`Key ${ahReq.key} is not available on the database`);
             }
          }
@@ -72,26 +66,34 @@ export default function ahReqPersistResp(req, resp, ahReq) {
             return Promise.resolve(null)
          }
          else { //Get the product from the external API
-            ahReq.msg.push(`Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`); 
+            const extnlApiMsg = `Request for key ${ahReq.key} returned with HTTP status code ${apiResp.extnlApiStatusCode}`;
+            const obtainedAt = Date.now();
 
-            ahReq.productDb = false;
-            ahReq.productObtainedAt = Date.now();
+            ahReq.msg.push(extnlApiMsg);
 
             if(apiResp.extnlApiStatusCode === 200) {
                resp
-                  .setHeader('X-AHRPR-Cache', ahReq.productDb)
-                  .setHeader('X-AHRPR-Obtained-At', new Date(ahReq.productObtainedAt))
+                  .setHeader('X-AHRPR-Cache', false)
+                  .setHeader('X-AHRPR-Obtained-At', new Date(obtainedAt))
                   .setHeader('X-AHRPR-API-HTTP-Status', apiResp.extnlApiStatusCode)
                   .set('Content-Type', 'application/json')
                   .send(apiResp.body);
 
                return db.query(ahReq.sql.insert, [ahReq.key, apiResp.body, 
-                                    ahReq.productObtainedAt, apiResp.extnlApiStatusCode]);
+                                       obtainedAt, apiResp.extnlApiStatusCode]);
             }
-            else {
+            else { //External API HTTP status code returned indicates an error
+               const apiHubErr = new ApiHubErr(ahErrCodes.httpErrReturn, extnlApiMsg, apiResp.body);
+
                resp
                   .status(apiResp.extnlApiStatusCode)
-                  .json(new ApiHubErr(ahErrCodes.httpErrReturn, ahReq.msg, apiResp.body));
+                  .json(apiHubErr);
+
+               let sqlErr  = 'INSERT INTO ah_errors (key, err, err_obtained_at, err_http_status) ';
+                   sqlErr += 'VALUES ($1, $2, $3, $4);';
+
+               return db.query(sqlErr, [ahReq.key, JSON.stringify(apiHubErr), 
+                                          obtainedAt, apiResp.extnlApiStatusCode]);
             }
          }
       })

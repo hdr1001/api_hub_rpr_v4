@@ -20,13 +20,35 @@
 --
 -- *********************************************************************
 
+-- Create a sequence for the primary key of table API hub errors
+CREATE SEQUENCE public.ah_errors_id_seq
+   INCREMENT 1
+   START 1
+   MINVALUE 1
+   MAXVALUE 9223372036854775807
+   CACHE 1;
+
 -- Create table for storing GLEIF data products
 CREATE TABLE public.products_gleif (
-    lei character varying(32) COLLATE pg_catalog."default",
-    lei_ref JSONB,
-    lei_ref_obtained_at bigint,
-    lei_ref_http_status smallint,
-    CONSTRAINT products_gleif_pkey PRIMARY KEY (lei)
+   lei character varying(32) COLLATE pg_catalog."default",
+   lei_ref JSONB,
+   lei_ref_obtained_at bigint,
+   lei_ref_http_status smallint,
+   CONSTRAINT products_gleif_pkey PRIMARY KEY (lei)
+)
+WITH (
+   OIDS = false
+)
+TABLESPACE pg_default;
+
+-- Create table for persisting error objects
+CREATE TABLE public.ah_errors (
+   id integer NOT NULL DEFAULT nextval('ah_errors_id_seq'::regclass),
+   key character varying(32) COLLATE pg_catalog."default",
+   err JSONB,
+   err_obtained_at bigint,
+   err_http_status smallint,
+   CONSTRAINT ah_errors_pkey PRIMARY KEY (id)
 )
 WITH (
     OIDS = false
