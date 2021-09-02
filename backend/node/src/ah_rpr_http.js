@@ -30,7 +30,7 @@ export default function getHttpRespPromise(ahReq) {
       https.request(ahReq.http, resp => {
          const body = [];
 
-         resp.on('error', err => reject(new ApiHubErr(ahErrCodes.extnlApiErr, 'External API emitted an error', err)));
+         resp.on('error', err => reject(err));
 
          resp.on('data', chunk => body.push(chunk));
 
@@ -40,7 +40,7 @@ export default function getHttpRespPromise(ahReq) {
                extnlApiStatusCode: resp.statusCode
             })
          });
-      }).end()
+      }).on('error', err => reject(err)).end()
 
-   });
+   })
 }

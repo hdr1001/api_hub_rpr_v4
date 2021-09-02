@@ -37,12 +37,12 @@ function getProductDb(ahReq) {
 }
 
 export default function ahReqPersistResp(req, resp, ahReq) {
-   ahReq.msg = [`\n➡️ ahReqPersistResp for ${ahReq.key}`];
+   ahReq.msg = [`\nahReqPersistResp for ${ahReq.key}`];
 
    getProductDb(ahReq)
       .then(dbResp => {
          if(dbResp) {
-            if(dbResp.rowCount > 0) { //Available on the database
+            if(dbResp.rows.length > 0) { //Available on the database
                resp
                   .setHeader('X-AHRPR-Cache', true)
                   .setHeader('X-AHRPR-Obtained-At', new Date(dbResp.rows[0].poa))
@@ -53,7 +53,7 @@ export default function ahReqPersistResp(req, resp, ahReq) {
 
                return Promise.resolve(null);
             }
-            else { //rowCount === 0 (i.e. not available from database)
+            else { //rows.length === 0 (i.e. not available from database)
                ahReq.msg.push(`Key ${ahReq.key} is not available on the database`);
             }
          }
@@ -83,25 +83,41 @@ export default function ahReqPersistResp(req, resp, ahReq) {
                                        obtainedAt, apiResp.extnlApiStatusCode]);
             }
             else { //External API HTTP status code returned indicates an error
-               const apiHubErr = new ApiHubErr(ahErrCodes.httpErrReturn, extnlApiMsg, apiResp.body);
+               ahReq.ahErr = new ApiHubErr(ahErrCodes.httpErrReturn, extnlApiMsg, apiResp.body);
 
                resp
                   .status(apiResp.extnlApiStatusCode)
-                  .json(apiHubErr);
+                  .json(ahReq.ahErr);
 
                let sqlErr  = 'INSERT INTO ah_errors (key, err, err_obtained_at, err_http_status) ';
                    sqlErr += 'VALUES ($1, $2, $3, $4);';
 
-               return db.query(sqlErr, [ahReq.key, JSON.stringify(apiHubErr), 
+               return db.query(sqlErr, [ahReq.key, JSON.stringify(ahReq.ahErr), 
                                           obtainedAt, apiResp.extnlApiStatusCode]);
             }
          }
       })
       .then(dbPersist => {
+         if(dbPersist) { //Not delivered out of the database
+            let persistMsg = 'Successfully wrote the ';
+            
+            if(dbPersist.rowCount !== 1) { persistMsg = 'Failed to write the ' }
+
+            persistMsg += ahReq.ahErr ? 'error' : 'API response';
+
+            ahReq.msg.push(persistMsg + ' to the database');
+         }
+
          ahReq.msg.forEach(elem => console.log(elem))
       })
       .catch(err => {
-         const ahErr = new ApiHubErr(ahErrCodes.generic, 'Error occurred');
-         resp.status(ahErr.apiHubErr.http.status).json(ahErr);
+         console.log('\nA promise was rejected in ahReqPersistResp');
+         console.log(err);
+
+         const ahErr = new ApiHubErr(ahErrCodes.generic, 'Error occurred', err);
+
+         if(!req.writableEnded) {
+            resp.status(ahErr.apiHubErr.http.status).json(ahErr);
+         }
       });
 }

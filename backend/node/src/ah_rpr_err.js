@@ -64,7 +64,18 @@ export default class ApiHubErr extends Error {
       this.apiHubErr.http = ahErrors[errorCode].httpStatusCode;
 
       if(extnlApiReturn) {
-         this.extnlApiErr = JSON.parse(extnlApiReturn)
+         if(typeof extnlApiReturn === 'string') {
+            try {
+               this.extnlApiErr = JSON.parse(extnlApiReturn)
+            }
+            catch(err) {
+               this.extnlApiErr = extnlApiReturn
+            }
+         }
+
+         if(typeof extnlApiReturn === 'object') {
+            this.extnlApiErr = extnlApiReturn
+         }
       }
    }
 
