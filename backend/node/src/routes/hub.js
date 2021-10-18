@@ -29,7 +29,7 @@ router.use('/api', api);
 
 router.get('/about', (req, resp) => {
    resp.json({
-         description: 'API Hub for requesting, persisting & passing on 3rd party API data (v3)',
+         description: 'API Hub for requesting, persisting & passing on 3rd party API data (v4)',
          gitRepository: 'https://github.com/hdr1001/api_hub_rpr_v4',
          license: 'Apache license, v2.0',
          licenseDetails: 'http://www.apache.org/licenses/LICENSE-2.0',

@@ -1,0 +1,47 @@
+{
+  "name": "ahv4ui",
+  "version": "1.0.0",
+  "description": "User interface for API Hub (v4)",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack serve  --hot --open",
+    "build": "webpack --config webpack.config.js --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hdr1001/api_hub_rpr_v4.git"
+  },
+  "keywords": [
+    "user",
+    "interface",
+    "API",
+    "hub"
+  ],
+  "author": "Hans de Rooij",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hdr1001/api_hub_rpr_v4/issues"
+  },
+  "homepage": "https://github.com/hdr1001/api_hub_rpr_v4#readme",
+  "dependencies": {
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/material": "^5.0.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-react": "^7.14.5",
+    "babel-loader": "^8.2.2",
+    "css-loader": "^6.4.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.4.0",
+    "style-loader": "^3.3.0",
+    "webpack": "^5.58.2",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.3.1"
+  }
+}
