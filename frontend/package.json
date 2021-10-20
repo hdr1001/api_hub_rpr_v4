@@ -6,6 +6,8 @@
   "scripts": {
     "start": "webpack serve  --hot --open",
     "build": "webpack --config webpack.config.js --mode production",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/hdr1001/api_hub_rpr_v4/issues"
   },
-  "homepage": "https://github.com/hdr1001/api_hub_rpr_v4#readme",
+  "homepage": "https://hdr1001.github.com/api_hub_rpr_v4/",
   "dependencies": {
     "@emotion/react": "^11.5.0",
     "@emotion/styled": "^11.3.0",
@@ -38,6 +40,7 @@
     "babel-loader": "^8.2.2",
     "css-loader": "^6.4.0",
     "file-loader": "^6.2.0",
+    "gh-pages": "^3.2.3",
     "html-webpack-plugin": "^5.4.0",
     "style-loader": "^3.3.0",
     "webpack": "^5.58.2",
