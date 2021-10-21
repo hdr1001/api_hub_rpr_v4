@@ -6,25 +6,36 @@ import IconButton from '@mui/material/IconButton';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
-
 export default function App(props) {
-   function sayHello(event) {
-      alert('React Material UI button clicked')
-   }
-
    return (
       <>
          <AppBar>
             <Toolbar>
                <Typography sx={{ flexGrow: 1 }}>API Hub (v4)</Typography>
-               <IconButton color="inherit">
-                  <UploadFileOutlinedIcon />
-               </IconButton>
-               <IconButton color="inherit">
+               <input
+                  type='file'
+                  accept='application/json, .json'
+                  multiple
+                  style={{ display: 'none' }}
+                  id='btn-file-inp'
+                  onChange={e => alert(Array.from(e.target.files).map(file => file.name).join(', '))}
+               />
+               <label htmlFor='btn-file-inp'>
+                  <IconButton
+                     color='inherit'
+                     component='span'
+                  >
+                     <UploadFileOutlinedIcon />
+                  </IconButton>
+               </label>
+               <IconButton
+                  color='inherit'
+                  onClick={() => {alert('Not yet implemented, please try again later')}}
+               >
                   <SettingsOutlinedIcon />
                </IconButton>
             </Toolbar>
          </AppBar>
       </>
    )
-}  
+}
