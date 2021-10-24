@@ -1,6 +1,7 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import AhAppBar from './AhAppBar';
+import AhContent from './AhContent';
 
 export default class App extends React.Component {
    constructor(props) {
@@ -27,12 +28,8 @@ export default class App extends React.Component {
             <AhAppBar handleFileInp={this.handleFileInp} />
 
             <Offset />
-            <table><tbody>
-               {
-                  this.state.arrFiles.map((file, idx) => <tr key={idx}><td>{file}</td></tr>)
-               }
-            </tbody></table>
+            <AhContent state={this.state} />
          </>
-      )
+      );
    }
 }
