@@ -22,6 +22,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
+import DplDBsMain from './dnb/DplDBsMain';
 
 export default function DnbDplDBs(props) {
    const [oDbData, setObjDbData] = useState(null);
@@ -55,7 +56,7 @@ export default function DnbDplDBs(props) {
                </Card>
             :
                <Card sx={{ px: 0.5 }}>
-                  {oDbData && JSON.stringify(oDbData, null, 3)}
+                  {oDbData && <DplDBsMain oDBs={oDbData} />}
                </Card>
          }
       </>
