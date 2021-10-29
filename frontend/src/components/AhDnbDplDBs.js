@@ -22,6 +22,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/system/Box';
 import DplDBsMain from './dnb/DplDBsMain';
 
 export default function DnbDplDBs(props) {
@@ -52,12 +54,14 @@ export default function DnbDplDBs(props) {
          {errMsg
             ?
                <Card sx={{ px: 0.5 }}>
-                  {errMsg}
+                  <Typography>
+                     {errMsg}
+                  </Typography>
                </Card>
             :
-               <Card sx={{ px: 0.5 }}>
+               <Box sx={{ px: 0.5 }}>
                   {oDbData && <DplDBsMain oDBs={oDbData} />}
-               </Card>
+               </Box>
          }
       </>
    );
