@@ -38,7 +38,7 @@ export default function AhContent(props) {
                <Box
                   key={idx}
                   sx={{
-                     width: 420,
+                     width: 385,
                      m: 1,
                      float: 'right'
                   }}

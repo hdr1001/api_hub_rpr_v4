@@ -28,13 +28,17 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import { grey } from '@mui/material/colors';
 
 function B2BDataTable(props) {
    return (
-      <TableContainer component={Paper}>
+      <TableContainer
+         component={Paper}
+         sx={{
+            my: 2
+         }}
+      >
          <Table size='small'>
             <TableHead
                sx={{
@@ -61,20 +65,62 @@ function B2BDataTable(props) {
 }
 
 function B2BDataTableRow(props) {
+   const [numContentRows, setNumContentRows] = useState(0);
+
+   useEffect(() => {
+      let numContentRows = 1;
+      
+      if(Array.isArray(props.content)) {
+         numContentRows = props.content.length
+      }
+
+      if(typeof props.content === 'string' && props.content.length === 0) {
+         numContentRows = 0
+      }
+
+      //Skip if no content available or empty array
+      if(numContentRows === 0) {
+         console.log('No content available for ' + props.label);
+         return null;
+      }
+
+      setNumContentRows(numContentRows);
+   });
+   
    return (
-      <TableRow>
-         <TableCell
-            component='th'
-            scope='row'
-            sx={{
-               fontStyle: 'italic'
-            }}
-         >
-            {props.label}
-         </TableCell>
-         <TableCell>{props.content}</TableCell>
-      </TableRow>
-   )
+      <>
+         {numContentRows && 
+            <TableRow>
+               <TableCell
+                  component='th'
+                  scope='row'
+                  sx={{
+                     fontStyle: 'italic'
+                  }}
+               >
+                  {props.label}
+               </TableCell>
+               {numContentRows === 1
+                  ?
+                     <TableCell>
+                        {Array.isArray(props.content) ? props.content[0] : props.content}
+                     </TableCell>
+                  :
+                     <>
+                     {props.content.map((item, idx) =>
+                        <TableRow>
+                           <TableCell>
+                              {item}
+                           </TableCell>
+                        </TableRow>
+                     )}
+                     </>
+
+               }
+            </TableRow>
+         }
+      </>
+   );
 }
 
 export default function DplDBsMain({ oDBs }) {
@@ -132,24 +178,35 @@ export default function DplDBsMain({ oDBs }) {
       <>
          {errMsg
             ?
-               <Card sx={{ px: 0.5 }}>
+               <Paper sx={{ px: 0.5 }}>
                   <Typography>
                      {errMsg}
                   </Typography>
-               </Card>
+               </Paper>
             :
-               <Card>
-                  {dataAvailability &&
-                     <B2BDataTable caption='Common data'>
-                        {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered'
-                           content={dataAvailability.org.duns} />}
-                        {dataAvailability.primaryName && <B2BDataTableRow label='Primary name'
-                           content={dataAvailability.org.primaryName} />}
-                        {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code'                      
-                           content={dataAvailability.org.countryISOAlpha2Code} />}
-                     </B2BDataTable>}
-               </Card>
+               <>
+               {dataAvailability && dataAvailability.dplReq &&
+                  <B2BDataTable caption='Inquiry details'>
+                     {dataAvailability.dplReq.duns && <B2BDataTableRow label='DUNS'
+                           content={dataAvailability.dplReq.duns} />}
+                     {dataAvailability.dplReq.blockIDs && <B2BDataTableRow label='Data blocks'
+                           content={dataAvailability.dplReq.blockIDs} />}
+                     {dataAvailability.dplReq.tradeUp && <B2BDataTableRow label='Trade up'
+                           content={dataAvailability.dplReq.tradeUp} />}
+                  </B2BDataTable>
+               }
+               {dataAvailability &&
+                  <B2BDataTable caption='Common data'>
+                     {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered'
+                        content={dataAvailability.org.duns} />}
+                     {dataAvailability.primaryName && <B2BDataTableRow label='Primary name'
+                        content={dataAvailability.org.primaryName} />}
+                     {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code'                      
+                        content={dataAvailability.org.countryISOAlpha2Code} />}
+                  </B2BDataTable>
+               }
+               </>
          }
       </>
-   )
+   );
 }
