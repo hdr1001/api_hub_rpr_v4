@@ -21,24 +21,60 @@
 // *********************************************************************
 
 import React, { useState, useEffect } from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
- 
+import { grey } from '@mui/material/colors';
+
 function B2BDataTable(props) {
    return (
-      <table className='b2bDataTable'>
-         <caption>
-            {props.caption}
-         </caption>
-         <tbody>
-            {props.children}
-         </tbody>
-      </table>
-   )
+      <TableContainer component={Paper}>
+         <Table size='small'>
+            <TableHead
+               sx={{
+                  backgroundColor: grey.A400,
+               }}
+            >
+               <TableRow>
+                  <TableCell
+                     colSpan={100}
+                     align='center'
+                     sx={{
+                        fontSize: 'larger',
+                        py: 1.3,
+                     }}
+                  >
+                     {props.caption}
+                  </TableCell>
+               </TableRow>
+            </TableHead>
+            <TableBody>{props.children}</TableBody>
+         </Table> 
+      </TableContainer>
+   );
 }
 
 function B2BDataTableRow(props) {
-   return <tr><th>{props.label}</th><td>{props.content}</td></tr>
+   return (
+      <TableRow>
+         <TableCell
+            component='th'
+            scope='row'
+            sx={{
+               fontStyle: 'italic'
+            }}
+         >
+            {props.label}
+         </TableCell>
+         <TableCell>{props.content}</TableCell>
+      </TableRow>
+   )
 }
 
 export default function DplDBsMain({ oDBs }) {
@@ -105,9 +141,12 @@ export default function DplDBsMain({ oDBs }) {
                <Card>
                   {dataAvailability &&
                      <B2BDataTable caption='Common data'>
-                        {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered' content={dataAvailability.org.duns} />}
-                        {dataAvailability.primaryName && <B2BDataTableRow label='Primary name' content={dataAvailability.org.primaryName} />}
-                        {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code' content={dataAvailability.org.countryISOAlpha2Code} />}
+                        {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered'
+                           content={dataAvailability.org.duns} />}
+                        {dataAvailability.primaryName && <B2BDataTableRow label='Primary name'
+                           content={dataAvailability.org.primaryName} />}
+                        {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code'                      
+                           content={dataAvailability.org.countryISOAlpha2Code} />}
                      </B2BDataTable>}
                </Card>
          }
