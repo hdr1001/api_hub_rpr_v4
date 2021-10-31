@@ -86,38 +86,42 @@ function B2BDataTableRow(props) {
 
       setNumContentRows(numContentRows);
    });
+
+   const tableCellAttrs = {component: 'th', scope: 'row', sx: { fontStyle: 'italic' }};
    
    return (
       <>
-         {numContentRows && 
-            <TableRow>
-               <TableCell
-                  component='th'
-                  scope='row'
-                  sx={{
-                     fontStyle: 'italic'
-                  }}
-               >
-                  {props.label}
-               </TableCell>
-               {numContentRows === 1
-                  ?
+         {numContentRows > 0 &&
+            numContentRows === 1
+               ?                  
+                  <TableRow>
+                     <TableCell { ...tableCellAttrs } >
+                        {props.label}
+                     </TableCell>
                      <TableCell>
                         {Array.isArray(props.content) ? props.content[0] : props.content}
                      </TableCell>
-                  :
+                  </TableRow>
+               :
+                  <>
+                     <TableRow>
+                        <TableCell
+                           { ...tableCellAttrs }
+                           rowSpan={numContentRows + 1}
+                        >
+                           {props.label}
+                        </TableCell>
+                     </TableRow>
                      <>
-                     {props.content.map((item, idx) =>
-                        <TableRow>
-                           <TableCell>
-                              {item}
-                           </TableCell>
-                        </TableRow>
-                     )}
+                        {Array.isArray(props.content) && props.content.map((item, idx) =>
+                           <TableRow key={idx}>
+                              <TableCell {...(idx < numContentRows - 1 ? {sx: {border: 0}} : {})} >
+                                 {item}
+                              </TableCell>
+                           </TableRow>
+                        )}
                      </>
-
-               }
-            </TableRow>
+                  </>
          }
       </>
    );
