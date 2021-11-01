@@ -126,4 +126,9 @@ function B2BDataTableRow(props) {
    );
 }
 
-export { B2BDataTable, B2BDataTableRow }
+//Check if an object is an empty object
+function bObjIsEmpty(obj) {
+   return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
+
+export { B2BDataTable, B2BDataTableRow, bObjIsEmpty }

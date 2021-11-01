@@ -23,7 +23,8 @@
 import React, { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { B2BDataTable, B2BDataTableRow } from '../../AhUtils'
+import { B2BDataTable, B2BDataTableRow } from '../AhUtils'
+import DbCompanyInfo from './DplCompanyInfo';
 
 export default function DplDBsMain({ oDBs }) {
    let dplReq, dplDataBlocks, org;
@@ -61,7 +62,7 @@ export default function DplDBsMain({ oDBs }) {
       da.org.primaryName ? da.primaryName = true : da.primaryName = false;
       da.org.countryISOAlpha2Code ? da.countryISOAlpha2Code = true : 
                                        da.countryISOAlpha2Code = false;
-
+/*
       //Log the data availability
       console.log('\nAvailable data');
       Object.keys(da)
@@ -72,7 +73,7 @@ export default function DplDBsMain({ oDBs }) {
       Object.keys(da)
          .filter(sKey => !da[sKey])
          .forEach(sKey => console.log('  ' + sKey));
-
+*/
       setDataAvailability(da);
    }, []);
 
@@ -97,7 +98,7 @@ export default function DplDBsMain({ oDBs }) {
                            content={dataAvailability.dplReq.tradeUp} />}
                   </B2BDataTable>
                }
-               {dataAvailability &&
+               {dataAvailability && !dataAvailability.blockIDs['companyinfo'] &&
                   <B2BDataTable caption='Common data'>
                      {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered'
                         content={dataAvailability.org.duns} />}
@@ -106,6 +107,9 @@ export default function DplDBsMain({ oDBs }) {
                      {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code'                      
                         content={dataAvailability.org.countryISOAlpha2Code} />}
                   </B2BDataTable>
+               }
+               {dataAvailability && dataAvailability.blockIDs['companyinfo'] &&
+                  <DbCompanyInfo globalDa={dataAvailability} />
                }
                </>
          }
