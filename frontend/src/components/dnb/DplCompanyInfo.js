@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { B2BDataTable, B2BDataTableRow, bObjIsEmpty } from '../AhUtils';
 
 //Address to object conversion
@@ -66,123 +66,153 @@ function getArrAddr(oAddr) {
    return arrAddr;
 }
 
+//Company Info telephone object conversion
+function getCiTel(oTel) {
+   return (oTel.isdCode ? '+' + oTel.isdCode + ' ' : '') + oTel.telephoneNumber
+}
+
+//Data block Company Information component
 export default function DbCompanyInfo(props) {
-   //State determined by Company Information data availability
-   const [ciDa, setCiDa] = useState(null);
-
-   useEffect(() => {
-      let ciDa = {}
-      
-      //Access the organization property through a property on ciDa
-      ciDa.org = props.globalDa.org;
-
-      ciDa.tradeStyleNames = ciDa.org.tradeStyleNames && ciDa.org.tradeStyleNames.length > 0;
-
-      ciDa.operatingStatus = ciDa.org.dunsControlStatus && ciDa.org.dunsControlStatus.operatingStatus
-                                 && !bObjIsEmpty(ciDa.org.dunsControlStatus.operatingStatus);
-
-      ciDa.primaryAddress = ciDa.org.primaryAddress && !bObjIsEmpty(ciDa.org.primaryAddress);
-
-      if(props.globalDa.blockIDs.companyinfo.level === 2) {
-         ciDa.org.registeredName ? ciDa.registeredName = true : ciDa.registeredName = false;
-
-         ciDa.businessEntityType = ciDa.org.businessEntityType 
-                                                   && ciDa.org.businessEntityType.description;
-
-         ciDa.legalForm = ciDa.org.legalForm && ciDa.org.legalForm.description;
-
-         ciDa.registeredDetails = ciDa.org.registeredDetails
-                                       && ciDa.org.registeredDetails.legalForm
-                                       && ciDa.org.registeredDetails.legalForm.description;
-
-         ciDa.controlOwnershipType = ciDa.org.controlOwnershipType &&
-                                       !bObjIsEmpty(ciDa.org.controlOwnershipType);
-
-         ciDa.org.startDate ? ciDa.startDate = true : ciDa.startDate = false;
-
-         ciDa.org.incorporatedDate ? ciDa.incorporatedDate = true : ciDa.incorporatedDate = false;
-
-         ciDa.registeredAddress = ciDa.org.registeredAddress
-                                             && !bObjIsEmpty(ciDa.org.registeredAddress);
-
-         ciDa.mailingAddress = ciDa.org.mailingAddress && !bObjIsEmpty(ciDa.org.mailingAddress);
+   //Company Information General component
+   function General(props) {
+      if(!(props.content && props.content.org)) {
+         return null;
       }
 
-      setCiDa(ciDa)
-   }, [])
+      const { duns, primaryName, registeredName, tradeStyleNames,
+               businessEntityType, legalForm, registeredDetails,
+               controlOwnershipType, startDate, incorporatedDate,
+               dunsControlStatus } = props.content.org;
 
-   return (
-      <>
-      {ciDa && 
+      return (
          <B2BDataTable caption='General'>
-            {props.globalDa.duns && 
-               <B2BDataTableRow label='DUNS delivered' content={ciDa.org.duns} />}
-            {props.globalDa.primaryName && 
-               <B2BDataTableRow label='Primary name' content={ciDa.org.primaryName} />}
-            {ciDa.registeredName &&
-               <B2BDataTableRow label='Registered name' content={ciDa.org.registeredName} />}
-            {ciDa.tradeStyleNames &&
+            {duns && 
+               <B2BDataTableRow label='DUNS delivered' content={duns} />
+            }
+            {primaryName && 
+               <B2BDataTableRow label='Primary name' content={primaryName} />
+            }
+            {registeredName &&
+               <B2BDataTableRow label='Registered name' content={registeredName} />
+            }
+            {tradeStyleNames && tradeStyleNames.length &&
                <B2BDataTableRow
                   label='Tradestyle(s)'
-                  content={ciDa.org.tradeStyleNames.map(oTS => oTS.name)}
+                  content={tradeStyleNames.map(oTS => oTS.name)}
                />
             }
-            {ciDa.businessEntityType &&
+            {businessEntityType && businessEntityType.description &&
                <B2BDataTableRow
                   label='Entity type'
-                  content={ciDa.org.businessEntityType.description}
+                  content={businessEntityType.description}
                />
             }
-            {ciDa.legalForm &&
-               <B2BDataTableRow label='Legal form' content={ciDa.org.legalForm.description} />}
-            {ciDa.registeredDetails &&
+            {legalForm && legalForm.description &&
+               <B2BDataTableRow label='Legal form' content={legalForm.description} />
+            }
+            {registeredDetails && registeredDetails.legalForm &&
+                           registeredDetails.legalForm.description &&
                <B2BDataTableRow
                   label='Registered as'
-                  content={ciDa.org.registeredDetails.legalForm.description}
+                  content={registeredDetails.legalForm.description}
                />
             }
-            {ciDa.controlOwnershipType &&
+            {controlOwnershipType && controlOwnershipType.description &&
                <B2BDataTableRow
                   label='Ownership type'
-                  content={ciDa.org.controlOwnershipType.description}
+                  content={controlOwnershipType.description}
                />
             }
-            {ciDa.startDate &&
-               <B2BDataTableRow label='Start date' content={ciDa.org.startDate} />}
-            {ciDa.incorporatedDate &&
-               <B2BDataTableRow label='Incorp. date' content={ciDa.org.incorporatedDate} />}
-            {ciDa.operatingStatus &&
+            {startDate &&
+               <B2BDataTableRow label='Start date' content={startDate} />
+            }
+            {incorporatedDate &&
+               <B2BDataTableRow label='Incorp. date' content={incorporatedDate} />
+            }
+            {dunsControlStatus && dunsControlStatus.operatingStatus &&
+                     dunsControlStatus.operatingStatus.description &&
                <B2BDataTableRow
                   label='Operating status'
-                  content={ciDa.org.dunsControlStatus.operatingStatus.description}
+                  content={dunsControlStatus.operatingStatus.description}
                />
             }
          </B2BDataTable>
+      )
+   }
+
+   //Company Information Address component
+   function Address(props) {
+      if(!(props.content && props.content.org) ||
+            !['primaryAddress', 'registeredAddress', 'mailingAddress'].some(prop => props.content.org[prop])) {
+         return null;
       }
-      {ciDa &&
-         ['primaryAddress', 'registeredAddress', 'mailingAddress'].some(prop => ciDa[prop]) &&
-            <B2BDataTable caption='Address'>
-               {ciDa.primaryAddress &&
-                  <B2BDataTableRow
-                     label='Primary address'
-                     content={getArrAddr(ciDa.org.primaryAddress)}
-                  />
-               }
-               {ciDa.registeredAddress &&
-                  !(ciDa.primaryAddress && ciDa.org.primaryAddress.isRegisteredAddress) &&
-                     <B2BDataTableRow
-                        label='Registered address'
-                        content={getArrAddr(ciDa.org.registeredAddress)}
-                     />
-               }
-               {ciDa.mailingAddress &&
-                  <B2BDataTableRow
-                     label='Mail address'
-                     content={getArrAddr(ciDa.org.mailingAddress)}
-                  />
-               }
-            </B2BDataTable>
+
+      const { primaryAddress, registeredAddress, mailingAddress } = props.content.org;
+
+      const primaryAddrIsRegisteredAddr = primaryAddress && primaryAddress.isRegisteredAddress;
+
+      return (
+         <B2BDataTable caption='Address'>
+            {primaryAddress && !bObjIsEmpty(primaryAddress) &&
+               <B2BDataTableRow
+                  label='Primary address'
+                  content={getArrAddr(primaryAddress)}
+               />
+            }
+            {!primaryAddrIsRegisteredAddr && registeredAddress && !bObjIsEmpty(registeredAddress) &&
+               <B2BDataTableRow
+                  label='Registered address'
+                  content={getArrAddr(registeredAddress)}
+               />
+            }
+            {mailingAddress && !bObjIsEmpty(mailingAddress) &&
+               <B2BDataTableRow
+                  label='Mail address'
+                  content={getArrAddr(mailingAddress)}
+               />
+            }
+         </B2BDataTable>
+      )
+   }
+
+   //Company Information Contact component
+   function ContactAt(props) {
+      if(!(props.content && props.content.org) ||
+            !['telephone', 'websiteAddress', 'email'].some(prop => props.content.org[prop])) {
+         return null;
       }
+
+      const { telephone, websiteAddress, email } = props.content.org;
+
+      return (
+         <B2BDataTable caption='Contact @'>
+            {telephone && telephone.length &&
+               <B2BDataTableRow
+                  label='Telephone'
+                  content={telephone.map(oTel => getCiTel(oTel))}
+               />
+            }
+            {websiteAddress && websiteAddress.length &&
+               <B2BDataTableRow
+                  label='Website'
+                  content={websiteAddress.map(oURL => oURL.url)}
+               />
+            }
+            {email && email.length &&
+               <B2BDataTableRow
+                  label='e-mail'
+                  content={email.map(oEmail => oEmail.address)}
+               />
+            }
+         </B2BDataTable>
+      )
+   }
+
+   return (
+      <>
+         <General content={props.globalDa} />
+         <Address content={props.globalDa} />
+         <ContactAt content={props.globalDa} />
       </>
    )
 }
