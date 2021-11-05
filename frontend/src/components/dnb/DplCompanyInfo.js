@@ -75,14 +75,14 @@ function getCiTel(oTel) {
 export default function DbCompanyInfo(props) {
    //Company Information General component
    function General(props) {
-      if(!(props.content && props.content.org)) {
-         return null;
+      if(!(props.content && props.content.organization)) {
+         return null
       }
 
       const { duns, primaryName, registeredName, tradeStyleNames,
                businessEntityType, legalForm, registeredDetails,
                controlOwnershipType, startDate, incorporatedDate,
-               dunsControlStatus } = props.content.org;
+               dunsControlStatus } = props.content.organization;
 
       return (
          <B2BDataTable caption='General'>
@@ -137,17 +137,17 @@ export default function DbCompanyInfo(props) {
                />
             }
          </B2BDataTable>
-      )
+      );
    }
 
    //Company Information Address component
    function Address(props) {
-      if(!(props.content && props.content.org) ||
-            !['primaryAddress', 'registeredAddress', 'mailingAddress'].some(prop => props.content.org[prop])) {
-         return null;
+      if(!(props.content && props.content.organization) ||
+            !['primaryAddress', 'registeredAddress', 'mailingAddress'].some(prop => props.content.organization[prop])) {
+         return null
       }
 
-      const { primaryAddress, registeredAddress, mailingAddress } = props.content.org;
+      const { primaryAddress, registeredAddress, mailingAddress } = props.content.organization;
 
       const primaryAddrIsRegisteredAddr = primaryAddress && primaryAddress.isRegisteredAddress;
 
@@ -172,17 +172,17 @@ export default function DbCompanyInfo(props) {
                />
             }
          </B2BDataTable>
-      )
+      );
    }
 
    //Company Information Contact component
    function ContactAt(props) {
-      if(!(props.content && props.content.org) ||
-            !['telephone', 'websiteAddress', 'email'].some(prop => props.content.org[prop])) {
+      if(!(props.content && props.content.organization) ||
+            !['telephone', 'websiteAddress', 'email'].some(prop => props.content.organization[prop])) {
          return null;
       }
 
-      const { telephone, websiteAddress, email } = props.content.org;
+      const { telephone, websiteAddress, email } = props.content.organization;
 
       return (
          <B2BDataTable caption='Contact @'>
@@ -205,14 +205,14 @@ export default function DbCompanyInfo(props) {
                />
             }
          </B2BDataTable>
-      )
+      );
    }
 
    return (
       <>
-         <General content={props.globalDa} />
-         <Address content={props.globalDa} />
-         <ContactAt content={props.globalDa} />
+         <General content={props.content} />
+         <Address content={props.content} />
+         <ContactAt content={props.content} />
       </>
    )
 }

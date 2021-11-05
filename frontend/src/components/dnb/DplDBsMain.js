@@ -20,98 +20,86 @@
 //
 // *********************************************************************
 
-import React, { useState, useEffect } from 'react';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import { B2BDataTable, B2BDataTableRow } from '../AhUtils'
+import React from 'react';
+import { B2BDataTable, B2BDataTableRow, ErrPaper } from '../AhUtils'
 import DbCompanyInfo from './DplCompanyInfo';
 
-export default function DplDBsMain({ oDBs }) {
-   let dplReq, dplDataBlocks, org;
-
-   const [dataAvailability, setDataAvailability] = useState(null);
-   const [errMsg, setErrMsg] = useState('');
-
-   useEffect(() => {
-      //Dynamically determine data availability
-      const da = {}; 
-
-      //The very basics
-      da.dplReq = oDBs.inquiryDetail;
-      da.dplDataBlocks = oDBs.inquiryDetail && oDBs.inquiryDetail.blockIDs;
-      da.org = oDBs.organization;
-
-      if(!(da.dplReq && da.dplDataBlocks && da.org)) {
-         setErrMsg('Error, JSON is missing required elements');
-         return;
+export default function DplDBsMain(props) {
+   //Echo the Direct+ data block request details
+   function InquiryDetails(props) {
+      if(!props.content.inquiryDetail) {
+         return <ErrPaper errMsg={'Error, JSON is missing required elements'} />
       }
 
-      //Parse the information contained in property blockIDs
-      da.blockIDs = {};
+      const { duns, blockIDs, tradeUp } = props.content.inquiryDetail;
 
-      da.dplDataBlocks.forEach(dbID => {
-         let splitBlockIDs = dbID.split('_');
+      return (
+         <B2BDataTable caption='Inquiry details'>
+            {duns &&
+               <B2BDataTableRow
+                  label='DUNS'
+                  content={duns}
+               />
+            }
+            {blockIDs &&
+               <B2BDataTableRow
+                  label='Data blocks'
+                  content={blockIDs}
+               />
+            }
+            {tradeUp &&
+               <B2BDataTableRow
+                  label='Trade up'
+                  content={tradeUp}
+               />
+            }
+         </B2BDataTable>
+      );
+   }
 
-         da.blockIDs[splitBlockIDs[0]] = {};
-         da.blockIDs[splitBlockIDs[0]]['level'] = parseInt(splitBlockIDs[1].slice(-1), 10);
-         da.blockIDs[splitBlockIDs[0]]['version'] = splitBlockIDs[2];
-      });
+   //D&B Direct+ common data component
+   function CommonData(props) {
+      if(!(props.content && props.content.organization) ||
+            !['duns', 'primaryName', 'countryISOAlpha2Code'].some(prop => props.content.organization[prop])) {
+         return null;
+      }
 
-      //Check for the availability of the common data elements
-      da.org.duns ? da.duns = true : da.duns = false;
-      da.org.primaryName ? da.primaryName = true : da.primaryName = false;
-      da.org.countryISOAlpha2Code ? da.countryISOAlpha2Code = true : 
-                                       da.countryISOAlpha2Code = false;
-/*
-      //Log the data availability
-      console.log('\nAvailable data');
-      Object.keys(da)
-         .filter(sKey => da[sKey])
-         .forEach(sKey => console.log('  ' + sKey));
+      const { duns, primaryName, countryISOAlpha2Code } = props.content.organization;
 
-      console.log('\nMissing data');
-      Object.keys(da)
-         .filter(sKey => !da[sKey])
-         .forEach(sKey => console.log('  ' + sKey));
-*/
-      setDataAvailability(da);
-   }, []);
+      return (
+         <B2BDataTable caption='Common data'>
+            {duns &&
+               <B2BDataTableRow
+                  label='DUNS delivered'
+                  content={duns}
+               />
+            }
+            {primaryName &&
+               <B2BDataTableRow
+                  label='Primary name'
+                  content={primaryName}
+               />
+            }
+            {countryISOAlpha2Code &&
+               <B2BDataTableRow
+                  label='Country code'
+                  content={countryISOAlpha2Code}
+               />
+            }
+         </B2BDataTable>
+      );
+   }
 
    return (
       <>
-         {errMsg
+         {console.log('DplDBsMain')}
+         <InquiryDetails content={props.oDBs} />
+         {props.oDBs.inquiryDetail && Array.isArray(props.oDBs.inquiryDetail.blockIDs) &&
+                  props.oDBs.inquiryDetail.blockIDs.some(blockID => blockID.match(/companyinfo/gi))
             ?
-               <Paper sx={{ px: 0.5 }}>
-                  <Typography>
-                     {errMsg}
-                  </Typography>
-               </Paper>
+               <DbCompanyInfo content={props.oDBs} />
             :
-               <>
-               {dataAvailability && dataAvailability.dplReq &&
-                  <B2BDataTable caption='Inquiry details'>
-                     {dataAvailability.dplReq.duns && <B2BDataTableRow label='DUNS'
-                           content={dataAvailability.dplReq.duns} />}
-                     {dataAvailability.dplReq.blockIDs && <B2BDataTableRow label='Data blocks'
-                           content={dataAvailability.dplReq.blockIDs} />}
-                     {dataAvailability.dplReq.tradeUp && <B2BDataTableRow label='Trade up'
-                           content={dataAvailability.dplReq.tradeUp} />}
-                  </B2BDataTable>
-               }
-               {dataAvailability && !dataAvailability.blockIDs['companyinfo'] &&
-                  <B2BDataTable caption='Common data'>
-                     {dataAvailability.duns && <B2BDataTableRow label='DUNS delivered'
-                        content={dataAvailability.org.duns} />}
-                     {dataAvailability.primaryName && <B2BDataTableRow label='Primary name'
-                        content={dataAvailability.org.primaryName} />}
-                     {dataAvailability.countryISOAlpha2Code && <B2BDataTableRow label='Country code'                      
-                        content={dataAvailability.org.countryISOAlpha2Code} />}
-                  </B2BDataTable>
-               }
-               {dataAvailability && dataAvailability.blockIDs['companyinfo'] &&
-                  <DbCompanyInfo globalDa={dataAvailability} />
-               }
-               </>
+               <CommonData content={props.oDBs} />
          }
       </>
    );

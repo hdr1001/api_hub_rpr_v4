@@ -1,7 +1,7 @@
 // *********************************************************************
 //
-// API Hub request, persist and respond UI content component
-// JavaScript code file: AhContent.js
+// API Hub request, persist and respond style objects
+// JavaScript code file: style.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -20,26 +20,44 @@
 //
 // *********************************************************************
 
-import React from 'react';
-import Box from '@mui/system/Box';
-import DnbDplDBs from './AhDnbDplDBs';
-import { contentBox, arrFilesBox } from './style';
+import { grey } from '@mui/material/colors';
 
-export default function AhContent(props) {
-   return (
-      <Box
-         sx={contentBox}
-      >
-         {
-            props.state.arrFiles.map((file, idx) => 
-               <Box
-                  key={idx}
-                  sx={arrFilesBox}
-               >
-                  <DnbDplDBs file={file} />
-               </Box>
-            )
-         }
-      </Box>
-   )
+const ahGrey = {
+   backgroundColor: grey.A400
+};
+
+const contentBox = {
+   mt: 1,
+   mx: 0.5,
+   display: 'inline-block' 
+};
+
+const arrFilesBox = {
+   width: 385,
+   m: 1,
+   float: 'right'
+};
+
+const horizontalPadding = {
+   px: 0.5
+};
+
+const verticalMargin = {
+   my: 2
+};
+
+const fontItalic = {
+   fontStyle: 'italic'
 }
+
+const borderNone = {
+   border: 0
+}
+
+const tableCaption = {
+   fontSize: 'larger',
+   py: 1.3,
+};
+
+export { ahGrey, contentBox, arrFilesBox, horizontalPadding,
+         verticalMargin, fontItalic, borderNone, tableCaption };

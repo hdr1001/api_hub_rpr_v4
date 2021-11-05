@@ -28,30 +28,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { grey } from '@mui/material/colors';
+import Typography from '@mui/material/Typography';
+import { ahGrey, horizontalPadding, verticalMargin,
+            fontItalic, borderNone, tableCaption } from './style'
 
 function B2BDataTable(props) {
    return (
       <TableContainer
          component={Paper}
-         sx={{
-            my: 2
-         }}
+         sx={ verticalMargin }
       >
          <Table size='small'>
             <TableHead
-               sx={{
-                  backgroundColor: grey.A400,
-               }}
+               sx={ ahGrey }
             >
                <TableRow>
                   <TableCell
                      colSpan={100}
                      align='center'
-                     sx={{
-                        fontSize: 'larger',
-                        py: 1.3,
-                     }}
+                     sx={ tableCaption }
                   >
                      {props.caption}
                   </TableCell>
@@ -86,7 +81,7 @@ function B2BDataTableRow(props) {
       setNumContentRows(numContentRows);
    });
 
-   const tableCellAttrs = {component: 'th', scope: 'row', sx: { fontStyle: 'italic' }};
+   const tableCellAttrs = {component: 'th', scope: 'row', sx: fontItalic};
    
    return (
       <>
@@ -114,7 +109,7 @@ function B2BDataTableRow(props) {
                      <>
                         {Array.isArray(props.content) && props.content.map((item, idx) =>
                            <TableRow key={idx}>
-                              <TableCell {...(idx < numContentRows - 1 ? {sx: {border: 0}} : {})} >
+                              <TableCell {...(idx < numContentRows - 1 ? {sx: borderNone} : {})} >
                                  {item}
                               </TableCell>
                            </TableRow>
@@ -126,9 +121,19 @@ function B2BDataTableRow(props) {
    );
 }
 
+function ErrPaper(props) {
+   return (
+      <Paper sx={{ ...horizontalPadding, ...verticalMargin }}>
+         <Typography>
+            {props.errMsg}
+         </Typography>
+      </Paper>
+   )
+}
+
 //Check if an object is an empty object
 function bObjIsEmpty(obj) {
    return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
-export { B2BDataTable, B2BDataTableRow, bObjIsEmpty }
+export { B2BDataTable, B2BDataTableRow, ErrPaper, bObjIsEmpty }

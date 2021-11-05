@@ -25,6 +25,7 @@ import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/system/Box';
 import DplDBsMain from './dnb/DplDBsMain';
+import { horizontalPadding } from './style';
 
 export default function DnbDplDBs(props) {
    const [oDbData, setObjDbData] = useState(null);
@@ -53,13 +54,13 @@ export default function DnbDplDBs(props) {
       <>
          {errMsg
             ?
-               <Card sx={{ px: 0.5 }}>
+               <Card sx={ horizontalPadding }>
                   <Typography>
                      {errMsg}
                   </Typography>
                </Card>
             :
-               <Box sx={{ px: 0.5 }}>
+               <Box sx={ horizontalPadding }>
                   {oDbData && <DplDBsMain oDBs={oDbData} />}
                </Box>
          }
