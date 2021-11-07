@@ -82,7 +82,7 @@ function B2BDataTableRow(props) {
    });
 
    const tableCellAttrs = {component: 'th', scope: 'row', sx: fontItalic};
-   
+
    return (
       <>
          {numContentRows > 0 &&

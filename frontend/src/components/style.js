@@ -59,5 +59,11 @@ const tableCaption = {
    py: 1.3,
 };
 
+const oCurrOpts = {
+   style: 'currency',
+   minimumFractionDigits: 0
+};
+
 export { ahGrey, contentBox, arrFilesBox, horizontalPadding,
-         verticalMargin, fontItalic, borderNone, tableCaption };
+         verticalMargin, fontItalic, borderNone, tableCaption,
+         oCurrOpts };

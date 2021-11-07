@@ -22,6 +22,7 @@
 
 import React from 'react';
 import { B2BDataTable, B2BDataTableRow, bObjIsEmpty } from '../AhUtils';
+import { oCurrOpts } from '../style'
 
 //Address to object conversion
 function getArrAddr(oAddr) {
@@ -69,6 +70,76 @@ function getArrAddr(oAddr) {
 //Company Info telephone object conversion
 function getCiTel(oTel) {
    return (oTel.isdCode ? '+' + oTel.isdCode + ' ' : '') + oTel.telephoneNumber
+}
+
+//Get yearly revenue number from the financials object
+function getCiYearlyRevenue(oFin) {
+   let oRet = {label: 'Yearly revenue', content: ''};
+
+   if(oFin.yearlyRevenue && oFin.yearlyRevenue[0]) {
+      if(oFin.yearlyRevenue[0].value && oFin.yearlyRevenue[0].currency) {
+         let oCurrency = { ...oCurrOpts, currency: oFin.yearlyRevenue[0].currency }
+
+         const intlNumFormat = new Intl.NumberFormat('en-us', oCurrency);
+
+         oRet.content = intlNumFormat.format(oFin.yearlyRevenue[0].value)
+      }
+      else {
+         if(oFin.yearlyRevenue[0].value) {
+            oRet.content = oFin.yearlyRevenue[0].value
+         }
+      }
+
+      if(oFin.reliabilityDnBCode === 9093) {
+         oRet.label = <span>{oRet.label}<br />
+                        <small>*figure is an estimate</small>
+                      </span>;
+      }
+   }
+
+   return oRet;
+}
+
+//Get number of employees figure from object
+function getCiNumEmpl(oNumEmpl) {
+   const oRet = {
+      label: 'Number of Employees',
+      content: ''
+   };
+
+   if(typeof oNumEmpl.value === 'number') {oRet.content = oNumEmpl.value.toString()}
+
+   let sLabelAdd = oNumEmpl.informationScopeDescription
+      ?
+         oNumEmpl.informationScopeDescription
+      :
+         '';
+
+   if(oNumEmpl.reliabilityDescription && sLabelAdd) {
+      sLabelAdd += ' & ' + oNumEmpl.reliabilityDescription;
+   }
+   else if(oNumEmpl.reliabilityDescription) {
+      sLabelAdd = oNumEmpl.reliabilityDescription;
+   }
+
+   if(sLabelAdd) {
+      oRet.label = <span>{oRet.label}<br /><small>*{sLabelAdd}</small></span>
+   }
+
+   return oRet;
+}
+
+//Remove the country code from a description
+function getDescNoCountryCode(sDesc) {
+   const idx = sDesc.indexOf('(');
+
+   if(idx > -1) {
+      if(sDesc.substr(idx + 3, 1) == ')') { //Just checking :-)
+         sDesc = sDesc.substr(0, idx - 1).trim();
+      }
+   }
+
+   return sDesc;
 }
 
 //Data block Company Information component
@@ -208,11 +279,109 @@ export default function DbCompanyInfo(props) {
       );
    }
 
+   //Company information size component
+   function CompanySize(props) {
+      if(!(props.content && props.content.organization) ||
+            !['financials', 'organizationSizeCategory', 'numberOfEmployees', 
+                  'isStandalone'].some(prop => props.content.organization[prop])) {
+         return null;
+      }
+
+      const { financials, numberOfEmployees, organizationSizeCategory,
+                  isStandalone } = props.content.organization;
+
+      return (
+         <B2BDataTable caption='Company size'>
+            {financials && financials.length &&
+               <B2BDataTableRow {...getCiYearlyRevenue(financials[0])} />
+            }
+            {numberOfEmployees && numberOfEmployees.length &&
+               numberOfEmployees.map((numEmpl, idx) => 
+                  <B2BDataTableRow key={idx}
+                     {...getCiNumEmpl(numEmpl)}
+                  />
+               )
+            }
+            {organizationSizeCategory && organizationSizeCategory.description &&
+               <B2BDataTableRow
+                  label='Size category'
+                  content={organizationSizeCategory.description}
+               />
+            }
+            {typeof isStandalone === 'boolean' &&
+               <B2BDataTableRow
+                  label='Standalone'
+                  content={isStandalone ? 'Yes' : 'No'}
+               />
+            }
+         </B2BDataTable>
+      );
+   }
+
+   function RegistrationNumbers(props) {
+      const { registrationNumbers } = props.content.organization;
+
+      if(!registrationNumbers || registrationNumbers.length === 0) { return null }
+
+      return (
+         <B2BDataTable caption='Registration number(s)'>
+            {
+               registrationNumbers.map(regNum => 
+                  <B2BDataTableRow key={regNum.typeDnBCode}
+                     label={getDescNoCountryCode(regNum.typeDescription)}
+                     content={regNum.registrationNumber}
+                  />
+               )
+            }
+         </B2BDataTable>
+      );
+   }
+
+   function Activities(props) {
+      const { activities } = props.content.organization;
+
+      if(!activities || activities.length === 0) { return null }
+
+      return (
+         <B2BDataTable caption='Business operations'>
+            {
+               activities.map((act, idx) => 
+                  <B2BDataTableRow key={idx}
+                     label={act.language.description}
+                     content={act.description}
+                  />
+               )
+            }
+         </B2BDataTable>
+      );
+   }
+
+   function StockExchanges(props) {
+      const { stockExchanges } = props.content.organization;
+
+      if(!stockExchanges || stockExchanges.length === 0) { return null }
+
+      return (
+         <B2BDataTable caption='Stock exchange(s)'>
+            { 
+               <B2BDataTableRow
+                  label='Ticker name(s)'
+                  content={stockExchanges.map(stockExch => stockExch.tickerName)}
+               />
+            }
+         </B2BDataTable>
+      );
+   }
+
    return (
       <>
          <General content={props.content} />
          <Address content={props.content} />
          <ContactAt content={props.content} />
+         <CompanySize content={props.content} />
+         <RegistrationNumbers content={props.content} />
+         <Activities content={props.content} />
+         <StockExchanges content={props.content} />
       </>
    )
 }

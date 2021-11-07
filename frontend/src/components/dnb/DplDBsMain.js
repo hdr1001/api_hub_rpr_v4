@@ -92,7 +92,6 @@ export default function DplDBsMain(props) {
 
    return (
       <>
-         {console.log('DplDBsMain')}
          <InquiryDetails content={props.oDBs} />
          {props.oDBs.inquiryDetail && Array.isArray(props.oDBs.inquiryDetail.blockIDs) &&
                   props.oDBs.inquiryDetail.blockIDs.some(blockID => blockID.match(/companyinfo/gi))

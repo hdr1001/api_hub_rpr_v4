@@ -20,14 +20,14 @@
 //
 // *********************************************************************
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/system/Box';
 import DplDBsMain from './dnb/DplDBsMain';
 import { horizontalPadding } from './style';
 
-export default function DnbDplDBs(props) {
+export default memo(function DnbDplDBs(props) {
    const [oDbData, setObjDbData] = useState(null);
    const [errMsg, setErrMsg] = useState('');
 
@@ -66,4 +66,4 @@ export default function DnbDplDBs(props) {
          }
       </>
    );
-}
+})
