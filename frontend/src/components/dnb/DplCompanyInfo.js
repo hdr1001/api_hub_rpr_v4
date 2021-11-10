@@ -21,6 +21,10 @@
 // *********************************************************************
 
 import React from 'react';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import { B2BDataTable, B2BDataTableRow, bObjIsEmpty } from '../AhUtils';
 import { oCurrOpts } from '../style'
 
@@ -356,6 +360,50 @@ export default function DbCompanyInfo(props) {
       );
    }
 
+   function IndustryCodes(props) {
+      const { industryCodes } = props.content.organization;
+
+      if(!industryCodes || industryCodes.length === 0) { return null }
+
+      function handleChange() {
+
+      }
+
+      const uniqueTypeCodes = industryCodes.reduce(
+         (arrDeduped, IndustryCode) => arrDeduped.some(IndustryCode => IndustryCode.typeDnBCode === arrDeduped.typeDnBCode)
+            ?
+               arrDeduped
+            :
+               [...arrDeduped, {typeDnBCode: IndustryCode.typeDnBCode, typeDescription: IndustryCode.typeDescription}],
+         []
+      )
+
+      return (
+         <B2BDataTable caption='Activity codes'>
+            <TableRow><TableCell colSpan={2}>
+               <Select
+                  autoWidth={false}
+                  name='selectTypeCodes'
+                  margin='dense'
+                  value={399}
+               >
+                  {uniqueTypeCodes.map(typeCode =>
+                     <MenuItem key={typeCode.typeDnBCode} value={typeCode.typeDnBCode}>{typeCode.typeDescription}</MenuItem>
+                  )}
+               </Select>
+               </TableCell></TableRow>
+            {
+               industryCodes.map((industryCode, idx) => 
+                  <B2BDataTableRow key={idx}
+                     label={industryCode.code}
+                     content={industryCode.description}
+                  />
+               )
+            }
+         </B2BDataTable>
+      );
+   }
+
    function StockExchanges(props) {
       const { stockExchanges } = props.content.organization;
 
@@ -381,6 +429,7 @@ export default function DbCompanyInfo(props) {
          <CompanySize content={props.content} />
          <RegistrationNumbers content={props.content} />
          <Activities content={props.content} />
+         <IndustryCodes content={props.content} />
          <StockExchanges content={props.content} />
       </>
    )
