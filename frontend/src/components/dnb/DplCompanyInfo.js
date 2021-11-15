@@ -171,7 +171,7 @@ export default function DbCompanyInfo(props) {
             {registeredName &&
                <B2BDataTableRow label='Registered name' content={registeredName} />
             }
-            {tradeStyleNames && tradeStyleNames.length &&
+            {tradeStyleNames && tradeStyleNames.length > 0 &&
                <B2BDataTableRow
                   label='Tradestyle(s)'
                   content={tradeStyleNames.map(oTS => oTS.name)}
@@ -262,19 +262,19 @@ export default function DbCompanyInfo(props) {
 
       return (
          <B2BDataTable caption='Contact @'>
-            {telephone && telephone.length &&
+            {telephone && telephone.length > 0 &&
                <B2BDataTableRow
                   label='Telephone'
                   content={telephone.map(oTel => getCiTel(oTel))}
                />
             }
-            {websiteAddress && websiteAddress.length &&
+            {websiteAddress && websiteAddress.length > 0 &&
                <B2BDataTableRow
                   label='Website'
                   content={websiteAddress.map(oURL => oURL.url)}
                />
             }
-            {email && email.length &&
+            {email && email.length > 0 &&
                <B2BDataTableRow
                   label='e-mail'
                   content={email.map(oEmail => oEmail.address)}
@@ -297,10 +297,10 @@ export default function DbCompanyInfo(props) {
 
       return (
          <B2BDataTable caption='Company size'>
-            {financials && financials.length &&
+            {financials && financials.length > 0 &&
                <B2BDataTableRow {...getCiYearlyRevenue(financials[0])} />
             }
-            {numberOfEmployees && numberOfEmployees.length &&
+            {numberOfEmployees && numberOfEmployees.length > 0 &&
                numberOfEmployees.map((numEmpl, idx) => 
                   <B2BDataTableRow key={idx}
                      {...getCiNumEmpl(numEmpl)}
@@ -367,11 +367,11 @@ export default function DbCompanyInfo(props) {
       if(!industryCodes || industryCodes.length === 0) { return null }
 
       const uniqueTypeCodes = industryCodes.reduce(
-         (arrDeduped, IndustryCode) => arrDeduped.some(IndustryCode => IndustryCode.typeDnBCode === arrDeduped.typeDnBCode)
+         (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.typeDnBCode)
             ?
                arrDeduped
             :
-               [...arrDeduped, {typeDnBCode: IndustryCode.typeDnBCode, typeDescription: IndustryCode.typeDescription}],
+               [...arrDeduped, {typeDnBCode: industryCode.typeDnBCode, typeDescription: industryCode.typeDescription}],
          []
       );
 
