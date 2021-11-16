@@ -27,10 +27,6 @@ import DbCompanyInfo from './DplCompanyInfo';
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
    function InquiryDetails(props) {
-      if(!props.content.inquiryDetail) {
-         return <ErrPaper errMsg={'Error, JSON is missing required elements'} />
-      }
-
       const { duns, blockIDs, tradeUp } = props.content.inquiryDetail;
 
       return (
@@ -90,16 +86,39 @@ export default function DplDBsMain(props) {
       );
    }
 
+   let dataBlocks = null;
+
+   if(props.oDBs && props.oDBs.inquiryDetail &&
+         props.oDBs.inquiryDetail.blockIDs &&
+         props.oDBs.inquiryDetail.blockIDs.length) {
+
+            dataBlocks = { blockIDs: {} };
+
+            props.oDBs.inquiryDetail.blockIDs.forEach(dbID => {
+               let splitBlockIDs = dbID.split('_');
+         
+               dataBlocks.blockIDs[splitBlockIDs[0]] = {};
+               dataBlocks.blockIDs[splitBlockIDs[0]]['level'] = parseInt(splitBlockIDs[1].slice(-1), 10);
+               dataBlocks.blockIDs[splitBlockIDs[0]]['version'] = splitBlockIDs[2];
+            });
+   }
+
    return (
       <>
-         <InquiryDetails content={props.oDBs} />
-         {props.oDBs.inquiryDetail && Array.isArray(props.oDBs.inquiryDetail.blockIDs) &&
-                  props.oDBs.inquiryDetail.blockIDs.some(blockID => blockID.match(/companyinfo/gi))
-            ?
-               <DbCompanyInfo content={props.oDBs} />
-            :
-               <CommonData content={props.oDBs} />
-         }
+      {(dataBlocks && props.oDBs.organization)
+         ?
+            <>
+               <InquiryDetails content={props.oDBs} />
+               {dataBlocks.blockIDs['companyinfo']
+                     ?
+                        <DbCompanyInfo content={props.oDBs} />
+                     :
+                        <CommonData content={props.oDBs} />
+               }
+            </>
+
+         : <ErrPaper errMsg={'Error, JSON is missing required elements'} />
+      }
       </>
    );
 }

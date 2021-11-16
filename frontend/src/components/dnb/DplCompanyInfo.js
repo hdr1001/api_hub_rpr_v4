@@ -253,12 +253,15 @@ export default function DbCompanyInfo(props) {
 
    //Company Information Contact component
    function ContactAt(props) {
-      if(!(props.content && props.content.organization) ||
-            !['telephone', 'websiteAddress', 'email'].some(prop => props.content.organization[prop])) {
-         return null;
-      }
+      if(!(props.content && props.content.organization)) { return null }
 
       const { telephone, websiteAddress, email } = props.content.organization;
+
+      if(!((telephone && telephone.length) ||
+            (websiteAddress && websiteAddress.length) ||
+            (email && email.length))) {
+         return null
+      }
 
       return (
          <B2BDataTable caption='Contact @'>
