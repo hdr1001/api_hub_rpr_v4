@@ -1,6 +1,6 @@
 // *********************************************************************
 //
-// API Hub request, D&B D+ Company Information data block component
+// API Hub, D&B D+ Company Information data block component
 // JavaScript code file: DplCompanyInfo.js
 //
 // Copyright 2021 Hans de Rooij
@@ -90,7 +90,7 @@ function getCiYearlyRevenue(oFin) {
          oRet.content = intlNumFormat.format(oFin.yearlyRevenue[0].value)
       }
       else {
-         if(oFin.yearlyRevenue[0].value) {
+         if(typeof oFin.yearlyRevenue[0].value === 'number') {
             oRet.content = oFin.yearlyRevenue[0].value
          }
       }
@@ -289,10 +289,13 @@ export default function DbCompanyInfo(props) {
 
    //Company information size component
    function CompanySize(props) {
-      if(!(props.content && props.content.organization) ||
-            !['financials', 'organizationSizeCategory', 'numberOfEmployees', 
-                  'isStandalone'].some(prop => props.content.organization[prop])) {
-         return null;
+      if(!(props.content && props.content.organization &&
+            ['financials', 'organizationSizeCategory', 'numberOfEmployees']
+               .some(prop => props.content.organization[prop]))) {
+
+         if(typeof props.content.organization['isStandalone'] !== 'boolean') {
+            return null;
+         }
       }
 
       const { financials, numberOfEmployees, organizationSizeCategory,
