@@ -26,51 +26,8 @@ import TableCell from '@mui/material/TableCell';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { B2BDataTable, B2BDataTableRow, bObjIsEmpty } from '../AhUtils';
+import { B2BDataTable, B2BDataTableRow, bIsEmptyObj, getArrAddr } from '../AhUtils';
 import { oCurrOpts } from '../style'
-
-//Address to object conversion
-function getArrAddr(oAddr) {
-   let arrAddr = [], str = '';
-
-   if(!oAddr) {return arrAddr}
-
-   //Street address
-   if(oAddr.streetAddress) {
-      if(oAddr.streetAddress.line1) {arrAddr.push(oAddr.streetAddress.line1)}
-      if(oAddr.streetAddress.line2) {arrAddr.push(oAddr.streetAddress.line2)}
-   }
-
-   //Refer to alternative properties if streetAddress doesn't contain info
-   if(arrAddr.length === 0) {
-      if(oAddr.streetName) {
-         str = oAddr.streetName;
-   
-         if(oAddr.streetNumber) {
-            str += ' ' + oAddr.streetNumber
-         }
-
-         arrAddr.push(str);
-
-         str = '';
-      }
-   }
-
-   //Postalcode & city
-   if(oAddr.postalCode) {str = oAddr.postalCode}
-   if(oAddr.addressLocality && !bObjIsEmpty(oAddr.addressLocality)) {
-      str.length > 0 ? str += ' ' + oAddr.addressLocality.name : str = oAddr.addressLocality.name
-   }
-   if(str.length > 0) {arrAddr.push(str)}
-
-   if(oAddr.addressCountry && oAddr.addressCountry.name) {arrAddr.push(oAddr.addressCountry.name)}
-
-   if(oAddr.isRegisteredAddress) {
-      arrAddr.push('Entity registered at this address');
-   }
-
-   return arrAddr;
-}
 
 //Company Info telephone object conversion
 function getCiTel(oTel) {
@@ -229,19 +186,19 @@ export default function DbCompanyInfo(props) {
 
       return (
          <B2BDataTable caption='Address'>
-            {primaryAddress && !bObjIsEmpty(primaryAddress) &&
+            {!bIsEmptyObj(primaryAddress) &&
                <B2BDataTableRow
                   label='Primary address'
                   content={getArrAddr(primaryAddress)}
                />
             }
-            {!primaryAddrIsRegisteredAddr && registeredAddress && !bObjIsEmpty(registeredAddress) &&
+            {!primaryAddrIsRegisteredAddr && !bIsEmptyObj(registeredAddress) &&
                <B2BDataTableRow
                   label='Registered address'
                   content={getArrAddr(registeredAddress)}
                />
             }
-            {mailingAddress && !bObjIsEmpty(mailingAddress) &&
+            {!bIsEmptyObj(mailingAddress) &&
                <B2BDataTableRow
                   label='Mail address'
                   content={getArrAddr(mailingAddress)}

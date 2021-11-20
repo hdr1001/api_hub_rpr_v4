@@ -132,8 +132,60 @@ function ErrPaper(props) {
 }
 
 //Check if an object is an empty object
-function bObjIsEmpty(obj) {
-   return Object.keys(obj).length === 0 && obj.constructor === Object;
+function bIsEmptyObj(obj) {
+   let bRet = false;
+
+   try {
+      bRet = obj.constructor === Object && Object.keys(obj).length === 0
+   }
+   catch(err) {
+      console.log('Parameter passed into function bIsEmptyObj is not an object')
+   }
+
+   return bRet;
 }
 
-export { B2BDataTable, B2BDataTableRow, ErrPaper, bObjIsEmpty }
+//D&B data block address object to array conversion
+function getArrAddr(oAddr) {
+   let arrAddr = [], str = '';
+
+   if(!oAddr) {return arrAddr}
+
+   //Street address
+   if(oAddr.streetAddress) {
+      if(oAddr.streetAddress.line1) {arrAddr.push(oAddr.streetAddress.line1)}
+      if(oAddr.streetAddress.line2) {arrAddr.push(oAddr.streetAddress.line2)}
+   }
+
+   //Refer to alternative properties if streetAddress doesn't contain info
+   if(arrAddr.length === 0) {
+      if(oAddr.streetName) {
+         str = oAddr.streetName;
+   
+         if(oAddr.streetNumber) {
+            str += ' ' + oAddr.streetNumber
+         }
+
+         arrAddr.push(str);
+
+         str = '';
+      }
+   }
+
+   //Postalcode & city
+   if(oAddr.postalCode) {str = oAddr.postalCode}
+   if(!bIsEmptyObj(oAddr.addressLocality)) {
+      str.length > 0 ? str += ' ' + oAddr.addressLocality.name : str = oAddr.addressLocality.name
+   }
+   if(str.length > 0) {arrAddr.push(str)}
+
+   if(oAddr.addressCountry && oAddr.addressCountry.name) {arrAddr.push(oAddr.addressCountry.name)}
+
+   if(oAddr.isRegisteredAddress) {
+      arrAddr.push('Entity registered at this address');
+   }
+
+   return arrAddr;
+}
+
+export { B2BDataTable, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr }
