@@ -24,6 +24,7 @@ import React from 'react';
 import { B2BDataTable, B2BDataTableRow, ErrPaper } from '../AhUtils'
 import DbCompanyInfo from './DplCompanyInfo';
 import DbHierarchiesConn from './DplHierarchiesConn';
+import DbPrincipals from './DplPrincipalsContacts'
 
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
@@ -118,6 +119,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['hierarchyconnections'] &&
                   <DbHierarchiesConn content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['principalscontacts'] &&
+                  <DbPrincipals content={props.oDBs} />
                }
             </>
 
