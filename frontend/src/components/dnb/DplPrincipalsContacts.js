@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import React from 'react';
-import { B2BDataTable, B2BDataTableRow, bIsEmptyObj } from '../AhUtils';
+import { B2BDataTable, B2BDataTableRow, bIsEmptyObj, getArrAddr } from '../AhUtils';
 
 //Extract full name from principal object
 function getFullName(oPrincipal) {
@@ -40,6 +40,23 @@ function getFullName(oPrincipal) {
    }
 
    return '-';
+}
+
+//Get principal DUNS
+function getDUNS(oPrincipal) {
+   let sRet = '';
+
+   if(!(oPrincipal && oPrincipal.idNumbers && oPrincipal.idNumbers.length)) {
+      return sRet;
+   }
+
+   const idDUNS = oPrincipal.idNumbers.filter(oID => 
+      oID.idType && oID.idType.dnbCode && oID.idType.dnbCode === 3575
+   );
+
+   if(idDUNS && idDUNS.length) { sRet = idDUNS[0].idNumber }
+
+   return sRet;
 }
 
 //Data block Principals & Contacts component
@@ -143,11 +160,67 @@ export default function DbPrincipals(props) {
                      {principal.subjectType && principal.subjectType !== 'Individuals' &&
                         <B2BDataTableRow label='Subject type' content='Legal entity' />
                      }
+                     {principal.idNumbers && principal.idNumbers.length > 0 &&
+                           getDUNS(principal).length > 0 &&
+
+                        <B2BDataTableRow label='DUNS' content={getDUNS(principal)} />
+                     }
                      {principal.namePrefix &&
                         <B2BDataTableRow label='Name prefix' content={principal.namePrefix} />
                      }
                      {principal.nameSuffix &&
                         <B2BDataTableRow label='Name suffix' content={principal.nameSuffix} />
+                     }
+                     {!bIsEmptyObj(principal.primaryAddress) &&
+                        <B2BDataTableRow
+                           label='Primary address'
+                           content={getArrAddr(principal.primaryAddress)}
+                        />
+                     }
+                     {principal.gender && principal.gender.description
+                           && principal.gender.description.length > 0 &&
+
+                        <B2BDataTableRow label='Gender' content={principal.gender.description} />
+                     }
+                     {principal.birthDate &&
+                        <B2BDataTableRow label='Date of birth' content={principal.birthDate} />
+                     }
+                     {principal.nationality && principal.nationality.name
+                           && principal.nationality.name.length > 0 &&
+
+                        <B2BDataTableRow label='Nationality' content={principal.nationality.name} />
+                     }
+                     {principal.jobTitles && principal.jobTitles.length > 0 &&
+                        <B2BDataTableRow
+                           label='Job title(s)'
+                           content={principal.jobTitles.map(jobTitle => jobTitle.title)}
+                        />
+                     }
+                     {principal.managementResponsibilities && principal.managementResponsibilities.length > 0 &&
+                        <B2BDataTableRow
+                           label='Mngmt responsibilities'
+                           content={principal.managementResponsibilities.map(managementResp => managementResp.description)}
+                        />
+                     }
+                     {principal.responsibleAreas && principal.isMostSenior
+                        ?
+                           principal.responsibleAreas.description &&
+                              <B2BDataTableRow
+                                 label='Areas of responsibility'
+                                 content={principal.responsibleAreas.description}
+                              />
+                        :
+                           principal.responsibleAreas.length > 0 &&
+                              <B2BDataTableRow
+                                 label='Areas of responsibility'
+                                 content={principal.responsibleAreas.map(respArea => respArea.description)}
+                              />
+                     }
+                     {typeof principal.isSigningAuthority === 'boolean' &&
+                        <B2BDataTableRow
+                           label='Signing authority'
+                           content={principal.isSigningAuthority ? 'Yes' : 'No'}
+                        />
                      }
                      {principal.isMostSenior && 
                         <B2BDataTableRow label='Most senior?' content='Yes' />
