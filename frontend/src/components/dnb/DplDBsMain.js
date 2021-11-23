@@ -25,6 +25,7 @@ import { B2BDataTable, B2BDataTableRow, ErrPaper } from '../AhUtils'
 import DbCompanyInfo from './DplCompanyInfo';
 import DbHierarchiesConn from './DplHierarchiesConn';
 import DbPrincipals from './DplPrincipalsContacts'
+import DbFinStrength from './DplFinStrength';
 
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
@@ -122,6 +123,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['principalscontacts'] &&
                   <DbPrincipals content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['financialstrengthinsight'] &&
+                  <DbFinStrength content={props.oDBs} />
                }
             </>
 
