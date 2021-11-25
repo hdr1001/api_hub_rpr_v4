@@ -34,19 +34,19 @@ export default function DplDBsMain(props) {
 
       return (
          <B2BDataTable caption='Inquiry details'>
-            {duns &&
+            {!!(duns) &&
                <B2BDataTableRow
                   label='DUNS'
                   content={duns}
                />
             }
-            {blockIDs &&
+            {!!(blockIDs) &&
                <B2BDataTableRow
                   label='Data blocks'
                   content={blockIDs}
                />
             }
-            {tradeUp &&
+            {!!(tradeUp) &&
                <B2BDataTableRow
                   label='Trade up'
                   content={tradeUp}
@@ -67,19 +67,19 @@ export default function DplDBsMain(props) {
 
       return (
          <B2BDataTable caption='Common data'>
-            {duns &&
+            {!!(duns) &&
                <B2BDataTableRow
                   label='DUNS delivered'
                   content={duns}
                />
             }
-            {primaryName &&
+            {!!(primaryName) &&
                <B2BDataTableRow
                   label='Primary name'
                   content={primaryName}
                />
             }
-            {countryISOAlpha2Code &&
+            {!!(countryISOAlpha2Code) &&
                <B2BDataTableRow
                   label='Country code'
                   content={countryISOAlpha2Code}

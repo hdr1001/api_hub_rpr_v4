@@ -161,14 +161,14 @@ export default function DbPrincipals(props) {
                         <B2BDataTableRow label='Subject type' content='Legal entity' />
                      }
                      {principal.idNumbers && principal.idNumbers.length > 0 &&
-                           getDUNS(principal).length > 0 &&
+                           !!(getDUNS(principal)) &&
 
                         <B2BDataTableRow label='DUNS' content={getDUNS(principal)} />
                      }
-                     {principal.namePrefix &&
+                     {!!(principal.namePrefix) &&
                         <B2BDataTableRow label='Name prefix' content={principal.namePrefix} />
                      }
-                     {principal.nameSuffix &&
+                     {!!(principal.nameSuffix) &&
                         <B2BDataTableRow label='Name suffix' content={principal.nameSuffix} />
                      }
                      {!bIsEmptyObj(principal.primaryAddress) &&
@@ -177,17 +177,13 @@ export default function DbPrincipals(props) {
                            content={getArrAddr(principal.primaryAddress)}
                         />
                      }
-                     {principal.gender && principal.gender.description
-                           && principal.gender.description.length > 0 &&
-
+                     {principal.gender && !!(principal.gender.description) &&
                         <B2BDataTableRow label='Gender' content={principal.gender.description} />
                      }
-                     {principal.birthDate &&
+                     {!!(principal.birthDate) &&
                         <B2BDataTableRow label='Date of birth' content={principal.birthDate} />
                      }
-                     {principal.nationality && principal.nationality.name
-                           && principal.nationality.name.length > 0 &&
-
+                     {principal.nationality && !!(principal.nationality.name) &&
                         <B2BDataTableRow label='Nationality' content={principal.nationality.name} />
                      }
                      {principal.jobTitles && principal.jobTitles.length > 0 &&
@@ -202,7 +198,8 @@ export default function DbPrincipals(props) {
                            content={principal.managementResponsibilities.map(managementResp => managementResp.description)}
                         />
                      }
-                     {principal.responsibleAreas && principal.isMostSenior
+{/*                     {(!bIsEmptyObj(principal.responsibleAreas) || typeof principal.responsibleAreas === 'array')
+                           && principal.isMostSenior
                         ?
                            principal.responsibleAreas.description &&
                               <B2BDataTableRow
@@ -215,7 +212,7 @@ export default function DbPrincipals(props) {
                                  label='Areas of responsibility'
                                  content={principal.responsibleAreas.map(respArea => respArea.description)}
                               />
-                     }
+                     } */}
                      {typeof principal.isSigningAuthority === 'boolean' &&
                         <B2BDataTableRow
                            label='Signing authority'

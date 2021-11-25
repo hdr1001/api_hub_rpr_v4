@@ -136,7 +136,11 @@ function bIsEmptyObj(obj) {
    let bRet = false;
 
    try {
-      bRet = obj.constructor === Object && Object.keys(obj).length === 0
+      if(obj === null || typeof obj === 'undefined' ||
+            (obj.constructor === Object && Object.keys(obj).length === 0)) {
+
+         bRet = true;
+      }
    }
    catch(err) {
       console.log('Parameter passed into function bIsEmptyObj is not an object')

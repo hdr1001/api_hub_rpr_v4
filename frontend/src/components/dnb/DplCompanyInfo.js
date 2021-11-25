@@ -119,13 +119,13 @@ export default function DbCompanyInfo(props) {
 
       return (
          <B2BDataTable caption='General'>
-            {duns && 
+            {!!(duns) && 
                <B2BDataTableRow label='DUNS delivered' content={duns} />
             }
-            {primaryName && 
+            {!!(primaryName) && 
                <B2BDataTableRow label='Primary name' content={primaryName} />
             }
-            {registeredName &&
+            {!!(registeredName) &&
                <B2BDataTableRow label='Registered name' content={registeredName} />
             }
             {tradeStyleNames && tradeStyleNames.length > 0 &&
@@ -134,36 +134,36 @@ export default function DbCompanyInfo(props) {
                   content={tradeStyleNames.map(oTS => oTS.name)}
                />
             }
-            {businessEntityType && businessEntityType.description &&
+            {businessEntityType && !!(businessEntityType.description) &&
                <B2BDataTableRow
                   label='Entity type'
                   content={businessEntityType.description}
                />
             }
-            {legalForm && legalForm.description &&
+            {legalForm && !!(legalForm.description) &&
                <B2BDataTableRow label='Legal form' content={legalForm.description} />
             }
             {registeredDetails && registeredDetails.legalForm &&
-                           registeredDetails.legalForm.description &&
+                           !!(registeredDetails.legalForm.description) &&
                <B2BDataTableRow
                   label='Registered as'
                   content={registeredDetails.legalForm.description}
                />
             }
-            {controlOwnershipType && controlOwnershipType.description &&
+            {controlOwnershipType && !!(controlOwnershipType.description) &&
                <B2BDataTableRow
                   label='Ownership type'
                   content={controlOwnershipType.description}
                />
             }
-            {startDate &&
+            {!!(startDate) &&
                <B2BDataTableRow label='Start date' content={startDate} />
             }
-            {incorporatedDate &&
+            {!!(incorporatedDate) &&
                <B2BDataTableRow label='Incorp. date' content={incorporatedDate} />
             }
             {dunsControlStatus && dunsControlStatus.operatingStatus &&
-                     dunsControlStatus.operatingStatus.description &&
+                     !!(dunsControlStatus.operatingStatus.description) &&
                <B2BDataTableRow
                   label='Operating status'
                   content={dunsControlStatus.operatingStatus.description}
@@ -270,7 +270,7 @@ export default function DbCompanyInfo(props) {
                   />
                )
             }
-            {organizationSizeCategory && organizationSizeCategory.description &&
+            {organizationSizeCategory && !!(organizationSizeCategory.description) &&
                <B2BDataTableRow
                   label='Size category'
                   content={organizationSizeCategory.description}

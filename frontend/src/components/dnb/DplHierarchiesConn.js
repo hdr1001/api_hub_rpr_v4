@@ -153,10 +153,10 @@ export default function DbHierarchiesConn(props) {
             {arrHierarchyLevels.map(level => 
                <React.Fragment key={level.caption}>
                   <B2BDataTable caption={level.caption}>
-                     {level.obj.duns && 
+                     {!!(level.obj.duns) && 
                         <B2BDataTableRow label='DUNS' content={level.obj.duns} />
                      }
-                     {level.obj.primaryName && 
+                     {!!(level.obj.primaryName) && 
                         <B2BDataTableRow label='Primary name' content={level.obj.primaryName} />
                      }
                      {!bIsEmptyObj(level.obj.primaryAddress) &&

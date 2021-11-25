@@ -53,8 +53,7 @@ export default function DbFinStrength(props) {
 
       let sMaxCreditLimit = '';
 
-      if(maximumRecommendedLimit && maximumRecommendedLimit.value && 
-            (typeof maximumRecommendedLimit.value === 'number')) {
+      if(maximumRecommendedLimit && typeof maximumRecommendedLimit.value === 'number') {
 
          sMaxCreditLimit = maximumRecommendedLimit.value.toString();
 
@@ -69,15 +68,15 @@ export default function DbFinStrength(props) {
 
       return (
          <B2BDataTable caption='D&amp;B standard rating'>
-            {!(financialStrength && riskSegment) && rating
+            {!(financialStrength && riskSegment) && !!(rating) 
                ?
                   <B2BDataTableRow label='D&amp;B Rating' content={rating} />
                :
                   <>
-                     {financialStrength &&
+                     {!!(financialStrength) &&
                         <B2BDataTableRow label='Financial strength' content={financialStrength} />
                      }
-                     {riskSegment &&
+                     {!!(riskSegment) &&
                         <B2BDataTableRow label='Risk segment' content={riskSegment} />
                      }
                   </>
@@ -85,10 +84,10 @@ export default function DbFinStrength(props) {
             {(rating || financialStrength || riskSegment) && scoreDate &&
                <B2BDataTableRow label='Score date' content={scoreDate} />
             }
-            {sMaxCreditLimit.length > 0 &&
+            {!!(sMaxCreditLimit) &&
                <B2BDataTableRow label='Max rec credit limit' content={sMaxCreditLimit} />
             }
-            {assessmentDate &&
+            {!!(assessmentDate) &&
                <B2BDataTableRow label='Credit limit assmnt date' content={assessmentDate} />
             }
             {ratingReason && ratingReason.length > 0 &&
@@ -125,7 +124,7 @@ export default function DbFinStrength(props) {
 
       return (
          <B2BDataTable caption='D&amp;B failure score'>
-            {nationalPercentile &&
+            {typeof nationalPercentile === 'number' &&
                <B2BDataTableRow label='Percentile score' content={nationalPercentile} />
             }
             {scoreOverrideReasons && scoreOverrideReasons.length > 0 &&
@@ -134,14 +133,57 @@ export default function DbFinStrength(props) {
             {typeof classScore === 'number' &&
                <B2BDataTableRow label='Class score' content={classScore} />
             }
-            {classScoreDescription &&
+            {!!(classScoreDescription) &&
                <B2BDataTableRow label='Description' content={classScoreDescription} />
             }
-            {scoreDate &&
+            {!!(scoreDate) &&
                <B2BDataTableRow label='Score date' content={scoreDate} />
             }
-            {scoreModel && scoreModel.description &&
+            {scoreModel && !!(scoreModel.description) &&
                <B2BDataTableRow label='Model' content={scoreModel.description} />
+            }
+         </B2BDataTable>
+      );
+   }
+
+   function FinCondition(props) {
+      if(!(props.content && props.content.organization)) { return null }
+
+      const { isHighRiskBusiness,
+         isDeterioratingBusiness
+      } = props.content.organization;
+
+      const {financialCondition,
+         historyRating,
+         hasSevereNegativeEvents
+      } = props.content.organization.dnbAssessment || {};
+
+
+      if(!(typeof isHighRiskBusiness === 'boolean') && 
+            !(typeof isDeterioratingBusiness === 'boolean') &&
+            bIsEmptyObj(financialCondition) &&
+            bIsEmptyObj(historyRating) &&
+            !(typeof hasSevereNegativeEvents === 'boolean')) {
+
+         return null
+      }
+
+      return (
+         <B2BDataTable caption='Financial condition'>
+            {financialCondition && !!(financialCondition.description) &&
+               <B2BDataTableRow label='Overall condition' content={financialCondition.description} />
+            }
+            {historyRating && !!(historyRating.description) &&
+               <B2BDataTableRow label='History' content={historyRating.description} />
+            }
+            {typeof hasSevereNegativeEvents === 'boolean' &&
+               <B2BDataTableRow label='Severe negative' content={hasSevereNegativeEvents ? 'Yes' : 'No'} />
+            }
+            {typeof isHighRiskBusiness === 'boolean' &&
+               <B2BDataTableRow label='High risk' content={isHighRiskBusiness ? 'Yes' : 'No'} />
+            }
+            {typeof isDeterioratingBusiness === 'boolean' &&
+               <B2BDataTableRow label='Deteriorating' content={isDeterioratingBusiness ? 'Yes' : 'No'} />
             }
          </B2BDataTable>
       );
@@ -151,6 +193,7 @@ export default function DbFinStrength(props) {
       <>
          <Rating content={props.content} />
          <FailureScore content={props.content} />
+         <FinCondition content={props.content} />
       </>
    );
 }
