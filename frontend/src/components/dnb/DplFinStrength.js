@@ -30,6 +30,85 @@ export default function DbFinStrength(props) {
       return null
    }
 
+   function DnbScore(props) {
+      const { nationalPercentile,
+         scoreOverrideReasons,
+         classScore,
+         classScoreDescription,
+         scoreDate,
+         scoreModel } = props.dnbScore;
+
+      if(!(nationalPercentile || classScore)) { return null }
+
+      return (
+         <B2BDataTable caption={props.caption}>
+            {typeof nationalPercentile === 'number' &&
+               <B2BDataTableRow label='Percentile score' content={nationalPercentile} />
+            }
+            {scoreOverrideReasons && scoreOverrideReasons.length > 0 &&
+               <B2BDataTableRow label='Override reason(s)' content={scoreOverrideReasons.map(reason => reason.description)} />
+            }
+            {typeof classScore === 'number' &&
+               <B2BDataTableRow label='Class score' content={classScore} />
+            }
+            {!!(classScoreDescription) &&
+               <B2BDataTableRow label='Description' content={classScoreDescription} />
+            }
+            {!!(scoreDate) &&
+               <B2BDataTableRow label='Score date' content={scoreDate} />
+            }
+            {scoreModel && !!(scoreModel.description) &&
+               <B2BDataTableRow label='Model' content={scoreModel.description} />
+            }
+         </B2BDataTable>
+      );
+   }
+
+   function FailureScore(props) {
+      if(!(props.content && props.content.organization && 
+            !bIsEmptyObj(props.content.organization.dnbAssessment) &&
+            !bIsEmptyObj(props.content.organization.dnbAssessment.failureScore))) {
+         return null
+      }
+
+      return (
+         <DnbScore
+            caption='D&amp;B failure score'
+            dnbScore={props.content.organization.dnbAssessment.failureScore}
+         />
+      );
+   }
+
+   function DelinquencyScore(props) {
+      if(!(props.content && props.content.organization && 
+            !bIsEmptyObj(props.content.organization.dnbAssessment) &&
+            !bIsEmptyObj(props.content.organization.dnbAssessment.delinquencyScore))) {
+         return null
+      }
+
+      return (
+         <DnbScore
+            caption='D&amp;B delinquency score'
+            dnbScore={props.content.organization.dnbAssessment.delinquencyScore}
+         />
+      );
+   }
+
+   function EmmaScore(props) {
+      if(!(props.content && props.content.organization && 
+            !bIsEmptyObj(props.content.organization.dnbAssessment) &&
+            !bIsEmptyObj(props.content.organization.dnbAssessment.emergingMarketMediationScore))) {
+         return null
+      }
+
+      return (
+         <DnbScore
+            caption='D&amp;B emerging market score'
+            dnbScore={props.content.organization.dnbAssessment.emergingMarketMediationScore}
+         />
+      );
+   }
+
    function Rating(props) {
       if(!(props.content && props.content.organization && 
             !bIsEmptyObj(props.content.organization.dnbAssessment) &&
@@ -106,46 +185,6 @@ export default function DbFinStrength(props) {
       );
    }
 
-   function FailureScore(props) {
-      if(!(props.content && props.content.organization && 
-            !bIsEmptyObj(props.content.organization.dnbAssessment) &&
-            !bIsEmptyObj(props.content.organization.dnbAssessment.failureScore))) {
-         return null
-      }
-
-      const { nationalPercentile,
-         scoreOverrideReasons,
-         classScore,
-         classScoreDescription,
-         scoreDate,
-         scoreModel } = props.content.organization.dnbAssessment.failureScore;
-
-      if(!(nationalPercentile || classScore)) { return null }
-
-      return (
-         <B2BDataTable caption='D&amp;B failure score'>
-            {typeof nationalPercentile === 'number' &&
-               <B2BDataTableRow label='Percentile score' content={nationalPercentile} />
-            }
-            {scoreOverrideReasons && scoreOverrideReasons.length > 0 &&
-               <B2BDataTableRow label='Override reason(s)' content={scoreOverrideReasons.map(reason => reason.description)} />
-            }
-            {typeof classScore === 'number' &&
-               <B2BDataTableRow label='Class score' content={classScore} />
-            }
-            {!!(classScoreDescription) &&
-               <B2BDataTableRow label='Description' content={classScoreDescription} />
-            }
-            {!!(scoreDate) &&
-               <B2BDataTableRow label='Score date' content={scoreDate} />
-            }
-            {scoreModel && !!(scoreModel.description) &&
-               <B2BDataTableRow label='Model' content={scoreModel.description} />
-            }
-         </B2BDataTable>
-      );
-   }
-
    function FinCondition(props) {
       if(!(props.content && props.content.organization)) { return null }
 
@@ -193,6 +232,8 @@ export default function DbFinStrength(props) {
       <>
          <Rating content={props.content} />
          <FailureScore content={props.content} />
+         <DelinquencyScore content={props.content} />
+         <EmmaScore content={props.content} />
          <FinCondition content={props.content} />
       </>
    );

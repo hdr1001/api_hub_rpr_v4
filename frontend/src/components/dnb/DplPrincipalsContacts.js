@@ -198,21 +198,20 @@ export default function DbPrincipals(props) {
                            content={principal.managementResponsibilities.map(managementResp => managementResp.description)}
                         />
                      }
-{/*                     {(!bIsEmptyObj(principal.responsibleAreas) || typeof principal.responsibleAreas === 'array')
-                           && principal.isMostSenior
+                     {principal.isMostSenior
                         ?
-                           principal.responsibleAreas.description &&
+                           principal.responsibleAreas && !!(principal.responsibleAreas.description) &&
                               <B2BDataTableRow
                                  label='Areas of responsibility'
                                  content={principal.responsibleAreas.description}
                               />
                         :
-                           principal.responsibleAreas.length > 0 &&
+                           principal.responsibleAreas && principal.responsibleAreas.length > 0 &&
                               <B2BDataTableRow
                                  label='Areas of responsibility'
                                  content={principal.responsibleAreas.map(respArea => respArea.description)}
                               />
-                     } */}
+                     }
                      {typeof principal.isSigningAuthority === 'boolean' &&
                         <B2BDataTableRow
                            label='Signing authority'
