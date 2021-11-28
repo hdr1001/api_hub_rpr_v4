@@ -31,10 +31,12 @@ export default function DbFinStrength(props) {
    }
 
    function DnbScore(props) {
-      const { nationalPercentile,
+      const { rawScore,
+         nationalPercentile,
          scoreOverrideReasons,
          classScore,
          classScoreDescription,
+         scoreCommentary,
          scoreDate,
          scoreModel } = props.dnbScore;
 
@@ -42,20 +44,26 @@ export default function DbFinStrength(props) {
 
       return (
          <B2BDataTable caption={props.caption}>
+            {typeof rawScore === 'number' &&
+               <B2BDataTableRow label='Raw score' content={rawScore} />
+            }
             {typeof nationalPercentile === 'number' &&
                <B2BDataTableRow label='Percentile score' content={nationalPercentile} />
             }
             {scoreOverrideReasons && scoreOverrideReasons.length > 0 &&
                <B2BDataTableRow label='Override reason(s)' content={scoreOverrideReasons.map(reason => reason.description)} />
             }
-            {typeof classScore === 'number' &&
+            {(typeof classScore === 'number' || typeof classScore === 'string') &&
                <B2BDataTableRow label='Class score' content={classScore} />
             }
             {!!(classScoreDescription) &&
                <B2BDataTableRow label='Description' content={classScoreDescription} />
             }
+            {scoreCommentary && scoreCommentary.length > 0 &&
+               <B2BDataTableRow label='Score commentary' content={scoreCommentary.map(reason => reason.description)} />
+            }
             {!!(scoreDate) &&
-               <B2BDataTableRow label='Score date' content={scoreDate} />
+               <B2BDataTableRow label='Score date' content={scoreDate.slice(0,10)} />
             }
             {scoreModel && !!(scoreModel.description) &&
                <B2BDataTableRow label='Model' content={scoreModel.description} />

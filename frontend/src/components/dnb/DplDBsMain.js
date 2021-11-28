@@ -26,6 +26,7 @@ import DbCompanyInfo from './DplCompanyInfo';
 import DbHierarchiesConn from './DplHierarchiesConn';
 import DbPrincipals from './DplPrincipalsContacts'
 import DbFinStrength from './DplFinStrength';
+import DbPaymInsights from './DplPaymInsights';
 
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
@@ -126,6 +127,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['financialstrengthinsight'] &&
                   <DbFinStrength content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['paymentinsight'] &&
+                  <DbPaymInsights content={props.oDBs} />
                }
             </>
 
