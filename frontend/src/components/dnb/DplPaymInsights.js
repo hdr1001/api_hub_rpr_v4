@@ -27,6 +27,16 @@ import { B2BDataTable, B2BDataTableRow } from '../AhUtils';
 export default function DbPaymInsights(props) {
    if(!(props.content && props.content.organization )) { return null }
 
+   function PaydexNotAvailable(props) {
+      return (
+         <B2BDataTable
+            caption={`Payment insights ${props.summaryDate ? ' (' + props.summaryDate + ')' : ''}`}
+         >
+            <B2BDataTableRow label='D&amp;B Paydex' content='Not available' />
+         </B2BDataTable>
+      )
+   }
+
    function SummaryRec(props) {
       const { dataCoverage,
          paydexScore,
@@ -35,26 +45,35 @@ export default function DbPaymInsights(props) {
          totalExperiencesCount
       } = props.summaryRec;
 
-      return (
-         <B2BDataTable
-            caption={`Payment insights ${props.summaryDate ? ' (' + props.summaryDate + ')' : ''}`}
-         >
-            {typeof paydexScore === 'number' &&
-               <B2BDataTableRow label='D&amp;B Paydex' content={paydexScore} />
-            }
-            {typeof paymentBehaviorDays === 'number' &&
-               <B2BDataTableRow label='Average delay in days' content={paymentBehaviorDays} />
-            }
-            {paymentBehaviorResult && !!(paymentBehaviorResult.description) &&
-               <B2BDataTableRow label='Description' content={paymentBehaviorResult.description} />
-            }
-            {typeof totalExperiencesCount === 'number' &&
-               <B2BDataTableRow label='Experiences count' content={totalExperiencesCount} />
-            }
-            {dataCoverage && !!(dataCoverage.description) &&
-               <B2BDataTableRow label='Data coverage' content={dataCoverage.description} />
-            }
-         </B2BDataTable>
+      //Check data availability
+      const iPaydexScore = typeof paydexScore === 'number' ? 1 : 0;
+      const iPaymentBehaviorDays = typeof paymentBehaviorDays === 'number' ? 1 : 0;
+      const iPaymentBehaviorResult = paymentBehaviorResult && !!(paymentBehaviorResult.description) ? 1 : 0;
+      const iTotalExperiencesCount = typeof totalExperiencesCount === 'number' ? 1 : 0;
+
+      return (iPaydexScore + iPaymentBehaviorDays + iPaymentBehaviorResult + iTotalExperiencesCount > 0
+         ?
+            <B2BDataTable
+               caption={`Payment insights ${props.summaryDate ? ' (' + props.summaryDate + ')' : ''}`}
+            >
+               {iPaydexScore > 0 &&
+                  <B2BDataTableRow label='D&amp;B Paydex' content={paydexScore} />
+               }
+               {iPaymentBehaviorDays > 0 &&
+                  <B2BDataTableRow label='Average delay in days' content={paymentBehaviorDays} />
+               }
+               {iPaymentBehaviorResult > 0 &&
+                  <B2BDataTableRow label='Description' content={paymentBehaviorResult.description} />
+               }
+               {iTotalExperiencesCount > 0 &&
+                  <B2BDataTableRow label='Experiences count' content={totalExperiencesCount} />
+               }
+               {dataCoverage && !!(dataCoverage.description) &&
+                  <B2BDataTableRow label='Data coverage' content={dataCoverage.description} />
+               }
+            </B2BDataTable>
+         :
+            <PaydexNotAvailable summaryDate={props.summaryDate} />
       );
    }
 
@@ -83,9 +102,7 @@ export default function DbPaymInsights(props) {
                }
             </>
          :
-            <B2BDataTable caption='Payment insights'>
-               <B2BDataTableRow label='D&amp;B Paydex' content='Not available' />
-            </B2BDataTable>
+         <PaydexNotAvailable />
       );
    }
 
