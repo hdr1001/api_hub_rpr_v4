@@ -27,6 +27,7 @@ import DbHierarchiesConn from './DplHierarchiesConn';
 import DbPrincipals from './DplPrincipalsContacts'
 import DbFinStrength from './DplFinStrength';
 import DbPaymInsights from './DplPaymInsights';
+import DbFilingsEvents from './DplFilingsEvents';
 
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
@@ -130,6 +131,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['paymentinsight'] &&
                   <DbPaymInsights content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['eventfilings'] &&
+                  <DbFilingsEvents content={props.oDBs} />
                }
             </>
 
