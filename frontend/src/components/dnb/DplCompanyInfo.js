@@ -21,12 +21,12 @@
 // *********************************************************************
 
 import React, { useState } from 'react';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import { B2BDataTable, B2BDataTableRow, bIsEmptyObj, getArrAddr } from '../AhUtils';
+import {
+   B2BDataTable,
+   B2BDataTableRowFilter,
+   B2BDataTableRow,
+   bIsEmptyObj,
+   getArrAddr } from '../AhUtils';
 import { oCurrOpts } from '../style'
 
 //Company Info telephone object conversion
@@ -330,16 +330,20 @@ export default function DbCompanyInfo(props) {
       if(!industryCodes || industryCodes.length === 0) { return null }
 
       const uniqueTypeCodes = industryCodes.reduce(
-         (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.typeDnBCode)
+         (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.value)
             ?
                arrDeduped
             :
-               [...arrDeduped, {typeDnBCode: industryCode.typeDnBCode, typeDescription: industryCode.typeDescription}],
+               [...arrDeduped, {
+                  key: industryCode.typeDnBCode,
+                  value: industryCode.typeDnBCode,
+                  desc: industryCode.typeDescription
+               }],
          []
       );
 
       function getInitialTypeCode() {
-         return uniqueTypeCodes.some(IndustryTypeCode => IndustryTypeCode.typeDnBCode === 399)
+         return uniqueTypeCodes.some(IndustryTypeCode => IndustryTypeCode.value === 399)
             ?
                399
             :
@@ -350,35 +354,19 @@ export default function DbCompanyInfo(props) {
 
       return (
          <B2BDataTable caption='Activity codes'>
-            <TableRow><TableCell colSpan={2}>
-               <FormControl
-                  component='fieldset'
-                  fullWidth={true}
-                  margin='none'
-                  size='small'
-               >
-                  <Select
-                     autoWidth={false}
-                     name='selectTypeCodes'
-                     margin='dense'
-                     value={filterCodeType}
-                     onChange={event => setFilterCodeType(event.target.value)}
-                  >
-                     {uniqueTypeCodes.map(typeCode =>
-                        <MenuItem key={typeCode.typeDnBCode} value={typeCode.typeDnBCode}>{typeCode.typeDescription}</MenuItem>
-                     )}
-                  </Select>
-               </FormControl>
-            </TableCell></TableRow>
-            {
-               industryCodes
-                  .filter(industryCode => industryCode.typeDnBCode === filterCodeType)
-                  .map((industryCode, idx) => 
-                     <B2BDataTableRow key={idx}
-                        label={industryCode.code}
-                        content={industryCode.description}
-                     />
-                  )
+            <B2BDataTableRowFilter
+               value={filterCodeType}
+               onChange={setFilterCodeType}
+               items={uniqueTypeCodes}
+            />
+            {industryCodes
+               .filter(industryCode => industryCode.typeDnBCode === filterCodeType)
+               .map((industryCode, idx) => 
+                  <B2BDataTableRow key={idx}
+                     label={industryCode.code}
+                     content={industryCode.description}
+                  />
+               )
             }
          </B2BDataTable>
       );

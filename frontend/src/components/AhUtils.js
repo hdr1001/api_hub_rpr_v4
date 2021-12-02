@@ -27,6 +27,9 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { ahGrey, horizontalPadding, verticalMargin,
@@ -56,6 +59,33 @@ function B2BDataTable(props) {
          </Table> 
       </TableContainer>
    );
+}
+
+function B2BDataTableRowFilter(props) {
+   return (
+      <TableRow>
+         <TableCell colSpan={2}>
+            <FormControl
+               component='fieldset'
+               fullWidth={true}
+               margin='none'
+               size='small'
+            >
+               <Select
+                  autoWidth={false}
+                  name='selectTypeCodes'
+                  margin='dense'
+                  value={props.value}
+                  onChange={event => props.onChange(event.target.value)}
+               >
+                  {props.items.map(item =>
+                     <MenuItem key={item.key} value={item.value}>{item.desc}</MenuItem>
+                  )}
+               </Select>
+            </FormControl>
+         </TableCell>
+      </TableRow>
+   )
 }
 
 function B2BDataTableRow(props) {
@@ -192,4 +222,4 @@ function getArrAddr(oAddr) {
    return arrAddr;
 }
 
-export { B2BDataTable, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr }
+export { B2BDataTable, B2BDataTableRowFilter, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr }

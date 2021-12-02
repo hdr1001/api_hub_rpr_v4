@@ -20,14 +20,23 @@
 //
 // *********************************************************************
 
-import React from 'react';
-import { B2BDataTable, B2BDataTableRow, bIsEmptyObj } from '../AhUtils';
+import React, { useState } from 'react';
+import { B2BDataTable,
+         B2BDataTableRowFilter,
+         B2BDataTableRow,
+         bIsEmptyObj } from '../AhUtils';
 
 //Data block Filings & Events component
 export default function DbFilingsEvents(props) {
    if(!(props.content && props.content.organization)) { return null }
 
    function LegalEvents(props) {
+      const filterOpts = [
+         {key: 'filterYes', value: 'Yes', desc: 'Display "Yes" values solely'},
+         {key: 'filterNo', value: 'No', desc: 'Display "No" values solely'},
+         {key: 'filterNull', value: '-', desc: 'Display "-" values solely'}
+      ];
+
       const arrLegalEvents = [
          {property: 'hasBankruptcy', label: 'Has bankruptcy'},
          {property: 'hasOpenBankruptcy', label: 'Has open bankruptcy'},
@@ -53,13 +62,30 @@ export default function DbFilingsEvents(props) {
          {property: 'hasOpenClaims', label: 'Has open claims'}
       ];
 
+      const arrLegalEventValues = arrLegalEvents.map(legalEvent => (
+         {
+            ...legalEvent,
+            value: props.legalEvents[legalEvent.property] === true ? 'Yes'
+                     : props.legalEvents[legalEvent.property] === false ? 'No'
+                     : '-'
+         }
+      ));
+
+      const [filterValue, setFilterValue] = useState('Yes');
+
       return (
          <B2BDataTable caption='Legal events'>
-            {
-               arrLegalEvents.map(event => 
+            <B2BDataTableRowFilter
+               value={filterValue}
+               onChange={setFilterValue}
+               items={filterOpts}
+            />
+            {arrLegalEventValues
+               .filter(event => event.value === filterValue)
+               .map(event => 
                   <B2BDataTableRow
                      label={event.label}
-                     content={props.legalEvents[event.property] ? 'Yes' : 'No'}
+                     content={event.value}
                      key={event.property}
                   />
                )
