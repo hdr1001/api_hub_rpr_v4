@@ -20,57 +20,65 @@
 //
 // *********************************************************************
 
+import { typography } from '@mui/system';
 import React, { useState } from 'react';
 import { B2BDataTable,
          B2BDataTableRowFilter,
          B2BDataTableRow,
          bIsEmptyObj } from '../AhUtils';
 
+const filterOpts = [
+   {key: 'filterYesOrNo', value: 'YesOrNo', desc: 'Display "Yes" and "No" values'},
+   {key: 'filterYes', value: 'Yes', desc: 'Display "Yes" values solely'},
+   {key: 'filterNo', value: 'No', desc: 'Display "No" values solely'},
+   {key: 'filterNull', value: '-', desc: 'Display "-" values solely'},
+   {key: 'filterNone', value: 'None', desc: 'Display all values unfiltered'}
+];
+      
+const arrLegalEvents = [
+   {property: 'hasBankruptcy', label: 'Has bankruptcy'},
+   {property: 'hasOpenBankruptcy', label: 'Has open bankruptcy'},
+   {property: 'hasInsolvency', label: 'Has insolvency'},
+   {property: 'hasLiquidation', label: 'Has liquidation'},
+   {property: 'hasSuspensionOfPayments', label: 'Has suspension of payments'},
+   {property: 'hasCriminalProceedings', label: 'Has criminal proceedings'},
+   {property: 'hasOpenCriminalProceedings', label: 'Has open criminal proceedings'},
+   {property: 'hasJudgments', label: 'Has judgments'},
+   {property: 'hasOpenJudgments', label: 'Has open judgments'},
+   {property: 'hasLegalEvents', label: 'Has legal events'},
+   {property: 'hasOpenLegalEvents', label: 'Has open legal events'},
+   {property: 'hasOtherLegalEvents', label: 'Has other legal events'},
+   {property: 'hasSuits', label: 'Has suits'},
+   {property: 'hasOpenSuits', label: 'Has open suits'},
+   {property: 'hasFinancialEmbarrassment', label: 'Has financial embarrassment'},
+   {property: 'hasOpenFinancialEmbarrassment', label: 'Has open financial embarrassment'},
+   {property: 'hasDebarments', label: 'Has debarments'},
+   {property: 'hasOpenDebarments', label: 'Has open debarments'},
+   {property: 'hasLiens', label: 'Has liens'},
+   {property: 'hasOpenLiens', label: 'Has open liens'},
+   {property: 'hasClaims', label: 'Has claims'},
+   {property: 'hasOpenClaims', label: 'Has open claims'}
+];
+
+//Function to convert boolean to Yes or No (or -)
+function booleanToYesNo(boole) {
+   if(typeof boole === 'boolean') {
+      if(boole) {
+         return 'Yes';
+      }
+      else {
+         return 'No';
+      }
+   }
+
+   return '-';
+}
+
 //Data block Filings & Events component
 export default function DbFilingsEvents(props) {
    if(!(props.content && props.content.organization)) { return null }
 
    function LegalEvents(props) {
-      const filterOpts = [
-         {key: 'filterYes', value: 'Yes', desc: 'Display "Yes" values solely'},
-         {key: 'filterNo', value: 'No', desc: 'Display "No" values solely'},
-         {key: 'filterNull', value: '-', desc: 'Display "-" values solely'}
-      ];
-
-      const arrLegalEvents = [
-         {property: 'hasBankruptcy', label: 'Has bankruptcy'},
-         {property: 'hasOpenBankruptcy', label: 'Has open bankruptcy'},
-         {property: 'hasInsolvency', label: 'Has insolvency'},
-         {property: 'hasLiquidation', label: 'Has liquidation'},
-         {property: 'hasSuspensionOfPayments', label: 'Has suspension of payments'},
-         {property: 'hasCriminalProceedings', label: 'Has criminal proceedings'},
-         {property: 'hasOpenCriminalProceedings', label: 'Has open criminal proceedings'},
-         {property: 'hasJudgments', label: 'Has judgments'},
-         {property: 'hasOpenJudgments', label: 'Has open judgments'},
-         {property: 'hasLegalEvents', label: 'Has legal events'},
-         {property: 'hasOpenLegalEvents', label: 'Has open legal events'},
-         {property: 'hasOtherLegalEvents', label: 'Has other legal events'},
-         {property: 'hasSuits', label: 'Has suits'},
-         {property: 'hasOpenSuits', label: 'Has open suits'},
-         {property: 'hasFinancialEmbarrassment', label: 'Has financial embarrassment'},
-         {property: 'hasOpenFinancialEmbarrassment', label: 'Has open financial embarrassment'},
-         {property: 'hasDebarments', label: 'Has debarments'},
-         {property: 'hasOpenDebarments', label: 'Has open debarments'},
-         {property: 'hasLiens', label: 'Has liens'},
-         {property: 'hasOpenLiens', label: 'Has open liens'},
-         {property: 'hasClaims', label: 'Has claims'},
-         {property: 'hasOpenClaims', label: 'Has open claims'}
-      ];
-
-      const arrLegalEventValues = arrLegalEvents.map(legalEvent => (
-         {
-            ...legalEvent,
-            value: props.legalEvents[legalEvent.property] === true ? 'Yes'
-                     : props.legalEvents[legalEvent.property] === false ? 'No'
-                     : '-'
-         }
-      ));
-
       const [filterValue, setFilterValue] = useState('Yes');
 
       return (
@@ -80,8 +88,15 @@ export default function DbFilingsEvents(props) {
                onChange={setFilterValue}
                items={filterOpts}
             />
-            {arrLegalEventValues
-               .filter(event => event.value === filterValue)
+            {arrLegalEvents
+               .map(event => ({
+                                 ...event,
+                                 value: booleanToYesNo(props.legalEvents[event.property])
+                              }))
+               .filter(event =>
+                           filterValue === 'None' ||
+                           event.value === filterValue ||
+                           filterValue === 'YesOrNo' && (event.value === 'Yes' || event.value === 'No'))
                .map(event => 
                   <B2BDataTableRow
                      label={event.label}
