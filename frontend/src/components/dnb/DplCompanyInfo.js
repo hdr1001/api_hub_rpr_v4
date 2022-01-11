@@ -96,7 +96,7 @@ function getDescNoCountryCode(sDesc) {
    const idx = sDesc.indexOf('(');
 
    if(idx > -1) {
-      if(sDesc.substr(idx + 3, 1) == ')') { //Just checking :-)
+      if(sDesc.substr(idx + 3, 1) === ')') { //Just checking :-)
          sDesc = sDesc.substr(0, idx - 1).trim();
       }
    }
@@ -326,50 +326,54 @@ export default function DbCompanyInfo(props) {
 
    function IndustryCodes(props) {
       const { industryCodes } = props.content.organization;
+      const [ filterCodeType, setFilterCodeType ] = useState(399);
 
-      if(!industryCodes || industryCodes.length === 0) { return null }
+      let ret = null;
 
-      const uniqueTypeCodes = industryCodes.reduce(
-         (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.value)
-            ?
-               arrDeduped
-            :
-               [...arrDeduped, {
-                  key: industryCode.typeDnBCode,
-                  value: industryCode.typeDnBCode,
-                  desc: industryCode.typeDescription
-               }],
-         []
-      );
+      if(Array.isArray(industryCodes) && industryCodes.length > 0) {
 
-      function getInitialTypeCode() {
-         return uniqueTypeCodes.some(IndustryTypeCode => IndustryTypeCode.value === 399)
-            ?
-               399
-            :
-               uniqueTypeCodes[0].typeDnBCode
+         const uniqueTypeCodes = industryCodes.reduce(
+            (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.value)
+               ?
+                  arrDeduped
+               :
+                  [...arrDeduped, {
+                     key: industryCode.typeDnBCode,
+                     value: industryCode.typeDnBCode,
+                     desc: industryCode.typeDescription
+                  }],
+            []
+         );
+
+         function getInitialTypeCode() {
+            return uniqueTypeCodes.some(IndustryTypeCode => IndustryTypeCode.value === 399)
+               ?
+                  399
+               :
+                  uniqueTypeCodes[0].typeDnBCode
+         }
+
+         ret = (
+            <B2BDataTable caption='Activity codes'>
+               <B2BDataTableRowFilter
+                  value={filterCodeType}
+                  onChange={setFilterCodeType}
+                  items={uniqueTypeCodes}
+               />
+               {industryCodes
+                  .filter(industryCode => industryCode.typeDnBCode === filterCodeType)
+                  .map((industryCode, idx) => 
+                     <B2BDataTableRow key={idx}
+                        label={industryCode.code}
+                        content={industryCode.description}
+                     />
+                  )
+               }
+            </B2BDataTable>
+         );
       }
 
-      const [filterCodeType, setFilterCodeType] = useState(getInitialTypeCode());
-
-      return (
-         <B2BDataTable caption='Activity codes'>
-            <B2BDataTableRowFilter
-               value={filterCodeType}
-               onChange={setFilterCodeType}
-               items={uniqueTypeCodes}
-            />
-            {industryCodes
-               .filter(industryCode => industryCode.typeDnBCode === filterCodeType)
-               .map((industryCode, idx) => 
-                  <B2BDataTableRow key={idx}
-                     label={industryCode.code}
-                     content={industryCode.description}
-                  />
-               )
-            }
-         </B2BDataTable>
-      );
+      return ret;
    }
 
    function StockExchanges(props) {

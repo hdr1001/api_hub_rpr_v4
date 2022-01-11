@@ -20,7 +20,6 @@
 //
 // *********************************************************************
 
-import React from 'react';
 import Box from '@mui/system/Box';
 import DnbDplDBs from './AhDnbDplDBs';
 import { contentBox, arrFilesBox } from './style';
@@ -31,7 +30,7 @@ export default function AhContent(props) {
          sx={contentBox}
       >
          {
-            props.state.arrFiles.map((file, idx) => 
+            props.arrFiles.map((file, idx) => 
                <Box
                   key={idx}
                   sx={arrFilesBox}

@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import React, { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/system/Box';
@@ -32,7 +32,7 @@ export default memo(function DnbDplDBs(props) {
    const [errMsg, setErrMsg] = useState('');
 
    useEffect(() => {
-      const fileReader = new FileReader;
+      const fileReader = new FileReader();
    
       fileReader.onload = evnt => {
          try {
@@ -48,7 +48,7 @@ export default memo(function DnbDplDBs(props) {
       };
    
       fileReader.readAsText(props.file, 'utf-8');
-   }, []);
+   }, [props.file]);
 
    return (
       <>

@@ -109,7 +109,7 @@ function B2BDataTableRow(props) {
       }
 
       setNumContentRows(numContentRows);
-   });
+   }, [props.content, props.label]);
 
    const tableCellAttrs = {component: 'th', scope: 'row', sx: fontItalic};
 
