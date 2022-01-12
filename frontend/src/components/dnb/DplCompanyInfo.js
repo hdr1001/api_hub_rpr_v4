@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import React, { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
    B2BDataTable,
    B2BDataTableRowFilter,
@@ -325,14 +325,16 @@ export default function DbCompanyInfo(props) {
    }
 
    function IndustryCodes(props) {
-      const { industryCodes } = props.content.organization;
-      const [ filterCodeType, setFilterCodeType ] = useState(399);
+      function ListIndustryCodes(props) {
+         const [ filterCodeType, setFilterCodeType ] = useState(
+            props.indCodes.some(indCode => indCode.typeDnBCode === 399)
+               ?
+                  399
+               :
+                  props.indCodes[0].typeDnBCode
+         );
 
-      let ret = null;
-
-      if(Array.isArray(industryCodes) && industryCodes.length > 0) {
-
-         const uniqueTypeCodes = industryCodes.reduce(
+         const uniqueTypeCodes = useRef(props.indCodes.reduce(
             (arrDeduped, industryCode) => arrDeduped.some(dedupIndustryCode => industryCode.typeDnBCode === dedupIndustryCode.value)
                ?
                   arrDeduped
@@ -343,24 +345,16 @@ export default function DbCompanyInfo(props) {
                      desc: industryCode.typeDescription
                   }],
             []
-         );
-
-         function getInitialTypeCode() {
-            return uniqueTypeCodes.some(IndustryTypeCode => IndustryTypeCode.value === 399)
-               ?
-                  399
-               :
-                  uniqueTypeCodes[0].typeDnBCode
-         }
-
-         ret = (
+         ));
+   
+         return (
             <B2BDataTable caption='Activity codes'>
                <B2BDataTableRowFilter
                   value={filterCodeType}
                   onChange={setFilterCodeType}
-                  items={uniqueTypeCodes}
+                  items={uniqueTypeCodes.current}
                />
-               {industryCodes
+               {props.indCodes
                   .filter(industryCode => industryCode.typeDnBCode === filterCodeType)
                   .map((industryCode, idx) => 
                      <B2BDataTableRow key={idx}
@@ -373,7 +367,14 @@ export default function DbCompanyInfo(props) {
          );
       }
 
-      return ret;
+      const { industryCodes } = props.content.organization;
+
+      if(!Array.isArray(industryCodes) || industryCodes.length === 0) {
+         return null
+      }
+      else {
+         return <ListIndustryCodes indCodes={industryCodes} />
+      }
    }
 
    function StockExchanges(props) {

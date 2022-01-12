@@ -152,7 +152,7 @@ export default function DbFilingsEvents(props) {
                .filter(event =>
                            filterValue === 'None' ||
                            event.value === filterValue ||
-                           filterValue === 'YesOrNo' && (event.value === 'Yes' || event.value === 'No'))
+                           (filterValue === 'YesOrNo' && (event.value === 'Yes' || event.value === 'No')))
                .map(event => 
                   <B2BDataTableRow
                      label={event.label}
