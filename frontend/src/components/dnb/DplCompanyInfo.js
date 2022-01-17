@@ -29,6 +29,29 @@ import {
    getArrAddr } from '../AhUtils';
 import { oCurrOpts } from '../style'
 
+//Company Info name object conversion
+function getCiName(labelIn, nameIn) {
+   let oRet = {label: labelIn, content: ''};
+
+   if(typeof nameIn === 'string') {
+      oRet.content = nameIn;
+      return oRet;
+   }
+
+   if(typeof nameIn === 'object') {
+      if(nameIn.language && nameIn.language.description) {
+         oRet.label = <span>{labelIn}<br /><small>{'*' + nameIn.language.description}</small></span>
+      }
+      else {
+         oRet.label = <span>{labelIn}</span>
+      }
+
+      oRet.content = nameIn.name;
+   }
+
+   return oRet;
+}
+
 //Company Info telephone object conversion
 function getCiTel(oTel) {
    return (oTel.isdCode ? '+' + oTel.isdCode + ' ' : '') + oTel.telephoneNumber
@@ -112,7 +135,9 @@ export default function DbCompanyInfo(props) {
          return null
       }
 
-      const { duns, primaryName, registeredName, tradeStyleNames,
+      const { duns, primaryName, multilingualPrimaryName,
+               registeredName, multilingualRegisteredNames,
+               tradeStyleNames, multilingualTradestyleNames,                
                businessEntityType, legalForm, registeredDetails,
                controlOwnershipType, startDate, incorporatedDate,
                dunsControlStatus } = props.content.organization;
@@ -122,17 +147,35 @@ export default function DbCompanyInfo(props) {
             {!!(duns) && 
                <B2BDataTableRow label='DUNS delivered' content={duns} />
             }
-            {!!(primaryName) && 
-               <B2BDataTableRow label='Primary name' content={primaryName} />
+            {Array.isArray(multilingualPrimaryName) && multilingualPrimaryName.length > 0
+               ?
+                  multilingualPrimaryName.map((oPN, idx) =>
+                     <B2BDataTableRow {...getCiName('Primary name', oPN)} key={idx} />
+                  )
+               :
+                  !!(primaryName) && 
+                     <B2BDataTableRow {...getCiName('Primary name', primaryName)} />
             }
-            {!!(registeredName) &&
-               <B2BDataTableRow label='Registered name' content={registeredName} />
+            {Array.isArray(multilingualRegisteredNames) && multilingualRegisteredNames.length > 0
+               ?
+                  multilingualRegisteredNames.map((oRN, idx) =>
+                     <B2BDataTableRow {...getCiName('Registered name', oRN)} key={idx} />
+                  )
+            :
+                  !!(registeredName) && 
+                     <B2BDataTableRow {...getCiName('Registered name', registeredName)} />
             }
-            {tradeStyleNames && tradeStyleNames.length > 0 &&
-               <B2BDataTableRow
-                  label='Tradestyle(s)'
-                  content={tradeStyleNames.map(oTS => oTS.name)}
-               />
+            {Array.isArray(multilingualTradestyleNames) && multilingualTradestyleNames.length > 0
+               ?
+                  multilingualTradestyleNames.map((oTS, idx) =>
+                     <B2BDataTableRow {...getCiName('Tradestyle', oTS)} key={idx} />
+                  )
+            :
+                  Array.isArray(tradeStyleNames) && tradeStyleNames.length > 0 &&
+                     <B2BDataTableRow
+                        label='Tradestyle(s)'
+                        content={tradeStyleNames.map(oTS => oTS.name)}
+                     />
             }
             {businessEntityType && !!(businessEntityType.description) &&
                <B2BDataTableRow
