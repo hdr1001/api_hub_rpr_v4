@@ -58,27 +58,45 @@ function getCiTel(oTel) {
 }
 
 //Get yearly revenue number from the financials object
-function getCiYearlyRevenue(oFin) {
+function getCiYearlyRevenue(oFin, defaultCurrency) {
+   function ExpandedLabel(props) {
+      return (
+         <span>{props.label}<br />
+            <small>*figure is {props.line2}</small>
+         </span>
+      )
+   }
+
    let oRet = {label: 'Yearly revenue', content: ''};
 
-   if(oFin.yearlyRevenue && oFin.yearlyRevenue[0]) {
-      if(oFin.yearlyRevenue[0].value && oFin.yearlyRevenue[0].currency) {
-         let oCurrency = { ...oCurrOpts, currency: oFin.yearlyRevenue[0].currency }
+   if(Array.isArray(oFin.yearlyRevenue) && oFin.yearlyRevenue.length) {
+      let yearlyRevenue = oFin.yearlyRevenue.filter(yr => yr.currency === defaultCurrency);
+
+      if(yearlyRevenue.length) {
+         yearlyRevenue = yearlyRevenue[0]
+      }
+      else { //No value for the default currency
+         yearlyRevenue = oFin.yearlyRevenue[0]
+      }
+
+      if(yearlyRevenue.value && yearlyRevenue.currency) {
+         let oCurrency = { ...oCurrOpts, currency: yearlyRevenue.currency };
 
          const intlNumFormat = new Intl.NumberFormat('en-us', oCurrency);
 
-         oRet.content = intlNumFormat.format(oFin.yearlyRevenue[0].value)
+         oRet.content = intlNumFormat.format(yearlyRevenue.value);
       }
       else {
-         if(typeof oFin.yearlyRevenue[0].value === 'number') {
-            oRet.content = oFin.yearlyRevenue[0].value
+         if(typeof yearlyRevenue.value === 'number') {
+            oRet.content = yearlyRevenue.value
          }
       }
 
       if(oFin.reliabilityDnBCode === 9093) {
-         oRet.label = <span>{oRet.label}<br />
-                        <small>*figure is an estimate</small>
-                      </span>;
+         oRet.label = <ExpandedLabel label={oRet.label} line2="an estimate" />
+      }
+      else if(oFin.reliabilityDnBCode === 9094) {
+         oRet.label = <ExpandedLabel label={oRet.label} line2="modelled" />
       }
    }
 
@@ -161,7 +179,7 @@ export default function DbCompanyInfo(props) {
                   multilingualRegisteredNames.map((oRN, idx) =>
                      <B2BDataTableRow {...getCiName('Registered name', oRN)} key={idx} />
                   )
-            :
+               :
                   !!(registeredName) && 
                      <B2BDataTableRow {...getCiName('Registered name', registeredName)} />
             }
@@ -170,7 +188,7 @@ export default function DbCompanyInfo(props) {
                   multilingualTradestyleNames.map((oTS, idx) =>
                      <B2BDataTableRow {...getCiName('Tradestyle', oTS)} key={idx} />
                   )
-            :
+               :
                   Array.isArray(tradeStyleNames) && tradeStyleNames.length > 0 &&
                      <B2BDataTableRow
                         label='Tradestyle(s)'
@@ -304,7 +322,7 @@ export default function DbCompanyInfo(props) {
       return (
          <B2BDataTable caption='Company size'>
             {financials && financials.length > 0 &&
-               <B2BDataTableRow {...getCiYearlyRevenue(financials[0])} />
+               <B2BDataTableRow {...getCiYearlyRevenue(financials[0], props.content.organization.defaultCurrency)} />
             }
             {numberOfEmployees && numberOfEmployees.length > 0 &&
                numberOfEmployees.map((numEmpl, idx) => 
@@ -327,6 +345,35 @@ export default function DbCompanyInfo(props) {
             }
          </B2BDataTable>
       );
+   }
+
+   //Company information size component
+   function DomesticUltSize(props) {
+      if(props.content && props.content.organization &&
+            props.content.organization.domesticUltimate &&
+               (!bIsEmptyObj(props.content.organization.domesticUltimate.numberOfEmployees) ||
+                  !bIsEmptyObj(props.content.organization.domesticUltimate.financials))) {
+
+         const {numberOfEmployees, financials} = props.content.organization.domesticUltimate;
+
+         return (
+            <B2BDataTable caption='Domestic ultimate size'>
+               {financials && financials.length > 0 &&
+                  <B2BDataTableRow {...getCiYearlyRevenue(financials[0], props.content.organization.defaultCurrency)} />
+               }
+               {numberOfEmployees && numberOfEmployees.length > 0 &&
+                  numberOfEmployees.map((numEmpl, idx) => 
+                     <B2BDataTableRow key={idx}
+                        {...getCiNumEmpl(numEmpl)}
+                     />
+                  )
+               }
+            </B2BDataTable>
+         );
+      }
+      else {
+         return null
+      }
    }
 
    function RegistrationNumbers(props) {
@@ -443,6 +490,7 @@ export default function DbCompanyInfo(props) {
          <Address content={props.content} />
          <ContactAt content={props.content} />
          <CompanySize content={props.content} />
+         <DomesticUltSize content={props.content} />
          <RegistrationNumbers content={props.content} />
          <Activities content={props.content} />
          <IndustryCodes content={props.content} />
