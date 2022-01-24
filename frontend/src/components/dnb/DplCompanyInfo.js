@@ -59,45 +59,81 @@ function getCiTel(oTel) {
 
 //Get yearly revenue number from the financials object
 function getCiYearlyRevenue(oFin, defaultCurrency) {
+
    function ExpandedLabel(props) {
-      return (
-         <span>{props.label}<br />
-            <small>*figure is {props.line2}</small>
-         </span>
-      )
-   }
+      const arrExpLabel = [];
 
-   let oRet = {label: 'Yearly revenue', content: ''};
-
-   if(Array.isArray(oFin.yearlyRevenue) && oFin.yearlyRevenue.length) {
-      let yearlyRevenue = oFin.yearlyRevenue.filter(yr => yr.currency === defaultCurrency);
-
-      if(yearlyRevenue.length) {
-         yearlyRevenue = yearlyRevenue[0]
-      }
-      else { //No value for the default currency
-         yearlyRevenue = oFin.yearlyRevenue[0]
-      }
-
-      if(yearlyRevenue.value && yearlyRevenue.currency) {
-         let oCurrency = { ...oCurrOpts, currency: yearlyRevenue.currency };
-
-         const intlNumFormat = new Intl.NumberFormat('en-us', oCurrency);
-
-         oRet.content = intlNumFormat.format(yearlyRevenue.value);
-      }
-      else {
-         if(typeof yearlyRevenue.value === 'number') {
-            oRet.content = yearlyRevenue.value
+      if(props.oFin.informationScopeDescription) {
+         if(props.oFin.informationScopeDnBCode !== 9066) { //Individual is presumed
+            arrExpLabel.push(props.oFin.informationScopeDescription)
          }
       }
 
-      if(oFin.reliabilityDnBCode === 9093) {
-         oRet.label = <ExpandedLabel label={oRet.label} line2="an estimate" />
+      if(props.oFin.reliabilityDescription) {
+         if(props.oFin.reliabilityDnBCode !== 9092) { //Actual is presumed
+            arrExpLabel.push(props.oFin.reliabilityDescription)
+         }
       }
-      else if(oFin.reliabilityDnBCode === 9094) {
-         oRet.label = <ExpandedLabel label={oRet.label} line2="modelled" />
+
+      return (
+         <span>{props.label}
+            {arrExpLabel.length > 0 &&
+               <>
+                  <br /><small>*{arrExpLabel.join(' & ')}</small>
+               </>
+            }
+         </span>
+      );
+   }
+
+   function ExpandedValue(props) {
+      let yearlyRevenue = props.content;
+      let bUnitCode = false;
+
+      if(Array.isArray(props.oFin.yearlyRevenue) && props.oFin.yearlyRevenue.length) {
+         //Preferably return the default currency value
+         const arrYearlyRevenue = props.oFin.yearlyRevenue.filter(yr => yr.currency === defaultCurrency);
+
+         let oYearlyRevenue = {};
+
+         if(arrYearlyRevenue.length) {
+            oYearlyRevenue = arrYearlyRevenue[0]
+         }
+         else { // ... no value for the default currency
+            oYearlyRevenue = props.oFin.yearlyRevenue[0]
+         }
+
+         //Properly format the revenue figure
+         if(typeof oYearlyRevenue.value === 'number' && oYearlyRevenue.currency) {
+            const intlNumFormat = new Intl.NumberFormat('en-us', 
+                                             { ...oCurrOpts, currency: oYearlyRevenue.currency });
+   
+            yearlyRevenue = intlNumFormat.format(oYearlyRevenue.value);
+         }
+         else if(typeof oYearlyRevenue.value === 'number') {
+            yearlyRevenue = oYearlyRevenue.value
+         }
+         else {
+            //Leave yearlyRevenue unchanged
+         }
+
+         if(props.oFin.unitCode && props.oFin.unitCode !== 'SingleUnits') {
+            bUnitCode = true
+         }
       }
+
+      return (
+         <span>{yearlyRevenue}
+            {bUnitCode && <><br /><small>*{props.oFin.unitCode}</small></>}
+         </span>
+      );
+   }
+
+   let oRet = {label: 'Yearly revenue', content: '-'};
+
+   if(Array.isArray(oFin.yearlyRevenue) && oFin.yearlyRevenue.length) {
+      oRet.label = <ExpandedLabel label={oRet.label} oFin={oFin} />
+      oRet.content = <ExpandedValue content={oRet.content} oFin={oFin} />
    }
 
    return oRet;
@@ -307,73 +343,97 @@ export default function DbCompanyInfo(props) {
 
    //Company information size component
    function CompanySize(props) {
-      if(!(props.content && props.content.organization &&
-            ['financials', 'organizationSizeCategory', 'numberOfEmployees']
-               .some(prop => props.content.organization[prop]))) {
-
-         if(typeof props.content.organization['isStandalone'] !== 'boolean') {
-            return null;
-         }
-      }
-
-      const { financials, numberOfEmployees, organizationSizeCategory,
-                  isStandalone } = props.content.organization;
-
-      return (
-         <B2BDataTable caption='Company size'>
-            {financials && financials.length > 0 &&
-               <B2BDataTableRow {...getCiYearlyRevenue(financials[0], props.content.organization.defaultCurrency)} />
-            }
-            {numberOfEmployees && numberOfEmployees.length > 0 &&
-               numberOfEmployees.map((numEmpl, idx) => 
-                  <B2BDataTableRow key={idx}
-                     {...getCiNumEmpl(numEmpl)}
-                  />
-               )
-            }
-            {organizationSizeCategory && !!(organizationSizeCategory.description) &&
-               <B2BDataTableRow
-                  label='Size category'
-                  content={organizationSizeCategory.description}
-               />
-            }
-            {typeof isStandalone === 'boolean' &&
-               <B2BDataTableRow
-                  label='Standalone'
-                  content={isStandalone ? 'Yes' : 'No'}
-               />
-            }
-         </B2BDataTable>
-      );
-   }
-
-   //Company information size component
-   function DomesticUltSize(props) {
-      if(props.content && props.content.organization &&
-            props.content.organization.domesticUltimate &&
-               (!bIsEmptyObj(props.content.organization.domesticUltimate.numberOfEmployees) ||
-                  !bIsEmptyObj(props.content.organization.domesticUltimate.financials))) {
-
-         const {numberOfEmployees, financials} = props.content.organization.domesticUltimate;
+      function CompanySizeDetails(props) {
+         const { financials, numberOfEmployees, organizationSizeCategory,
+                     isStandalone } = props.entity;
 
          return (
-            <B2BDataTable caption='Domestic ultimate size'>
-               {financials && financials.length > 0 &&
-                  <B2BDataTableRow {...getCiYearlyRevenue(financials[0], props.content.organization.defaultCurrency)} />
+            <B2BDataTable caption={props.caption}>
+               {Array.isArray(financials) && financials.length > 0 &&
+                  <B2BDataTableRow {...getCiYearlyRevenue(financials[0], props.defaultCurrency)} />
                }
-               {numberOfEmployees && numberOfEmployees.length > 0 &&
+               {Array.isArray(numberOfEmployees) && numberOfEmployees.length > 0 &&
                   numberOfEmployees.map((numEmpl, idx) => 
                      <B2BDataTableRow key={idx}
                         {...getCiNumEmpl(numEmpl)}
                      />
                   )
                }
+               {organizationSizeCategory && !!(organizationSizeCategory.description) &&
+                  <B2BDataTableRow
+                     label='Size category'
+                     content={organizationSizeCategory.description}
+                  />
+               }
+               {typeof isStandalone === 'boolean' &&
+                  <B2BDataTableRow
+                     label='Standalone'
+                     content={isStandalone ? 'Yes' : 'No'}
+                  />
+               }
             </B2BDataTable>
          );
       }
-      else {
-         return null
+
+      function EntityCompanySize(props) {
+         let org = null, iKey = 0;
+
+         if((Array.isArray(props.org.numberOfEmployees) && props.org.numberOfEmployees.length > 0) ||
+               (Array.isArray(props.org.financials) && props.org.financials.length > 0) ||
+               !bIsEmptyObj(props.org.organizationSizeCategory) ||
+               typeof props.content.organization['isStandalone'] !== 'boolean') {
+
+            org = <CompanySizeDetails
+                     caption='Company size'
+                     entity={props.org}
+                     defaultCurrency={props.defaultCurrency}
+                     key={++iKey}
+                  />
+         }
+
+         let domUlt = null;
+
+         if(props.org.domesticUltimate &&
+               (!bIsEmptyObj(props.org.domesticUltimate.numberOfEmployees) ||
+                  !bIsEmptyObj(props.org.domesticUltimate.financials))) {
+
+            domUlt = <CompanySizeDetails
+                        caption='Domestic ultimate size'
+                        entity={props.org.domesticUltimate}
+                        defaultCurrency={props.defaultCurrency}
+                        key={++iKey}
+                     />
+         }
+
+         let globalUlt = null;
+
+         if(props.org.globalUltimate &&
+               (!bIsEmptyObj(props.org.globalUltimate.numberOfEmployees) ||
+                  !bIsEmptyObj(props.org.globalUltimate.financials))) {
+
+            globalUlt = <CompanySizeDetails
+                           caption='Global ultimate size'
+                           entity={props.org.globalUltimate}
+                           defaultCurrency={props.defaultCurrency}
+                           key={++iKey}
+                        />
+         }
+
+         return [org, domUlt, globalUlt];
       }
+
+      if(props.content && props.content.organization) {
+         const defaultCurrency = props.content.organization.defaultCurrency;
+
+         return (
+            <EntityCompanySize
+               org={props.content.organization}
+               defaultCurrency={defaultCurrency}
+            />
+         );
+      }
+
+      return null;
    }
 
    function RegistrationNumbers(props) {
@@ -490,7 +550,6 @@ export default function DbCompanyInfo(props) {
          <Address content={props.content} />
          <ContactAt content={props.content} />
          <CompanySize content={props.content} />
-         <DomesticUltSize content={props.content} />
          <RegistrationNumbers content={props.content} />
          <Activities content={props.content} />
          <IndustryCodes content={props.content} />
