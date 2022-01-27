@@ -331,7 +331,7 @@ export default function DbCompanyInfo(props) {
    function CompanySize(props) {
       function CompanySizeDetails(props) {
          const { financials, numberOfEmployees, organizationSizeCategory,
-                     isStandalone } = props.entity;
+                     isSmallBusiness, isStandalone } = props.entity;
 
          return (
             <B2BDataTable caption={props.caption}>
@@ -339,7 +339,7 @@ export default function DbCompanyInfo(props) {
                   financials.map((oFin, idx) => 
                      <B2BDataTableRow
                         key={idx}
-                        {...getCiYearlyRevenue(financials[0], props.defaultCurrency)}
+                        {...getCiYearlyRevenue(oFin, props.defaultCurrency)}
                      />
                   )
                }
@@ -355,6 +355,12 @@ export default function DbCompanyInfo(props) {
                   <B2BDataTableRow
                      label='Size category'
                      content={organizationSizeCategory.description}
+                  />
+               }
+               {typeof isSmallBusiness === 'boolean' &&
+                  <B2BDataTableRow
+                     label='Small business'
+                     content={isSmallBusiness ? 'Yes' : 'No'}
                   />
                }
                {typeof isStandalone === 'boolean' &&
@@ -377,7 +383,7 @@ export default function DbCompanyInfo(props) {
       if((Array.isArray(org.numberOfEmployees) && org.numberOfEmployees.length > 0) ||
             (Array.isArray(org.financials) && org.financials.length > 0) ||
             !bIsEmptyObj(org.organizationSizeCategory) ||
-            (typeof org.isStandalone === 'boolean')) {
+            typeof org.isStandalone === 'boolean') {
 
          orgSize = <CompanySizeDetails
                      caption='Company size'
