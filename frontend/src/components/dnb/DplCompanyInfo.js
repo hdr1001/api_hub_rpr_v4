@@ -79,6 +79,74 @@ function getCiName(labelIn, nameIn) {
    return oRet;
 }
 
+//Company operating status conversion
+function CiOpStatus(props) {
+   let arrOpStatuses = [], opStatusCode;
+
+   //Add the main operating status
+   if(props.dunsControlStatus.operatingStatus && props.dunsControlStatus.operatingStatus.description) {
+      arrOpStatuses.push(props.dunsControlStatus.operatingStatus.description);
+
+      //Save the (main) operating status code
+      opStatusCode = props.dunsControlStatus.operatingStatus.dnbCode;
+   }
+
+   //Add the operating substatus
+   if(props.dunsControlStatus.operatingSubStatus && props.dunsControlStatus.operatingSubStatus.description) {
+
+      //No reason to just repeat the main status
+      if(props.dunsControlStatus.operatingSubStatus.dnbCode &&
+            props.dunsControlStatus.operatingSubStatus.dnbCode !== opStatusCode) {
+
+         let desc;
+
+         switch(props.dunsControlStatus.operatingSubStatus.dnbCode) {
+            case 9076:
+               desc = 'Unfavourable';
+               break;
+            case 9077:
+               desc = 'Favourable';
+               break;
+            default:
+               desc = props.dunsControlStatus.operatingSubStatus.description;
+         }
+         
+         arrOpStatuses.push(desc + 
+            (
+               props.dunsControlStatus.operatingSubStatus.startDate
+                  ? 
+                     ' (' + props.dunsControlStatus.operatingSubStatus.startDate + ')'
+                  :
+                     ''
+            )
+         )
+      }
+   }
+
+   //Add the detailed operating status
+   if(props.dunsControlStatus.detailedOperatingStatus && props.dunsControlStatus.detailedOperatingStatus.description) {
+
+      //No reason to show the detailed operating status if null or 29931 (i.e. undetermined)
+      if(props.dunsControlStatus.detailedOperatingStatus.dnbCode && 
+            props.dunsControlStatus.detailedOperatingStatus.dnbCode !== 29931) {
+
+         arrOpStatuses.push(props.dunsControlStatus.detailedOperatingStatus.description)
+      }
+   }
+
+   if(arrOpStatuses.length) {
+      return (
+         <B2BDataTableRow
+            label='Operating status'
+            content={arrOpStatuses}
+         />
+      )
+   }
+   else {
+      return null
+   }
+}
+
 //Company Info telephone object conversion
 function getCiTel(oTel) {
    return (oTel.isdCode ? '+' + oTel.isdCode + ' ' : '') + oTel.telephoneNumber
@@ -179,8 +247,8 @@ export default function DbCompanyInfo(props) {
                registeredName, multilingualRegisteredNames,
                tradeStyleNames, multilingualTradestyleNames,                
                businessEntityType, legalForm, registeredDetails,
-               controlOwnershipType, startDate, incorporatedDate,
-               dunsControlStatus } = props.content.organization;
+               controlOwnershipType, preferredLanguage,
+               startDate, incorporatedDate, dunsControlStatus } = props.content.organization;
 
       return (
          <B2BDataTable caption='General'>
@@ -239,18 +307,17 @@ export default function DbCompanyInfo(props) {
                   content={controlOwnershipType.description}
                />
             }
+            {!bIsEmptyObj(preferredLanguage) && preferredLanguage.description &&
+               <B2BDataTableRow label='Language' content={preferredLanguage.description} />
+            }
             {!!(startDate) &&
                <B2BDataTableRow label='Start date' content={startDate} />
             }
             {!!(incorporatedDate) &&
                <B2BDataTableRow label='Incorp. date' content={incorporatedDate} />
             }
-            {dunsControlStatus && dunsControlStatus.operatingStatus &&
-                     !!(dunsControlStatus.operatingStatus.description) &&
-               <B2BDataTableRow
-                  label='Operating status'
-                  content={dunsControlStatus.operatingStatus.description}
-               />
+            {!bIsEmptyObj(dunsControlStatus) && 
+               <CiOpStatus dunsControlStatus={dunsControlStatus} />
             }
          </B2BDataTable>
       );
