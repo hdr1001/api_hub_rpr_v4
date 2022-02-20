@@ -40,7 +40,7 @@ import { ahGrey, horizontalPadding, verticalMargin,
             fontItalic, borderNone, tableCaption } from './style'
 
 function B2BDataTable(props) {
-   const [collapsed, setCollapsed] = React.useState(false);
+   const [collapsed, setCollapsed] = React.useState(!!props.collapsed);
 
    return (
       <TableContainer
@@ -144,7 +144,7 @@ function B2BDataTableRow(props) {
          {numContentRows > 0 &&
             numContentRows === 1
                ?                  
-                  <TableRow height={0}>
+                  <TableRow>
                      <TableCell { ...tableCellAttrs } >
                         {props.label}
                      </TableCell>
