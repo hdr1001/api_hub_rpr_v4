@@ -30,12 +30,18 @@ import TableRow from '@mui/material/TableRow';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import { ahGrey, horizontalPadding, verticalMargin,
             fontItalic, borderNone, tableCaption } from './style'
 
 function B2BDataTable(props) {
+   const [collapsed, setCollapsed] = React.useState(false);
+
    return (
       <TableContainer
          component={Paper}
@@ -48,14 +54,34 @@ function B2BDataTable(props) {
                <TableRow>
                   <TableCell
                      colSpan={100}
-                     align='center'
-                     sx={ tableCaption }
                   >
-                     {props.caption}
+                     <Box sx={{ display: 'flex' }}>
+                        <Typography
+                           sx={{
+                              flexGrow: 1,
+                              textAlign: 'center',
+                              ...tableCaption
+                           }}
+                        >
+                           {props.caption}
+                        </Typography>
+                        <IconButton
+                           color='inherit'
+                           onClick={() => setCollapsed(prevCollapsed => !prevCollapsed)}
+                           sx={{ px: 0 }}
+                        >
+                           {collapsed 
+                              ?
+                                 <ExpandMoreOutlinedIcon />
+                              :
+                                 <ExpandLessOutlinedIcon />
+                           }
+                        </IconButton>
+                     </Box>
                   </TableCell>
                </TableRow>
             </TableHead>
-            <TableBody>{props.children}</TableBody>
+            <TableBody>{ collapsed ? null : props.children }</TableBody>
          </Table> 
       </TableContainer>
    );
@@ -118,7 +144,7 @@ function B2BDataTableRow(props) {
          {numContentRows > 0 &&
             numContentRows === 1
                ?                  
-                  <TableRow>
+                  <TableRow height={0}>
                      <TableCell { ...tableCellAttrs } >
                         {props.label}
                      </TableCell>
