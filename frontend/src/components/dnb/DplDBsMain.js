@@ -35,7 +35,11 @@ export default function DplDBsMain(props) {
       const { duns, blockIDs, tradeUp } = props.content.inquiryDetail;
 
       return (
-         <B2BDataTable caption='Inquiry details' collapsed={true}>
+         <B2BDataTable
+            caption='Inquiry details'
+            trashCan={true}
+            collapsed={true}
+         >
             {!!(duns) &&
                <B2BDataTableRow
                   label='DUNS'

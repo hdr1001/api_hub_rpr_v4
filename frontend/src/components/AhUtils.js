@@ -34,6 +34,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import { ahGrey, horizontalPadding, verticalMargin,
@@ -65,6 +66,15 @@ function B2BDataTable(props) {
                         >
                            {props.caption}
                         </Typography>
+                        {!!props.trashCan &&
+                           <IconButton
+                              color='inherit'
+                              onClick={() => {console.log('trash')}}
+                              sx={{ px: 0 }}
+                           >
+                              <DeleteForeverOutlinedIcon />
+                           </IconButton>
+                        }
                         <IconButton
                            color='inherit'
                            onClick={() => setCollapsed(prevCollapsed => !prevCollapsed)}
