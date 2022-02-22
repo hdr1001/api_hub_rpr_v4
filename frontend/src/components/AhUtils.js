@@ -20,7 +20,8 @@
 //
 // *********************************************************************
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { DataContext } from './App';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -41,8 +42,10 @@ import { ahGrey, horizontalPadding, verticalMargin,
             fontItalic, borderNone, tableCaption } from './style'
 
 function B2BDataTable(props) {
-   const [collapsed, setCollapsed] = React.useState(!!props.collapsed);
+   const dataContext = useContext(DataContext);
 
+   const [collapsed, setCollapsed] = React.useState(!!props.collapsed);
+   
    return (
       <TableContainer
          component={Paper}
@@ -69,7 +72,7 @@ function B2BDataTable(props) {
                         {!!props.trashCan &&
                            <IconButton
                               color='inherit'
-                              onClick={() => {console.log('trash')}}
+                              onClick={e => dataContext.handleDeleteData(e, props.uuid)}
                               sx={{ px: 0 }}
                            >
                               <DeleteForeverOutlinedIcon />

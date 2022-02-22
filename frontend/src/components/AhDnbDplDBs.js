@@ -61,7 +61,7 @@ export default memo(function DnbDplDBs(props) {
                </Card>
             :
                <Box sx={ horizontalPadding }>
-                  {oDbData && <DplDBsMain oDBs={oDbData} />}
+                  {oDbData && <DplDBsMain oDBs={oDbData} uuid={props.uuid} />}
                </Box>
          }
       </>

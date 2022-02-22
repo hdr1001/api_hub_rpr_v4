@@ -39,6 +39,7 @@ export default function DplDBsMain(props) {
             caption='Inquiry details'
             trashCan={true}
             collapsed={true}
+            uuid={props.uuid}
          >
             {!!(duns) &&
                <B2BDataTableRow
@@ -117,7 +118,10 @@ export default function DplDBsMain(props) {
       {(dataBlocks && props.oDBs.organization)
          ?
             <>
-               <InquiryDetails content={props.oDBs} />
+               <InquiryDetails
+                  content={props.oDBs}
+                  uuid={props.uuid}
+               />
                {dataBlocks.blockIDs['companyinfo']
                      ?
                         <DbCompanyInfo content={props.oDBs} />

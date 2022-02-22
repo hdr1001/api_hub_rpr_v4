@@ -20,6 +20,8 @@
 //
 // *********************************************************************
 
+import { useContext } from 'react';
+import { DataContext } from './App'
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -28,6 +30,8 @@ import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export default function AhAppBar(props) {
+   const dataContext = useContext(DataContext);
+
    return (
       <AppBar>
          <Toolbar>
@@ -38,7 +42,7 @@ export default function AhAppBar(props) {
                multiple
                style={{ display: 'none' }}
                id='btn-file-inp'
-               onChange={props.handleFileInp}
+               onChange={dataContext.handleFileInp}
             />
             <label htmlFor='btn-file-inp'>
                <IconButton

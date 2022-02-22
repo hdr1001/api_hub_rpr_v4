@@ -2,7 +2,6 @@
    "name": "ahv4ui",
    "version": "1.0.0",
    "description": "User interface for API Hub (v4)",
-
    "author": "Hans de Rooij",
    "license": "Apache-2.0",
    "keywords": [
@@ -11,7 +10,6 @@
       "API",
       "hub"
    ],
-
    "scripts": {
       "start": "react-scripts start",
       "build": "react-scripts build",
@@ -20,7 +18,6 @@
       "test": "react-scripts test",
       "eject": "react-scripts eject"
    },
-
    "dependencies": {
       "@emotion/react": "^11.7.1",
       "@emotion/styled": "^11.6.0",
@@ -32,12 +29,12 @@
       "react": "^17.0.2",
       "react-dom": "^17.0.2",
       "react-scripts": "5.0.0",
+      "uuid": "^8.3.2",
       "web-vitals": "^2.1.3"
    },
    "devDependencies": {
       "gh-pages": "^3.2.3"
    },
-
    "repository": {
       "type": "git",
       "url": "git+https://github.com/hdr1001/api_hub_rpr_v4.git"
@@ -46,7 +43,6 @@
       "url": "https://github.com/hdr1001/api_hub_rpr_v4/issues"
    },
    "homepage": "https://hdr1001.github.com/api_hub_rpr_v4/",
-
    "eslintConfig": {
       "extends": [
          "react-app",

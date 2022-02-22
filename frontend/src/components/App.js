@@ -21,28 +21,39 @@
 // *********************************************************************
 
 import './App.css';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { styled } from '@mui/material/styles';
 import AhAppBar from './AhAppBar';
 import AhContent from './AhContent';
 
+export const DataContext = React.createContext(); 
+
 const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 export default function App(props) {
-   const [arrFiles, setArrFiles] = useState([]);
+   const [arrData, setArrData] = useState([]);
 
    //useEffect(() => console.log('arrFiles = ' + arrFiles.map(file => file.name).join(', '), [arrFiles]));   
 
-   const handleFileInp = e => {
-      setArrFiles([...arrFiles, ...Array.from(e.target.files)])
-   };
+   const handleFileInp = e => 
+      setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
+   
+   const handleDeleteData = (e, uuid) => {
+      console.log('in handleDeleteData with uuid ' + uuid)
+   }
 
    return (
-      <>
-         <AhAppBar handleFileInp={handleFileInp} />
+      <DataContext.Provider
+         value={{
+            arrData,
+            handleFileInp,
+            handleDeleteData
+         }}>
+         <AhAppBar />
          <Offset />
 
-         <AhContent arrFiles={arrFiles} />
-      </>
+         <AhContent />
+      </DataContext.Provider>
    );
 }
