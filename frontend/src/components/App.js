@@ -34,13 +34,11 @@ const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 export default function App(props) {
    const [arrData, setArrData] = useState([]);
 
-   //useEffect(() => console.log('arrFiles = ' + arrFiles.map(file => file.name).join(', '), [arrFiles]));   
-
    const handleFileInp = e => 
       setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
    
    const handleDeleteData = (e, uuid) => {
-      console.log('in handleDeleteData with uuid ' + uuid)
+      setArrData(arrData.filter(oData => oData.uuid !== uuid))
    }
 
    return (
