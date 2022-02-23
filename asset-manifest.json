@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/api_hub_rpr_v4/static/css/main.31d6cfe0.css",
-    "main.js": "/api_hub_rpr_v4/static/js/main.054ca537.js",
+    "main.js": "/api_hub_rpr_v4/static/js/main.fc6e91d9.js",
     "static/js/787.fd4579a2.chunk.js": "/api_hub_rpr_v4/static/js/787.fd4579a2.chunk.js",
     "index.html": "/api_hub_rpr_v4/index.html",
-    "main.054ca537.js.map": "/api_hub_rpr_v4/static/js/main.054ca537.js.map",
+    "main.fc6e91d9.js.map": "/api_hub_rpr_v4/static/js/main.fc6e91d9.js.map",
     "787.fd4579a2.chunk.js.map": "/api_hub_rpr_v4/static/js/787.fd4579a2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.31d6cfe0.css",
-    "static/js/main.054ca537.js"
+    "static/js/main.fc6e91d9.js"
   ]
 }
