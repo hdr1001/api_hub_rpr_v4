@@ -157,6 +157,15 @@ export default function DbPrincipals(props) {
                <React.Fragment key={idx}>
                   <B2BDataTable caption='Principal'>
                      <B2BDataTableRow label='Full name' content={getFullName(principal)} />
+                     {Array.isArray(principal.otherLanguageNames) && principal.otherLanguageNames.length > 0 &&
+                           principal.otherLanguageNames.map((olName, idx) => 
+                              <B2BDataTableRow
+                                 label='Full name'
+                                 content={getFullName(olName)}
+                                 key={idx}
+                              />
+                           )
+                     }
                      {principal.subjectType && principal.subjectType !== 'Individuals' &&
                         <B2BDataTableRow label='Subject type' content='Legal entity' />
                      }
@@ -176,6 +185,22 @@ export default function DbPrincipals(props) {
                            label='Primary address'
                            content={getArrAddr(principal.primaryAddress)}
                         />
+                     }
+                     {!bIsEmptyObj(principal.birthAddress) && !bIsEmptyObj(principal.birthAddress.addressLocality) &&
+                        principal.birthAddress.addressLocality.name &&
+
+                        <B2BDataTableRow
+                           label='Birth address'
+                           content={principal.birthAddress.addressLocality.name}
+                        />
+                     }
+                     {Array.isArray(principal.telephones) && principal.telephones.length > 0 &&
+                        principal.telephones.map(oTel => 
+                           <B2BDataTableRow
+                              label='Telephone'
+                              content={oTel.telephoneNumber}
+                           />
+                        )
                      }
                      {principal.gender && !!(principal.gender.description) &&
                         <B2BDataTableRow label='Gender' content={principal.gender.description} />
@@ -220,6 +245,9 @@ export default function DbPrincipals(props) {
                      }
                      {principal.isMostSenior && 
                         <B2BDataTableRow label='Most senior?' content='Yes' />
+                     }
+                     {principal.hasBankruptcyHistory && 
+                        <B2BDataTableRow label='Bankruptcy history' content='Yes' />
                      }
                   </B2BDataTable>
                </React.Fragment>
