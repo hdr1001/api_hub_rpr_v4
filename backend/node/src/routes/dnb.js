@@ -21,11 +21,23 @@
 // *********************************************************************
 
 import express from 'express';
+import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import ApiHubErr from '../ah_rpr_err.js';
 
 const router = express.Router();
 
 router.get('/', (req, resp) => {
-    resp.json({api: 'D&B'})
+    resp.json({api: ahProviders[ahProviderCodes.dnb] , key: ahKeys[ahKeyCodes.duns]})
+});
+
+router.post('/find', (req, resp) => {
+   if(!req.body.isoCountry) {
+      const ahErr = new ApiHubErr(ahErrCodes.semanticError, 'No country code specified');
+
+      resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
+   }
+
+   resp.json(req.body);
 });
 
 export default router;

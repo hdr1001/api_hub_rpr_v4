@@ -26,6 +26,7 @@ import { ahErrCodes } from './ah_rpr_globs.js';
 const httpStatusCodes = {
    okay: { description: 'Request succeeded', status: 200 },
    notFound: { description: 'Unable to locate', status: 404 },
+   unprocessableEntity: { description: 'Unprocessable entity', status: 422 },
    genericErr: { description: 'Server Error', status: 500 }
 };
 
@@ -35,7 +36,8 @@ const ahErrors = [
    { errDesc: 'Unable to locate the requested resource', httpStatusCode: httpStatusCodes.notFound },
    { errDesc: 'Invalid parameter', httpStatusCode: httpStatusCodes.notFound },
    { errDesc: 'External API returned an error', httpStatusCode: httpStatusCodes.genericErr },
-   { errDesc: 'External API returned an HTTP error status', httpStatusCode: httpStatusCodes.genericErr }
+   { errDesc: 'External API returned an HTTP error status', httpStatusCode: httpStatusCodes.genericErr },
+   { errDesc: 'Semantically erroneous request', httpStatusCode: httpStatusCodes.unprocessableEntity }
 ];
 
 export default class ApiHubErr extends Error {

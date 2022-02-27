@@ -50,7 +50,8 @@ const ahErrCodes = {
    unableToLocate: 1,
    invalidParameter: 2,
    extnlApiErr: 3,
-   httpErrReturn: 4
+   httpErrReturn: 4,
+   semanticError: 5
 };
 
 export {
