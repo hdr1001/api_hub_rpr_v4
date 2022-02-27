@@ -21,13 +21,11 @@
 // *********************************************************************
 
 import https from 'https';
-import { ahErrCodes } from './ah_rpr_globs.js'
-import ApiHubErr from './ah_rpr_err.js';
 
-export default function getHttpRespPromise(ahReq) {
+export default function getHttpRespPromise(ahReq, httpPostBody) {
    return new Promise((resolve, reject) => {
 
-      https.request(ahReq.http, resp => {
+      let httpsReq = https.request(ahReq.http, resp => {
          const body = [];
 
          resp.on('error', err => reject(err));
@@ -40,7 +38,19 @@ export default function getHttpRespPromise(ahReq) {
                extnlApiStatusCode: resp.statusCode
             })
          });
-      }).on('error', err => reject(err)).end()
+      });
 
+      httpsReq.on('error', err => reject(err));
+
+      if(httpPostBody) {
+         if(typeof httpPostBody === 'object') {
+            httpsReq.write(JSON.stringify(httpPostBody));
+         }
+         else {
+            httpsReq.write(httpPostBody);
+         }
+      }
+
+      httpsReq.end();
    })
 }
