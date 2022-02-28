@@ -23,7 +23,9 @@
 // *********************************************************************
 
 import express from 'express';
+import 'dotenv/config';
 import { ahErrCodes } from './ah_rpr_globs.js';
+import DplAuthToken from './ah_rpr_auth.js';
 import ApiHubErr from './ah_rpr_err.js';
 import hub from './routes/hub.js';
 
@@ -49,3 +51,5 @@ const server = app.listen(port, err => {
       console.log(`Now listening on port ${server.address().port}`)
    }
 });
+
+const dplAuthToken = new DplAuthToken();

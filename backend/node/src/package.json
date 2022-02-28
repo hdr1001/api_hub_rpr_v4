@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/hdr1001/api_hub_rpr_v4#readme",
   "dependencies": {
+    "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "pg": "^8.7.1"
   },

@@ -22,31 +22,43 @@
 
 import getHttpRespPromise from './ah_rpr_http.js';
 
-export default function dplAuthToken() {
-   const oCredentials = {
-      key: '',
-      secret: ''
-   }
-
-   function getBase64EncCredentials() {
-      return Buffer.from(oCredentials.key + ':' + oCredentials.secret).toString('Base64');
-   }
-
-   const ahReq = {
-      http: {
-         method: 'POST',
-         host: 'plus.dnb.com',
-         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + getBase64EncCredentials()
-         },
-         path: '/v2/token'
-      }
-   };
-
-   getHttpRespPromise(ahReq, { grant_type: 'client_credentials' })
-      .then(data => console.log(data))
-      .catch(err => console.log(err));
+function getBase64EncCredentials() {
+   return Buffer.from(process.env.DNB_DPL_KEY + ':' + process.env.DNB_DPL_SECRET).toString('Base64')
 }
 
-dplAuthToken()
+const ahReq = {
+   http: {
+      method: 'POST',
+      host: 'plus.dnb.com',
+      headers: {
+         'Content-Type': 'application/json',
+         'Authorization': 'Basic ' + getBase64EncCredentials()
+      },
+      path: '/v2/token'
+   },
+   body: '{ "grant_type": "client_credentials" }'
+};
+
+export default class DplAuthToken { 
+   constructor() {
+      getHttpRespPromise(ahReq.http, ahReq.body)
+         .then(apiResp => {
+            console.log('Successfully retrieved a new token');
+
+            const oRespBody = JSON.parse(apiResp.body);
+
+            this.authToken = oRespBody.access_token;
+            this.expiresIn = oRespBody.expiresIn;
+         })
+         .catch(err => console.log(err));
+   }
+
+   toString() {
+      if(!this.authToken) {
+         return ''
+      }
+      else {
+         return 'Bearer ' + this.authToken;
+      }
+   }
+}

@@ -59,7 +59,7 @@ export default function ahReqPersistResp(req, resp, ahReq) {
          }
 
          //Not on database or forceNew flag set
-         return getHttpRespPromise(ahReq);
+         return getHttpRespPromise(ahReq.http);
       })
       .then(apiResp => {
          if(apiResp === null) { //Product delivered out of the database

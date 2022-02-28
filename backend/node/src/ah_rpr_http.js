@@ -22,10 +22,10 @@
 
 import https from 'https';
 
-export default function getHttpRespPromise(ahReq, httpPostBody) {
+export default function getHttpRespPromise(httpOpts, httpPostBody) {
    return new Promise((resolve, reject) => {
 
-      let httpsReq = https.request(ahReq.http, resp => {
+      let httpsReq = https.request(httpOpts, resp => {
          const body = [];
 
          resp.on('error', err => reject(err));
