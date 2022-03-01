@@ -20,6 +20,8 @@
 //
 // *********************************************************************
 
+import DplAuthToken from './ah_rpr_auth.js';
+
 //API providers
 const ahProviders = [
    'gleif',
@@ -54,10 +56,13 @@ const ahErrCodes = {
    semanticError: 5
 };
 
+const dplAuthToken = new DplAuthToken();
+
 export {
    ahProviders,
    ahProviderCodes,
    ahKeys,
    ahKeyCodes,
-   ahErrCodes
+   ahErrCodes,
+   dplAuthToken
 };

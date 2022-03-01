@@ -20,6 +20,12 @@
 --
 -- *********************************************************************
 
+-- DROP TABLE public.auth_tokens_dpl;
+-- DROP TABLE public.ah_errors;
+-- DROP TABLE public.products_gleif;
+-- DROP SEQUENCE public.auth_tokens_dpl_id_seq;
+-- DROP SEQUENCE public.ah_errors_id_seq;
+
 -- Create a sequence for the primary key of table API hub errors
 CREATE SEQUENCE public.ah_errors_id_seq
    INCREMENT 1
@@ -27,6 +33,14 @@ CREATE SEQUENCE public.ah_errors_id_seq
    MINVALUE 1
    MAXVALUE 9223372036854775807
    CACHE 1;
+
+-- Create the sequence for the primary key of table auth_tokens_dpl
+CREATE SEQUENCE public.auth_tokens_dpl_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
 
 -- Create table for storing GLEIF data products
 CREATE TABLE public.products_gleif (
@@ -52,5 +66,19 @@ CREATE TABLE public.ah_errors (
 )
 WITH (
     OIDS = false
+)
+TABLESPACE pg_default;
+
+-- Create table auth_tokens for storing Direct Direct+ tokens
+CREATE TABLE public.auth_tokens_dpl
+(
+    id integer NOT NULL DEFAULT nextval('auth_tokens_dpl_id_seq'::regclass),
+    token character varying(2048) COLLATE pg_catalog."default",
+    expires_in bigint,
+    obtained_at bigint,
+    CONSTRAINT auth_tokens_dpl_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
 )
 TABLESPACE pg_default;
