@@ -20,6 +20,7 @@
 //
 // *********************************************************************
 
+import db from './ah_rpr_pg.js';
 import getHttpRespPromise from './ah_rpr_http.js';
 
 function getBase64EncCredentials() {
@@ -41,6 +42,23 @@ const ahReq = {
 
 export default class DplAuthToken { 
    constructor() {
+      let sqlSelect = 'SELECT id, token, expires_in, obtained_at ';
+      sqlSelect += 'FROM auth_tokens_dpl ';
+      sqlSelect += 'ORDER BY id DESC LIMIT 1;';
+
+      db.query(sqlSelect)
+         .then(dbResp => {
+            if(dbResp && dbResp.rows.length > 0) {
+               this.authToken = dbResp.rows[0].token;
+               this.expiresIn = dbResp.rows[0].expires_in;
+               this.obtainedAt = dbResp.rows[0].obtained_at;
+      
+               console.log('Request for authentication token delivered from database');
+
+               return Promise.resolve(null);
+            }
+         });
+/*
       getHttpRespPromise(ahReq.http, ahReq.body)
          .then(apiResp => {
             console.log('Successfully retrieved a new token');
@@ -49,8 +67,11 @@ export default class DplAuthToken {
 
             this.authToken = oRespBody.access_token;
             this.expiresIn = oRespBody.expiresIn;
+            this.obtainedAt = Date.now();
          })
-         .catch(err => console.log(err));
+         .catch(err => console.log(err)); */
+
+//INSERT INTO auth_tokens_dpl (token, expires_in, obtained_at) VALUES ('41...', 86400, 1646115141993) RETURNING id;
    }
 
    toString() {
