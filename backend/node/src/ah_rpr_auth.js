@@ -49,37 +49,63 @@ export default class DplAuthToken {
       db.query(sqlSelect)
          .then(dbResp => {
             if(dbResp && dbResp.rows.length > 0) {
+               console.log(`Number of tokens retrieved from the database is ${dbResp.rows.length}`);
+
                this.authToken = dbResp.rows[0].token;
                this.expiresIn = dbResp.rows[0].expires_in;
                this.obtainedAt = dbResp.rows[0].obtained_at;
-      
-               console.log('Request for authentication token delivered from database');
 
-               return Promise.resolve(null);
+               if(this.authToken && !this.renewAdvised) {
+                  console.log(`Database token validated okay, (${this.expiresInMins.toFixed(1)} minutes remaining)`);
+
+                  return 0;
+               }
+
+               getHttpRespPromise(ahReq.http, ahReq.body)
+                  .then(apiResp => {
+                     console.log(`Token request resulted in HTTP status ${apiResp.extnlApiStatusCode}`);
+         
+                     const oRespBody = JSON.parse(apiResp.body);
+         
+                     this.authToken = oRespBody.access_token;
+                     this.expiresIn = oRespBody.expiresIn;
+                     this.obtainedAt = Date.now();
+
+                     let sqlInsert = 'INSERT INTO auth_tokens_dpl ';
+                     sqlInsert += '(token, expires_in, obtained_at) ';
+                     sqlInsert += 'VALUES ($1, $2, $3); ';
+                     
+                     return db.query(sqlInsert, [this.authToken, this.expiresIn, this.obtainedAt])
+                  })
+                  .then(dbResult => {
+
+                  });
             }
-         });
-/*
-      getHttpRespPromise(ahReq.http, ahReq.body)
-         .then(apiResp => {
-            console.log('Successfully retrieved a new token');
-
-            const oRespBody = JSON.parse(apiResp.body);
-
-            this.authToken = oRespBody.access_token;
-            this.expiresIn = oRespBody.expiresIn;
-            this.obtainedAt = Date.now();
          })
-         .catch(err => console.log(err)); */
+         .catch(err => console.log(err));
+   }
 
-//INSERT INTO auth_tokens_dpl (token, expires_in, obtained_at) VALUES ('41...', 86400, 1646115141993) RETURNING id;
+   get expiresInMins() { //Return the number of minutes until the token expires
+      if(!this.expiresIn || !this.obtainedAt) {
+         return 0;
+      }
+
+      return (this.obtainedAt + (this.expiresIn * 1000) - Date.now()) / 60000;
+   }
+
+   get renewAdvised() { //Answer the question; should this authorization token be renewed?
+      if(this.expiresInMins < 76) {
+         return true;
+      }
+
+      return false;
    }
 
    toString() {
       if(!this.authToken) {
          return ''
       }
-      else {
-         return 'Bearer ' + this.authToken;
-      }
+
+      return 'Bearer ' + this.authToken;
    }
 }
