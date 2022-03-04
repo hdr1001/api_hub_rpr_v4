@@ -33,11 +33,15 @@ const ahReq = {
       host: 'plus.dnb.com',
       headers: {
          'Content-Type': 'application/json',
-         'Authorization': 'Basic ' + getBase64EncCredentials()
+         Authorization: 'Basic ' + getBase64EncCredentials()
       },
       path: '/v2/token'
    },
-   body: '{ "grant_type": "client_credentials" }'
+   body: '{ "grant_type": "client_credentials" }',
+   sql: {
+      select: 'SELECT id, token, expires_in, obtained_at FROM auth_tokens_dpl ORDER BY id DESC LIMIT 1;',
+      insert: 'INSERT INTO auth_tokens_dpl (token, expires_in, obtained_at) VALUES ($1, $2, $3) RETURNING id;'
+   }
 };
 
 export default class DplAuthToken { 
@@ -73,11 +77,7 @@ export default class DplAuthToken {
    }
 
    getNewToken(bForceApiCall) {
-      let sqlSelect = 'SELECT id, token, expires_in, obtained_at ';
-      sqlSelect += 'FROM auth_tokens_dpl ';
-      sqlSelect += 'ORDER BY id DESC LIMIT 1;';
-
-      (bForceApiCall ? 0 : db.query(sqlSelect))
+      (bForceApiCall ? Promise.resolve(null) : db.query(ahReq.sql.select))
          .then(dbResp => {
             if(dbResp && dbResp.rows.length > 0) {
                console.log(`Number of tokens retrieved from the database is ${dbResp.rows.length}`);
@@ -110,12 +110,8 @@ export default class DplAuthToken {
                   this.expiresIn = oRespBody.expiresIn;
                   this.obtainedAt = Date.now();
    
-                  let sqlInsert = 'INSERT INTO auth_tokens_dpl ';
-                  sqlInsert += '(token, expires_in, obtained_at) ';
-                  sqlInsert += 'VALUES ($1, $2, $3) RETURNING id;';
-                  
                   //Success, now persist the token on the database
-                  return db.query(sqlInsert, [this.authToken, this.expiresIn, this.obtainedAt]);
+                  return db.query(ahReq.sql.insert, [this.authToken, this.expiresIn, this.obtainedAt]);
                }
                else {
                   //HTTP status code !== 200, jump to catch

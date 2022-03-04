@@ -27,30 +27,6 @@ import ApiHubErr from '../ah_rpr_err.js';
 
 const router = express.Router();
 
-const ahEndpoint = {
-   provider: ahProviders[ahProviderCodes.gleif],
-   attr: {
-      method: 'GET',
-      host: 'api.gleif.org'
-   },
-   headers: {
-      'Accept': 'application/vnd.api+json'
-   },
-   endpoints: [
-      { //Attributes specifically for endpoint lei
-         path: '/api/v1/lei-records'
-      }
-   ],
-   endpointCodes: {
-      lei: 0
-   }
-};
-
-const ahSql = {
-   select: 'SELECT lei AS key, lei_ref AS product, lei_ref_obtained_at AS poa, lei_ref_http_status AS api_http_status FROM products_gleif WHERE lei = $1;',
-   insert: 'INSERT INTO products_gleif (lei, lei_ref, lei_ref_obtained_at, lei_ref_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (lei) DO UPDATE SET lei_ref = $2, lei_ref_obtained_at = $3, lei_ref_http_status = $4;'
-};
-
 function isKeyValid(sKey) {
    let m = 0, charCode;
 
@@ -77,26 +53,28 @@ router.get('/', (req, resp) => {
 });
 
 router.get(`/${ahKeys[ahKeyCodes.lei]}/:key`, (req, resp) => {
-
    if(!isKeyValid(req.params.key)) {
       const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, 'LEI submitted is not valid');
 
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
-   const ahReq = { key: req.params.key, forceNew: false, sql: ahSql };
-
-   //Irregardless of the value assigned, if forceNew is specified as a query parameter,
-   //the forceNew flag will be considered set
-   if(req.query.forceNew !== undefined) {
-      ahReq.forceNew = true;
+   const ahReq = {
+      key: req.params.key,
+      http: {
+         method: 'GET',
+         host: 'api.gleif.org',
+         headers: {
+            Accept: 'application/vnd.api+json'
+         },
+         path: '/api/v1/lei-records/' + req.params.key
+      },
+      forceNew: (req.query.forceNew !== undefined && req.query.forceNew !== 'false') ? true : false,
+      sql: {
+         select: 'SELECT lei AS key, lei_ref AS product, lei_ref_obtained_at AS poa, lei_ref_http_status AS api_http_status FROM products_gleif WHERE lei = $1;',
+         insert: 'INSERT INTO products_gleif (lei, lei_ref, lei_ref_obtained_at, lei_ref_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (lei) DO UPDATE SET lei_ref = $2, lei_ref_obtained_at = $3, lei_ref_http_status = $4;'
+      }
    }
-
-   ahReq.http = {
-      ...ahEndpoint.attr,
-      headers: { ...ahEndpoint.headers },
-      path: ahEndpoint.endpoints[ahEndpoint.endpointCodes.lei].path + '/' + ahReq.key
-   };
 
    ahReqPersistResp(req, resp, ahReq);
 });

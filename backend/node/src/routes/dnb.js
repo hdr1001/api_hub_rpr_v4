@@ -21,8 +21,9 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes } from '../ah_rpr_globs.js';
+import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes, dplAuthToken } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
+import getHttpRespPromise from '../ah_rpr_http.js';
 
 const router = express.Router();
 
@@ -36,6 +37,34 @@ router.post('/find', (req, resp) => {
 
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
+
+   const ahReq = {
+      http: {
+         method: 'GET',
+         host: 'plus.dnb.com',
+         headers: {
+            'Content-Type': 'application/json',
+            Authorization: dplAuthToken.toString()
+         },
+         path: '/v1/match/cleanseMatch'
+      },
+      sql: {
+/*            select: 'SELECT id, token, expires_in, obtained_at FROM auth_tokens_dpl ORDER BY id DESC LIMIT 1;',
+         insert: 'INSERT INTO auth_tokens_dpl (token, expires_in, obtained_at) VALUES ($1, $2, $3) RETURNING id;' */
+      }
+   };
+
+   ahReq.http.path += `?countryISOAlpha2Code=${req.body.isoCountry}&name=${req.body.name}`;
+
+   getHttpRespPromise(ahReq.http).then(apiResp => {
+      if(apiResp) {
+         console.log(`D&B Direct+ cleanseMatch request resulted in HTTP status ${apiResp.extnlApiStatusCode}`);
+
+         if(apiResp.extnlApiStatusCode === 200) {
+            console.log(apiResp.body);
+         }
+      }
+   })
 
    resp.json(req.body);
 });
