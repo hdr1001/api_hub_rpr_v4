@@ -20,9 +20,11 @@
 --
 -- *********************************************************************
 
+-- DROP TABLE public.dnb_dpl_idr;
 -- DROP TABLE public.auth_tokens_dpl;
 -- DROP TABLE public.ah_errors;
 -- DROP TABLE public.products_gleif;
+-- DROP SEQUENCE public.dnb_dpl_idr_id_seq;
 -- DROP SEQUENCE public.auth_tokens_dpl_id_seq;
 -- DROP SEQUENCE public.ah_errors_id_seq;
 
@@ -36,6 +38,14 @@ CREATE SEQUENCE public.ah_errors_id_seq
 
 -- Create the sequence for the primary key of table auth_tokens_dpl
 CREATE SEQUENCE public.auth_tokens_dpl_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+-- Create the sequence for the primary key of table match_dnb_idr
+CREATE SEQUENCE public.dnb_dpl_idr_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -77,6 +87,22 @@ CREATE TABLE public.auth_tokens_dpl
     expires_in bigint,
     obtained_at bigint,
     CONSTRAINT auth_tokens_dpl_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+-- Create table storing D&B Direct+ identity resolution in & output
+CREATE TABLE public.dnb_dpl_idr
+(
+    id integer NOT NULL DEFAULT nextval('dnb_dpl_idr_id_seq'::regclass),
+    parameters JSONB,
+    result JSONB,
+    http_stat char(3),
+    obtained_at bigint,
+    duns character varying(11) COLLATE pg_catalog."default",
+    CONSTRAINT dnb_dpl_idr_pkey PRIMARY KEY (id)
 )
 WITH (
     OIDS = FALSE

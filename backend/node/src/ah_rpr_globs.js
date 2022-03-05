@@ -53,7 +53,8 @@ const ahErrCodes = {
    invalidParameter: 2,
    extnlApiErr: 3,
    httpErrReturn: 4,
-   semanticError: 5
+   semanticError: 5,
+   serverError: 6
 };
 
 const dplAuthToken = new DplAuthToken();

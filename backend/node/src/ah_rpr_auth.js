@@ -87,7 +87,7 @@ export default class DplAuthToken {
                this.obtainedAt = dbResp.rows[0].obtained_at;
 
                if(this.authToken && !this.renewAdvised) {
-                  console.log(`Database token validated okay, (${this.expiresInMins.toFixed(1)} minutes remaining)`);
+                  console.log(`Database token validated okay (${this.expiresInMins.toFixed(1)} minutes remaining)`);
 
                   return 0;
                }
@@ -122,17 +122,13 @@ export default class DplAuthToken {
          .then(dbResult => {
             if(dbResult !== 0) {
                if(dbResult.rowCount && dbResult.rowCount === 1) {
-                  console.log(`Successfully persisted D&B Direct+ authorization token`);
+                  console.log(`Successfully persisted D&B Direct+ authorization token`)
                   //console.log(`Token id = ${dbResult.rows[0].id}`);
                }
                else {
-                  console.error(`🤔, dbResult.rowCount === 1 evaluates to false`);
-
-                  return -1;
+                  console.error(`🤔, dbResult.rowCount === 1 evaluates to false`)
                }
             }
-
-            return 0;
          })
          .catch(err => {
             console.error('An error occured while instantiating a DplAuthToken object');

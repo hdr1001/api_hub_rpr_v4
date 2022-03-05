@@ -37,7 +37,8 @@ const ahErrors = [
    { errDesc: 'Invalid parameter', httpStatusCode: httpStatusCodes.notFound },
    { errDesc: 'External API returned an error', httpStatusCode: httpStatusCodes.genericErr },
    { errDesc: 'External API returned an HTTP error status', httpStatusCode: httpStatusCodes.genericErr },
-   { errDesc: 'Semantically erroneous request', httpStatusCode: httpStatusCodes.unprocessableEntity }
+   { errDesc: 'Semantically erroneous request', httpStatusCode: httpStatusCodes.unprocessableEntity },
+   { errDesc: 'Server error', httpStatusCode: httpStatusCodes.genericErr }
 ];
 
 export default class ApiHubErr extends Error {
