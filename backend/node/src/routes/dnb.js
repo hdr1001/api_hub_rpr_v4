@@ -110,7 +110,7 @@ router.post('/find', (req, resp) => {
             }
          }
 
-         return Promise.reject(new ApiHubErr(ahErrCodes.extnlApiErr, sErr, apiResp.body));
+         return Promise.reject(new ApiHubErr(ahErrCodes.extnlApiErr, sErr, '', httpStatus, apiResp.body));
       })
       .then(sqlReturn => {
          if(sqlReturn.rowCount && sqlReturn.rowCount === 1) {

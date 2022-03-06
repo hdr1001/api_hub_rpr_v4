@@ -20,8 +20,10 @@
 //
 // *********************************************************************
 
+import { ahErrCodes } from './ah_rpr_globs.js';
 import db from './ah_rpr_pg.js';
 import getHttpRespPromise from './ah_rpr_http.js';
+import ApiHubErr from './ah_rpr_err.js';
 
 function getBase64EncCredentials() {
    return Buffer.from(process.env.DNB_DPL_KEY + ':' + process.env.DNB_DPL_SECRET).toString('Base64')
@@ -77,6 +79,8 @@ export default class DplAuthToken {
    }
 
    getNewToken(bForceApiCall) {
+      let sErr = '', httpStatus = 0;
+
       (bForceApiCall ? Promise.resolve(null) : db.query(ahReq.sql.select))
          .then(dbResp => {
             if(dbResp && dbResp.rows.length > 0) {
@@ -100,9 +104,11 @@ export default class DplAuthToken {
                return 0;
             }
             else {
-               console.log(`D&B Direct+ token request resulted in HTTP status ${apiResp.extnlApiStatusCode}`);
+               httpStatus = apiResp.extnlApiStatusCode;
 
-               if(apiResp.extnlApiStatusCode === 200) {
+               console.log(`D&B Direct+ token request resulted in HTTP status ${httpStatus}`);
+
+               if(httpStatus === 200) {
    
                   const oRespBody = JSON.parse(apiResp.body);
       
@@ -113,10 +119,11 @@ export default class DplAuthToken {
                   //Success, now persist the token on the database
                   return db.query(ahReq.sql.insert, [this.authToken, this.expiresIn, this.obtainedAt]);
                }
-               else {
-                  //HTTP status code !== 200, jump to catch
-                  return Promise.reject(new Error('D&B Direct+ API token request resulted in an error'))
-               }
+
+               //HTTP status code !== 200, jump to catch
+               sErr = 'D&B Direct+ API token request resulted in an error';
+
+               return Promise.reject(new ApiHubErr(ahErrCodes.extnlApiStatusCode, sErr, '', httpStatus, apiResp.body))
             }
          })
          .then(dbResult => {
@@ -131,8 +138,12 @@ export default class DplAuthToken {
             }
          })
          .catch(err => {
-            console.error('An error occured while instantiating a DplAuthToken object');
-            console.error(`Message: ${err.message}`);
+            if(err instanceof ApiHubErr) {
+               console.error(JSON.stringify(err, null, 3))
+            }
+            else {
+               console.error(`Error: ${err.message}`);
+            }
          });
    }
 

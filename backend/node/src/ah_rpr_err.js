@@ -42,17 +42,28 @@ const ahErrors = [
 ];
 
 export default class ApiHubErr extends Error {
-   constructor(errCode, addtlErrMsg, extnlApiReturn) {
-      let errorCode;
+   constructor(errCode, errMessage, addtlErrMsg, extnlApiStatus, extnlApiBody) {
+      let errorCode = 0, oAhError = null;
 
-      if(ahErrors[errCode]) {
-         errorCode = errCode
+      try {
+         oAhError = ahErrors[errCode];
+
+         if(!oAhError.errDesc) {
+            throw new Error('Revert to generic error')
+         }
+
+         errorCode = errCode;
       }
-      else {
-         errorCode = ahErrCodes.generic
+      catch(err) {
+         console.log('Error code parameter is not valid');
+
+         errorCode = ahErrCodes.generic;
+
+         oAhError = ahErrors[errorCode];
       }
 
-      super(ahErrors[errorCode].errDesc);
+      super(errMessage || oAhError.errDesc);
+
       this.name = 'ApiHubError';
 
       this.apiHubErr = {
@@ -60,24 +71,30 @@ export default class ApiHubErr extends Error {
          code: errorCode
       };
 
-      if(addtlErrMsg) {
-         this.apiHubErr.addtlErrorMessage = addtlErrMsg
-      }
+      if(addtlErrMsg) { this.apiHubErr.addtlErrorMessage = addtlErrMsg }
 
-      this.apiHubErr.http = ahErrors[errorCode].httpStatusCode;
+      this.apiHubErr.http = oAhError.httpStatusCode;
 
-      if(extnlApiReturn) {
-         if(typeof extnlApiReturn === 'string') {
-            try {
-               this.extnlApiErr = JSON.parse(extnlApiReturn)
-            }
-            catch(err) {
-               this.extnlApiErr = extnlApiReturn
-            }
+      if(extnlApiStatus || extnlApiBody) {
+         this.apiHubErr.externalApi = {};
+
+         if(extnlApiStatus) {
+            this.apiHubErr.externalApi.status = extnlApiStatus
          }
 
-         if(typeof extnlApiReturn === 'object') {
-            this.extnlApiErr = extnlApiReturn
+         if(extnlApiBody) {
+            if(typeof extnlApiBody === 'string') {
+               try {
+                  this.apiHubErr.externalApi.body = JSON.parse(extnlApiBody)
+               }
+               catch(err) {
+                  tthis.apiHubErr.externalApi.body = extnlApiBody
+               }
+            }
+
+            if(typeof extnlApiBody === 'object') {
+               this.apiHubErr.externalApi.body = extnlApiBody
+            }
          }
       }
    }
