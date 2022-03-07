@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import express from 'express';
-import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes, dplAuthToken } from '../ah_rpr_globs.js';
+import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes, httpSuccess, dplAuthToken } from '../ah_rpr_globs.js';
 import ApiHubErr from '../ah_rpr_err.js';
 import db from '../ah_rpr_pg.js';
 import getHttpRespPromise from '../ah_rpr_http.js';
@@ -65,6 +65,8 @@ router.post('/find', (req, resp) => {
       }
    };
 
+   console.log('\nProcessing D&B find request');
+
    (validateReqBody()
       ?
          db.query(ahReq.sql.insert, [req.body])
@@ -90,7 +92,7 @@ router.post('/find', (req, resp) => {
             httpStatus = apiResp.extnlApiStatusCode;
             const obtainedAt = Date.now();
    
-            if(apiResp.extnlApiStatusCode === 200) {
+            if(apiResp.extnlApiStatusCode === httpSuccess) {
                resp
                   .setHeader('X-AHRPR-Cache', false)
                   .setHeader('X-AHRPR-Obtained-At', obtainedAt)
@@ -121,12 +123,65 @@ router.post('/find', (req, resp) => {
          }
       })
       .catch(err => {
+         if(sErr) { console.log(sErr) }
+
          httpStatus = httpStatus || 500;
 
          if(!req.writableEnded) {
             resp.status(httpStatus).json(err);
          }
       });
+});
+
+router.post('/find/duns', (req, resp) => {
+   let httpStatus = 0;
+
+   function validateReqBody() {
+      if(!req.body || req.body.constructor !== Object || Object.keys(req.body).length === 0) {
+         sErr = 'No update parameters specified in the body of the POST transaction';
+         return false;
+      }
+
+      if(!req.body.id) {
+         sErr = 'No unique identifier (id) specified in the body of the POST transaction';
+         return false;
+      }
+
+      if(!req.body.duns) {
+         sErr = 'No duns specified in the body of the POST transaction';
+         return false;
+      }
+
+      return true;
+   }
+
+   console.log('\nProcessing D&B IDR update DUNS request');
+
+   (validateReqBody()
+      ?
+         db.query('UPDATE dnb_dpl_idr SET duns = $1 WHERE id = $2;', [req.body.duns, req.body.id])
+      :
+         Promise.reject(new ApiHubErr(ahErrCodes.semanticError, sErr))
+      )
+      .then(sqlReturn => {
+         let oReturn = { ...req.body, success: false };
+
+         if(sqlReturn.rowCount && sqlReturn.rowCount === 1) {
+            console.log(`Successfully updated the duns associated with IDR transaction ${req.body.id}`);
+            oReturn.success = true;
+         }
+         else {
+            console.log(`Unexpected result updating the duns ${req.body.duns} for IDR transaction ${req.body.id}`);
+         }
+
+         resp
+            .status(httpSuccess)
+            .json(oReturn);
+      })
+      .catch(err => {
+
+      });
+
 });
 
 export default router;

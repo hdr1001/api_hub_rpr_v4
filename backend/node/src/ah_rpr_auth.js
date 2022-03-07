@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import { ahErrCodes } from './ah_rpr_globs.js';
+import { ahErrCodes, httpSuccess } from './ah_rpr_globs.js';
 import db from './ah_rpr_pg.js';
 import getHttpRespPromise from './ah_rpr_http.js';
 import ApiHubErr from './ah_rpr_err.js';
@@ -108,7 +108,7 @@ export default class DplAuthToken {
 
                console.log(`D&B Direct+ token request resulted in HTTP status ${httpStatus}`);
 
-               if(httpStatus === 200) {
+               if(httpStatus === httpSuccess) {
    
                   const oRespBody = JSON.parse(apiResp.body);
       
@@ -149,12 +149,12 @@ export default class DplAuthToken {
 
    getNewTokenIfAdvised() {
       if(this.renewAdvised) { 
-         console.log('Token invalid or (nearly) expired, get new token online');
+         console.log('\nToken invalid or (nearly) expired, get new token online');
 
          this.getNewToken(true);
       }
       else {
-         console.log(`D&B Direct+ token validated okay (${this.expiresInMins.toFixed(1)} minutes remaining)`)
+         console.log(`\nD&B Direct+ token validated okay (${this.expiresInMins.toFixed(1)} minutes remaining)`)
       }
    }
 }

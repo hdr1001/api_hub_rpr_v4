@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import { ahErrCodes } from './ah_rpr_globs.js';
+import { ahErrCodes, httpSuccess } from './ah_rpr_globs.js';
 import db from './ah_rpr_pg.js';
 import getHttpRespPromise from './ah_rpr_http.js';
 import ApiHubErr from './ah_rpr_err.js';
@@ -67,7 +67,7 @@ export default function ahReqPersistResp(req, resp, ahReq) {
 
             console.log(extnlApiMsg);
 
-            if(httpStatus === 200) {
+            if(httpStatus === httpSuccess) {
                resp
                   .setHeader('X-AHRPR-Cache', false)
                   .setHeader('X-AHRPR-Obtained-At', new Date(obtainedAt))

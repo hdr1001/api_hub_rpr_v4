@@ -57,6 +57,9 @@ const ahErrCodes = {
    serverError: 6
 };
 
+//HTTP success
+const httpSuccess = 200;
+
 const dplAuthToken = new DplAuthToken();
 
 export {
@@ -65,5 +68,6 @@ export {
    ahKeys,
    ahKeyCodes,
    ahErrCodes,
+   httpSuccess,
    dplAuthToken
 };
