@@ -134,54 +134,43 @@ router.post('/find', (req, resp) => {
 });
 
 router.post('/find/duns', (req, resp) => {
-   let httpStatus = 0;
+   console.log('\nProcessing D&B IDR update DUNS request');
 
-   function validateReqBody() {
+   try {
       if(!req.body || req.body.constructor !== Object || Object.keys(req.body).length === 0) {
-         sErr = 'No update parameters specified in the body of the POST transaction';
-         return false;
+         throw(new ApiHubErr(ahErrCodes.semanticError, 'No update parameters specified in the body of the POST transaction'))
       }
 
       if(!req.body.id) {
-         sErr = 'No unique identifier (id) specified in the body of the POST transaction';
-         return false;
+         throw(new ApiHubErr(ahErrCodes.semanticError, 'No unique identifier (id) specified in the body of the POST transaction'))
       }
 
       if(!req.body.duns) {
-         sErr = 'No duns specified in the body of the POST transaction';
-         return false;
+         throw(new ApiHubErr(ahErrCodes.semanticError, 'No duns specified in the body of the POST transaction'))
       }
-
-      return true;
+   }
+   catch(err) {
+      console.error(err.apiHubErr.message);
+      resp.status(err.apiHubErr.http.status).json(err);
+      return;
    }
 
-   console.log('\nProcessing D&B IDR update DUNS request');
-
-   (validateReqBody()
-      ?
-         db.query('UPDATE dnb_dpl_idr SET duns = $1 WHERE id = $2;', [req.body.duns, req.body.id])
-      :
-         Promise.reject(new ApiHubErr(ahErrCodes.semanticError, sErr))
-      )
+   db.query('UPDATE dnb_dpl_idr SET duns = $1 WHERE id = $2;', [req.body.duns, req.body.id])
       .then(sqlReturn => {
-         let oReturn = { ...req.body, success: false };
-
          if(sqlReturn.rowCount && sqlReturn.rowCount === 1) {
             console.log(`Successfully updated the duns associated with IDR transaction ${req.body.id}`);
-            oReturn.success = true;
-         }
-         else {
-            console.log(`Unexpected result updating the duns ${req.body.duns} for IDR transaction ${req.body.id}`);
+
+            resp.json({ ...req.body, success: true });
+
+            return;
          }
 
-         resp
-            .status(httpSuccess)
-            .json(oReturn);
+         return Promise.reject(new ApiHubErr(ahErrCodes.serverError, `Error persisting DUNS ${req.body.duns} for IDR id ${req.body.id}`));
       })
       .catch(err => {
-
+         console.error(err.apiHubErr.message);
+         resp.status(err.apiHubErr.http.status).json(err);
       });
-
 });
 
 export default router;
