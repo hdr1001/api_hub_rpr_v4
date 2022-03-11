@@ -33,21 +33,7 @@ router.get('/', (req, resp) => {
 });
 
 router.post('/find', (req, resp) => {
-   let sErr = '', idIDR = 0, httpStatus = 0;
-
-   function validateReqBody() {
-      if(!req.body || req.body.constructor !== Object || Object.keys(req.body).length === 0) {
-         sErr = 'No search criteria specified in the body of the POST transaction';
-         return false;
-      }
-
-      if(!req.body.countryISOAlpha2Code) {
-         sErr = 'No country code specified in the body of the POST transaction';
-         return false;
-      }
-
-      return true;
-   }
+   let idIDR = 0, httpStatus = 0;
 
    const ahReq = {
       http: {
@@ -67,23 +53,34 @@ router.post('/find', (req, resp) => {
 
    console.log('\nProcessing D&B find request');
 
-   (validateReqBody()
-      ?
-         db.query(ahReq.sql.insert, [req.body])
-      :
-         Promise.reject(new ApiHubErr(ahErrCodes.semanticError, sErr))
-      )
+   try {
+      if(!req.body || req.body.constructor !== Object || Object.keys(req.body).length === 0) {
+         throw(new ApiHubErr(ahErrCodes.semanticError, 'No search parameters specified in the body of the POST transaction'))
+      }
+
+      if(!req.body.countryISOAlpha2Code) {
+         throw(new ApiHubErr(ahErrCodes.semanticError, 'No country code specified in the body of the POST transaction'))
+      }
+   }
+   catch(err) {
+      if(err instanceof ApiHubErr) {
+         console.error(err.apiHubErr.message);
+         resp.status(err.apiHubErr.http.status).json(err);
+         return;
+      }
+   }
+
+   db.query(ahReq.sql.insert, [req.body])
       .then(sqlReturn => {
          try {
             idIDR = sqlReturn.rows[0].id //Test database write success
          }
          catch(err) {
-            sErr = 'Database returned no or invalid dnb_dpl_idr row id';
-
-            return Promise.reject(new ApiHubErr(ahErrCodes.serverError, sErr));
+            const ahErr = new ApiHubErr(ahErrCodes.serverError, 'Database returned no or invalid dnb_dpl_idr row id');
+            return Promise.reject(ahErr);
          }
 
-         console.log(`Wrote D&B Direct+ IDR parameters to database, idIDR is ${idIDR}`);
+         console.log(`Wrote D&B Direct+ IDR parameters to database, idIDR is ${idIDR}`); //Happy path
 
          return getHttpRespPromise(ahReq.http);
       })
@@ -92,7 +89,7 @@ router.post('/find', (req, resp) => {
             httpStatus = apiResp.extnlApiStatusCode;
             const obtainedAt = Date.now();
    
-            if(apiResp.extnlApiStatusCode === httpSuccess) {
+            if(apiResp.extnlApiStatusCode === httpSuccess) { //Happy path
                resp
                   .setHeader('X-AHRPR-Cache', false)
                   .setHeader('X-AHRPR-Obtained-At', obtainedAt)
@@ -100,22 +97,24 @@ router.post('/find', (req, resp) => {
                   .set('Content-Type', 'application/json')
                   .send(apiResp.body);
 
+               console.log(`Successfully retrieved D&B match candidates, idIDR is ${idIDR}`);
+
                return db.query(ahReq.sql.update, [apiResp.body, httpStatus, obtainedAt, idIDR]);
             }
          }
 
-         sErr = 'D&B Direct+ cleanseMatch request failed';
+         const ahErr = new ApiHubErr(
+            ahErrCodes.extnlApiErr,
+            'D&B Direct+ cleanseMatch API request failed',
+            '',
+            httpStatus || apiResp.extnlApiStatusCode || 500,
+            apiResp ? apiResp.body : null
+         )
 
-         if(!httpStatus) {
-            if(apiResp && apiResp.extnlApiStatusCode) {
-               httpStatus = apiResp.extnlApiStatusCode
-            }
-         }
-
-         return Promise.reject(new ApiHubErr(ahErrCodes.extnlApiErr, sErr, '', httpStatus, apiResp.body));
+         return Promise.reject(ahErr);
       })
       .then(sqlReturn => {
-         if(sqlReturn.rowCount && sqlReturn.rowCount === 1) {
+         if(sqlReturn && sqlReturn.rowCount && sqlReturn.rowCount === 1) {
             console.log('Successfully persisted D&B Direct+ IDR transaction')
          }
          else {
@@ -123,7 +122,15 @@ router.post('/find', (req, resp) => {
          }
       })
       .catch(err => {
-         if(sErr) { console.log(sErr) }
+         if(err instanceof ApiHubErr) {
+            console.error(err.apiHubErr.message);
+
+            resp.status(httpStatus || err.apiHubErr.http.status).json(err);
+
+            return;
+         }
+
+         console.error(err.message);
 
          httpStatus = httpStatus || 500;
 
