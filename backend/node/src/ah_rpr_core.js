@@ -26,8 +26,6 @@ import getHttpRespPromise from './ah_rpr_http.js';
 import ApiHubErr from './ah_rpr_err.js';
 
 export default function ahReqPersistResp(req, resp, ahReq) {
-   let ahErr = null, httpStatus = 0;
-
    console.log(`\nahReqPersistResp for ${ahReq.key}`);
 
    (ahReq.forceNew 
@@ -60,14 +58,13 @@ export default function ahReqPersistResp(req, resp, ahReq) {
             return Promise.resolve(null)
          }
          else { //Get the product from the external API
-            httpStatus = apiResp.extnlApiStatusCode;
-
-            const extnlApiMsg = `Request for key ${ahReq.key} returned with HTTP status code ${httpStatus}`;
+            const httpStatus = apiResp && apiResp.extnlApiStatusCode ? apiResp.extnlApiStatusCode : 0;
             const obtainedAt = Date.now();
 
+            const extnlApiMsg = `Request for key ${ahReq.key} returned with HTTP status code ${httpStatus}`;
             console.log(extnlApiMsg);
 
-            if(httpStatus === httpSuccess) {
+            if(apiResp && (httpStatus === httpSuccess)) { //Happy flow
                resp
                   .setHeader('X-AHRPR-Cache', false)
                   .setHeader('X-AHRPR-Obtained-At', new Date(obtainedAt))
@@ -77,31 +74,32 @@ export default function ahReqPersistResp(req, resp, ahReq) {
 
                return db.query(ahReq.sql.insert, [ahReq.key, apiResp.body, obtainedAt, httpStatus]);
             }
-            else { //External API HTTP status code returned indicates an error
-               ahErr = new ApiHubErr(ahErrCodes.httpErrReturn, extnlApiMsg, '', httpStatus, apiResp.body);
 
-               console.error(JSON.stringify(ahErr, null, 3));
+            //No longer in the happy flow
+            const ahErr = new ApiHubErr(
+               ahErrCodes.httpErrReturn,
+               extnlApiMsg,
+               '',
+               httpStatus,
+               apiResp && apiResp.body ? apiResp.body : null
+            );
 
-               resp
-                  .status(httpStatus)
-                  .json(ahErr);
+            console.error(JSON.stringify(ahErr, null, 3));
 
-               let sqlErr  = 'INSERT INTO ah_errors (key, err, err_obtained_at, err_http_status) ';
-                   sqlErr += 'VALUES ($1, $2, $3, $4);';
+            resp
+               .status(httpStatus)
+               .json(ahErr);
 
-               return db.query(sqlErr, [ahReq.key, JSON.stringify(ahErr), obtainedAt, httpStatus]);
-            }
+            let sqlErr  = 'INSERT INTO ah_errors (key, err, err_obtained_at, err_http_status) ';
+            sqlErr += 'VALUES ($1, $2, $3, $4);';
+
+            return db.query(sqlErr, [ahReq.key, JSON.stringify(ahErr), obtainedAt, httpStatus]);
          }
       })
       .then(dbPersist => {
          if(dbPersist) { //Not delivered out of the database
             if(dbPersist.rowCount && dbPersist.rowCount === 1) {
-               if(ahErr) {
-                  console.log(`Successfully persisted error on the database`)
-               }
-               else {
-                  console.log(`Successfully persisted ${ahReq.key} on the database`)
-               }
+               console.log(`Successfully persisted ${ahReq.key} on the database`)
             }
             else {
                console.error(`🤔, dbPersist.rowCount === 1 evaluates to false`)

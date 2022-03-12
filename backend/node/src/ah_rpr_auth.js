@@ -79,8 +79,6 @@ export default class DplAuthToken {
    }
 
    getNewToken(bForceApiCall) {
-      let sErr = '', httpStatus = 0;
-
       (bForceApiCall ? Promise.resolve(null) : db.query(ahReq.sql.select))
          .then(dbResp => {
             if(dbResp && dbResp.rows.length > 0) {
@@ -104,26 +102,32 @@ export default class DplAuthToken {
                return 0;
             }
             else {
-               httpStatus = apiResp.extnlApiStatusCode;
+               if(apiResp) {
+                  console.log(`D&B Direct+ token request resulted in HTTP status ${apiResp.extnlApiStatusCode}`);
 
-               console.log(`D&B Direct+ token request resulted in HTTP status ${httpStatus}`);
-
-               if(httpStatus === httpSuccess) {
-   
-                  const oRespBody = JSON.parse(apiResp.body);
+                  if(apiResp.extnlApiStatusCode === httpSuccess) {
       
-                  this.authToken = oRespBody.access_token;
-                  this.expiresIn = oRespBody.expiresIn;
-                  this.obtainedAt = Date.now();
-   
-                  //Success, now persist the token on the database
-                  return db.query(ahReq.sql.insert, [this.authToken, this.expiresIn, this.obtainedAt]);
+                     const oRespBody = JSON.parse(apiResp.body);
+         
+                     this.authToken = oRespBody.access_token;
+                     this.expiresIn = oRespBody.expiresIn;
+                     this.obtainedAt = Date.now();
+      
+                     //Success, now persist the token on the database
+                     return db.query(ahReq.sql.insert, [this.authToken, this.expiresIn, this.obtainedAt]);
+                  }
                }
 
                //HTTP status code !== 200, jump to catch
-               sErr = 'D&B Direct+ API token request resulted in an error';
+               const ahErr = new ApiHubErr(
+                  ahErrCodes.extnlApiStatusCode,
+                  'D&B Direct+ API token request resulted in an error',
+                  '',
+                  apiResp && apiResp.extnlApiStatusCode ? apiResp.extnlApiStatusCode : 500,
+                  apiResp && apiResp.body ? apiResp.body : null
+               );
 
-               return Promise.reject(new ApiHubErr(ahErrCodes.extnlApiStatusCode, sErr, '', httpStatus, apiResp.body))
+               return Promise.reject(ahErr)
             }
          })
          .then(dbResult => {
