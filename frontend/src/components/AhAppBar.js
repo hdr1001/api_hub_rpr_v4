@@ -54,7 +54,7 @@ export default function AhAppBar(props) {
             </label>
             <IconButton
                color='inherit'
-               onClick={() => {alert('Not yet implemented, please try again later')}}
+               onClick={dataContext.openFormSettings}
             >
                <SettingsOutlinedIcon />
             </IconButton>

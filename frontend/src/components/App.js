@@ -25,6 +25,7 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { styled } from '@mui/material/styles';
 import AhAppBar from './AhAppBar';
+import FormSettings from './forms/Settings.js'
 import AhContent from './AhContent';
 
 export const DataContext = React.createContext(); 
@@ -33,7 +34,11 @@ const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 export default function App(props) {
    const [arrData, setArrData] = useState([]);
+   const [formSettingsIsOpen, setFormSettingsIsOpen] = useState(false);
 
+   const openFormSettings = () => setFormSettingsIsOpen(true);
+   const closeFormSettings = () => setFormSettingsIsOpen(false);
+ 
    const handleFileInp = e => 
       setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
    
@@ -45,6 +50,7 @@ export default function App(props) {
       <DataContext.Provider
          value={{
             arrData,
+            openFormSettings,
             handleFileInp,
             handleDeleteData
          }}>
@@ -52,6 +58,10 @@ export default function App(props) {
          <Offset />
 
          <AhContent />
+         <FormSettings
+            formSettingsIsOpen={formSettingsIsOpen}
+            closeFormSettings={closeFormSettings}
+         />
       </DataContext.Provider>
    );
 }
