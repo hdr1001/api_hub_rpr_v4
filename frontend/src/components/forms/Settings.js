@@ -20,57 +20,97 @@
 //
 // *********************************************************************
 
+import { useReducer } from "react";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-//  FormControl,
-//  InputLabel,
-//  Select,
-//  MenuItem,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Button,
   TextField
 } from "@mui/material";
 
 const FormSettings = (props) => {
-  return (
-    <Dialog open={props.formSettingsIsOpen} onClose={props.closeFormSettings}>
-      <DialogTitle>Application settings</DialogTitle>
-      <DialogContent>
-         <DialogContentText>
-            API Hub connection settings
-         </DialogContentText>
-{ /*        <FormControl component='fieldset'>
-            <InputLabel id='labelProtocol'>Protocol</InputLabel>
-            <Select
-               labelId='labelProtocol'
-               name='selectProtocolOpts'
-               label='Menu options'
-               margin='dense'
-               value={props.state.selectProtocolOpts}
-               onChange={props.handleChange}
+   const [connSettings, setConSettings] = useReducer(
+      (prevState, state) => ( { ...prevState, ...state } ),
+      {protocol: 'https', host: '', port: '', path: ''}
+   );
+
+   const handleOnChange = evnt => {
+      const { name, value } = evnt.target;
+      setConSettings( { [name]: value } );
+   };
+
+   return (
+      <Dialog open={props.formSettingsIsOpen} onClose={props.closeFormSettings}>
+         <DialogTitle>Application settings</DialogTitle>
+         <DialogContent>
+            <DialogContentText>
+               API Hub connection settings
+            </DialogContentText>
+            <FormControl
+               component='fieldset'
+               sx={{ mt: 1, mb: 1 }}
             >
-               <MenuItem value='http'>HTTP</MenuItem>
-               <MenuItem value='https'>HTTPS</MenuItem>
-            </Select>
-         </FormControl> */ }
-         <TextField
-            autoFocus
-            size="small"
-            margin="normal"
-            id="pwdTextField"
-            label="Password"
-            type="text"
-            fullWidth
-            variant="outlined"
-         />
-      </DialogContent>
-      <DialogActions>
-         <Button onClick={props.closeFormSettings}>Close</Button>
-      </DialogActions>
-   </Dialog>
+               <RadioGroup
+                  id='protocol'
+                  value={connSettings.protocol}
+                  onChange={handleOnChange}
+                  row
+               >
+                  <FormControlLabel
+                     autoFocus
+                     value='http'
+                     name='protocol'
+                     control={<Radio />}
+                     label='HTTP'
+                  />
+                  <FormControlLabel
+                     value='https'
+                     name='protocol'
+                     control={<Radio />}
+                     label='HTTPS'
+                  />
+               </RadioGroup>
+               <TextField
+                  fullWidth
+                  name='host' label='Host name' 
+                  size='small' margin='dense' 
+                  value={connSettings.host}
+                  onChange={handleOnChange}
+               />
+               <TextField
+                  fullWidth name='port'
+                  label='Port' 
+                  size='small' margin='sense' 
+                  value={connSettings.port}
+                  onChange={handleOnChange}
+               />
+               <TextField
+                  fullWidth name='path'
+                  label='Path' 
+                  size='small' margin='dense' 
+                  value={connSettings.path}
+                  onChange={handleOnChange}
+               />
+               <Button
+                  variant='contained'
+                  color='secondary'
+                  onClick={() => console.log(connSettings)}
+               >
+                  Test
+               </Button>
+            </FormControl>
+         </DialogContent>
+         <DialogActions>
+            <Button onClick={props.closeFormSettings}>Close</Button>
+         </DialogActions>
+      </Dialog>
    );
 };
 
