@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import { useReducer } from "react";
+import { useState, useReducer } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -31,20 +31,25 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Stack,
   Button,
   TextField
 } from "@mui/material";
 
 const FormSettings = (props) => {
+   const connSettingsDefaults = {protocol: 'https', host: 'localhost', port: '8080', path: '/hub'};
+
    const [connSettings, setConSettings] = useReducer(
-      (prevState, state) => ( { ...prevState, ...state } ),
-      {protocol: 'https', host: '', port: '', path: ''}
+      (prevState, state) => ( { ...prevState, ...state }),
+      connSettingsDefaults
    );
 
    const handleOnChange = evnt => {
       const { name, value } = evnt.target;
       setConSettings( { [name]: value } );
    };
+
+   const [resetConnSettings, setResetConnSettings] = useState(connSettingsDefaults);
 
    return (
       <Dialog open={props.formSettingsIsOpen} onClose={props.closeFormSettings}>
@@ -87,7 +92,7 @@ const FormSettings = (props) => {
                <TextField
                   fullWidth name='port'
                   label='Port' 
-                  size='small' margin='sense' 
+                  size='small' margin='dense' 
                   value={connSettings.port}
                   onChange={handleOnChange}
                />
@@ -98,13 +103,32 @@ const FormSettings = (props) => {
                   value={connSettings.path}
                   onChange={handleOnChange}
                />
-               <Button
-                  variant='contained'
-                  color='secondary'
-                  onClick={() => console.log(connSettings)}
-               >
-                  Test
-               </Button>
+               <Stack
+                  direction='row'
+                  spacing={1}
+                  sx={{ mt: 1.5, mb: 1, mx: 'auto' }}>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     onClick={() => console.log(connSettings)}
+                  >
+                     Test
+                  </Button>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     onClick={() => {setConSettings(resetConnSettings)}}
+                  >
+                     Reset
+                  </Button>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     onClick={() => console.log(connSettings)}
+                  >
+                     Save
+                  </Button>
+               </Stack>
             </FormControl>
          </DialogContent>
          <DialogActions>
