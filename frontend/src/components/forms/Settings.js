@@ -20,120 +20,37 @@
 //
 // *********************************************************************
 
-import { useState, useReducer } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-  FormControl,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Stack,
   Button,
-  TextField
 } from "@mui/material";
 
 const FormSettings = (props) => {
-   const connSettingsDefaults = {protocol: 'https', host: 'localhost', port: '8080', path: '/hub'};
-
-   const [connSettings, setConSettings] = useReducer(
-      (prevState, state) => ( { ...prevState, ...state }),
-      connSettingsDefaults
-   );
-
-   const handleOnChange = evnt => {
-      const { name, value } = evnt.target;
-      setConSettings( { [name]: value } );
-   };
-
-   const [resetConnSettings, setResetConnSettings] = useState(connSettingsDefaults);
-
    return (
       <Dialog open={props.formSettingsIsOpen} onClose={props.closeFormSettings}>
-         <DialogTitle>Application settings</DialogTitle>
+         <DialogTitle>API Hub (v4)</DialogTitle>
          <DialogContent>
             <DialogContentText>
-               API Hub connection settings
-            </DialogContentText>
-            <FormControl
-               component='fieldset'
-               sx={{ mt: 1, mb: 1 }}
-            >
-               <RadioGroup
-                  id='protocol'
-                  value={connSettings.protocol}
-                  onChange={handleOnChange}
-                  row
+               API Hub - Request, Persist & Respond<br />
+               © Hans de Rooij<br /><br />
+               <Button
+                  variant='Text'
+                  sx={{ mx: 0, px: 0 }}
+                  href='https://github.com/hdr1001/api_hub_rpr_v4'
+                  target='_blank'
+                  rel='noopener noreferrer'
                >
-                  <FormControlLabel
-                     autoFocus
-                     value='http'
-                     name='protocol'
-                     control={<Radio />}
-                     label='HTTP'
-                  />
-                  <FormControlLabel
-                     value='https'
-                     name='protocol'
-                     control={<Radio />}
-                     label='HTTPS'
-                  />
-               </RadioGroup>
-               <TextField
-                  fullWidth
-                  name='host' label='Host name' 
-                  size='small' margin='dense' 
-                  value={connSettings.host}
-                  onChange={handleOnChange}
-               />
-               <TextField
-                  fullWidth name='port'
-                  label='Port' 
-                  size='small' margin='dense' 
-                  value={connSettings.port}
-                  onChange={handleOnChange}
-               />
-               <TextField
-                  fullWidth name='path'
-                  label='Path' 
-                  size='small' margin='dense' 
-                  value={connSettings.path}
-                  onChange={handleOnChange}
-               />
-               <Stack
-                  direction='row'
-                  spacing={1}
-                  sx={{ mt: 1.5, mb: 1, mx: 'auto' }}>
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     onClick={() => console.log(connSettings)}
-                  >
-                     Test
-                  </Button>
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     onClick={() => {setConSettings(resetConnSettings)}}
-                  >
-                     Reset
-                  </Button>
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     onClick={() => console.log(connSettings)}
-                  >
-                     Save
-                  </Button>
-               </Stack>
-            </FormControl>
+                  Github Repository
+               </Button>
+            </DialogContentText>
+            <DialogActions>
+               <Button onClick={props.closeFormSettings}>Close</Button>
+            </DialogActions>
          </DialogContent>
-         <DialogActions>
-            <Button onClick={props.closeFormSettings}>Close</Button>
-         </DialogActions>
       </Dialog>
    );
 };

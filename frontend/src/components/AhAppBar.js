@@ -21,12 +21,14 @@
 // *********************************************************************
 
 import { useContext } from 'react';
-import { DataContext } from './App'
+import { DataContext } from './App';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import HubIcon from '@mui/icons-material/Hub';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
+import IconButton from '@mui/material/IconButton';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export default function AhAppBar(props) {
@@ -45,19 +47,31 @@ export default function AhAppBar(props) {
                onChange={dataContext.handleFileInp}
             />
             <label htmlFor='btn-file-inp'>
+               <Tooltip title='Open JSON file'>
+                  <IconButton
+                     color='inherit'
+                     component='span'
+                  >
+                     <UploadFileOutlinedIcon />
+                  </IconButton>
+               </Tooltip>
+            </label>
+            <Tooltip title={dataContext.apiHubUrl ? 'Connected to hub' : 'No hub connected'}>
                <IconButton
                   color='inherit'
-                  component='span'
+                  onClick={dataContext.openFormConnSettings}
                >
-                  <UploadFileOutlinedIcon />
+                  <HubIcon color={dataContext.apiHubUrl ? 'inherit' : 'warning'} />
                </IconButton>
-            </label>
-            <IconButton
-               color='inherit'
-               onClick={dataContext.openFormSettings}
-            >
-               <SettingsOutlinedIcon />
-            </IconButton>
+            </Tooltip>
+            <Tooltip title='Settings'>
+               <IconButton
+                  color='inherit'
+                  onClick={dataContext.openFormSettings}
+               >
+                  <SettingsOutlinedIcon />
+               </IconButton>
+            </Tooltip>
          </Toolbar>
       </AppBar>
    )

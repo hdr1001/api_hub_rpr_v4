@@ -23,6 +23,7 @@
 // *********************************************************************
 
 import express from 'express';
+import cors from 'cors';
 import 'dotenv/config';
 import { ahErrCodes } from './ah_rpr_globs.js';
 import ApiHubErr from './ah_rpr_err.js';
@@ -31,6 +32,11 @@ import hub from './routes/hub.js';
 const app = express();
 
 const port = process.env.APP_PORT || 3000;
+
+//Allow Cross-Origin Resource Sharing (https://bit.ly/2MHOCHG)
+app.use(cors({
+   exposedHeaders: ['Content-Length'],
+}));
 
 app.use(express.json());
 

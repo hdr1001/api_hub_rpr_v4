@@ -25,7 +25,8 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { styled } from '@mui/material/styles';
 import AhAppBar from './AhAppBar';
-import FormSettings from './forms/Settings.js'
+import FormConnSettings from './forms/ConnSettings.js';
+import FormSettings from './forms/Settings.js';
 import AhContent from './AhContent';
 
 export const DataContext = React.createContext(); 
@@ -34,22 +35,32 @@ const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 export default function App(props) {
    const [arrData, setArrData] = useState([]);
+ 
+   const handleFileInp = e => 
+   setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
+
+   const handleDeleteData = (e, uuid) => {
+      setArrData(arrData.filter(oData => oData.uuid !== uuid))
+   }
+
+   const [apiHubUrl, setApiHubUrl] = useState('');
+
+   const [formConnSettingsIsOpen, setFormConnSettingsIsOpen] = useState(false);
+
+   const openFormConnSettings = () => setFormConnSettingsIsOpen(true);
+   const closeFormConnSettings = () => setFormConnSettingsIsOpen(false);
+
    const [formSettingsIsOpen, setFormSettingsIsOpen] = useState(false);
 
    const openFormSettings = () => setFormSettingsIsOpen(true);
    const closeFormSettings = () => setFormSettingsIsOpen(false);
  
-   const handleFileInp = e => 
-      setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
-   
-   const handleDeleteData = (e, uuid) => {
-      setArrData(arrData.filter(oData => oData.uuid !== uuid))
-   }
-
    return (
       <DataContext.Provider
          value={{
             arrData,
+            apiHubUrl,
+            openFormConnSettings,
             openFormSettings,
             handleFileInp,
             handleDeleteData
@@ -58,6 +69,11 @@ export default function App(props) {
          <Offset />
 
          <AhContent />
+         <FormConnSettings
+            formConnSettingsIsOpen={formConnSettingsIsOpen}
+            closeFormConnSettings={closeFormConnSettings}
+            setApiHubUrl={setApiHubUrl}
+         />
          <FormSettings
             formSettingsIsOpen={formSettingsIsOpen}
             closeFormSettings={closeFormSettings}
