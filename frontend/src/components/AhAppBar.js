@@ -20,8 +20,6 @@
 //
 // *********************************************************************
 
-import { useContext } from 'react';
-import { DataContext } from './App';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -32,8 +30,6 @@ import IconButton from '@mui/material/IconButton';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export default function AhAppBar(props) {
-   const dataContext = useContext(DataContext);
-
    return (
       <AppBar>
          <Toolbar>
@@ -44,7 +40,7 @@ export default function AhAppBar(props) {
                multiple
                style={{ display: 'none' }}
                id='btn-file-inp'
-               onChange={dataContext.handleFileInp}
+               onChange={props.handleFileInp}
             />
             <label htmlFor='btn-file-inp'>
                <Tooltip title='Open JSON file'>
@@ -56,18 +52,18 @@ export default function AhAppBar(props) {
                   </IconButton>
                </Tooltip>
             </label>
-            <Tooltip title={dataContext.apiHubUrl ? 'Connected to hub' : 'No hub connected'}>
+            <Tooltip title={props.apiHubUrl ? 'Connected to hub' : 'No hub connected'}>
                <IconButton
                   color='inherit'
-                  onClick={dataContext.openFormConnSettings}
+                  onClick={props.openFormConnSettings}
                >
-                  <HubIcon color={dataContext.apiHubUrl ? 'inherit' : 'warning'} />
+                  <HubIcon color={props.apiHubUrl ? 'inherit' : 'warning'} />
                </IconButton>
             </Tooltip>
             <Tooltip title='Settings'>
                <IconButton
                   color='inherit'
-                  onClick={dataContext.openFormSettings}
+                  onClick={props.openFormSettings}
                >
                   <SettingsOutlinedIcon />
                </IconButton>

@@ -57,7 +57,7 @@ const FormConnSettings = (props) => {
       return Object.keys(resetConnSettings).some(setting => resetConnSettings[setting] !== connSettings[setting])
    }
 
-   function apiHubUrl() {
+   function concatApiHubUrl() {
       return `${connSettings.protocol}://${connSettings.host}:${connSettings.port}${connSettings.path}/about`
    }
 
@@ -131,7 +131,7 @@ const FormConnSettings = (props) => {
                      variant='contained'
                      color='primary'
                      onClick={() => {
-                        fetch(apiHubUrl())
+                        fetch(concatApiHubUrl())
                            .then(resp => resp.json())
                            .then(abt => {
                               let desc = abt.description;
@@ -175,7 +175,7 @@ const FormConnSettings = (props) => {
 
                            setResetConnSettings(connSettings);
 
-                           props.setApiHubUrl(apiHubUrl());
+                           props.setApiHubUrl(concatApiHubUrl());
                         }
                      }
                      disabled={!(settingsTestSuccess && settingsChanged())}

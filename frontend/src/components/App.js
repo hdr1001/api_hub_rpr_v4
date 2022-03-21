@@ -58,17 +58,17 @@ export default function App(props) {
    return (
       <DataContext.Provider
          value={{
-            arrData,
-            apiHubUrl,
-            openFormConnSettings,
-            openFormSettings,
-            handleFileInp,
             handleDeleteData
          }}>
-         <AhAppBar />
+         <AhAppBar
+            apiHubUrl={apiHubUrl}
+            handleFileInp={handleFileInp}
+            openFormConnSettings={openFormConnSettings}
+            openFormSettings={openFormSettings}
+         />
          <Offset />
 
-         <AhContent />
+         <AhContent arrData={arrData} />
          <FormConnSettings
             formConnSettingsIsOpen={formConnSettingsIsOpen}
             closeFormConnSettings={closeFormConnSettings}

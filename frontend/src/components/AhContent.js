@@ -20,21 +20,17 @@
 //
 // *********************************************************************
 
-import { useContext } from 'react';
-import { DataContext } from './App'
 import Box from '@mui/system/Box';
 import DnbDplDBs from './AhDnbDplDBs';
 import { contentBox, arrFilesBox } from './style';
 
 export default function AhContent(props) {
-   const dataContext = useContext(DataContext);
-
    return (
       <Box
          sx={contentBox}
       >
          {
-            dataContext.arrData.map(data => 
+            props.arrData.map(data => 
                <Box
                   key={data.uuid}
                   sx={arrFilesBox}
