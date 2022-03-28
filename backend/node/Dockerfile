@@ -14,6 +14,7 @@ RUN if [ "$NODE_ENV" = "production" ] ; then \
    npm install --production=false --silent ; \
 fi 
 
+COPY ./.env ./
 COPY ./*.js ./
 RUN mkdir ./routes
 COPY ./routes/*.js ./routes/
