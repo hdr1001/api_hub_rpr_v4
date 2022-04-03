@@ -25,6 +25,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import HubIcon from '@mui/icons-material/Hub';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import IconButton from '@mui/material/IconButton';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -52,6 +53,16 @@ export default function AhAppBar(props) {
                   </IconButton>
                </Tooltip>
             </label>
+            {props.apiHubUrl &&
+               <Tooltip title='Find'>
+                  <IconButton
+                     color='inherit'
+                     onClick={props.openFormFind}
+                  >
+                     <SearchOutlinedIcon />
+                  </IconButton>
+               </Tooltip>
+            }
             <Tooltip title={props.apiHubUrl ? 'Connected to hub' : 'No hub connected'}>
                <IconButton
                   color='inherit'

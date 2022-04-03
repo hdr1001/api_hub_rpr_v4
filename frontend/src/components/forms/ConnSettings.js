@@ -20,7 +20,7 @@
 //
 // *********************************************************************
 
-import { useState, useReducer } from "react";
+import { useState, useReducer } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -34,7 +34,7 @@ import {
   Stack,
   Button,
   TextField
-} from "@mui/material";
+} from '@mui/material';
 
 const FormConnSettings = (props) => {
    const connSettingsDefaults = {protocol: 'https', host: 'localhost', port: '8080', path: '/hub'};
@@ -58,7 +58,7 @@ const FormConnSettings = (props) => {
    }
 
    function concatApiHubUrl() {
-      return `${connSettings.protocol}://${connSettings.host}:${connSettings.port}${connSettings.path}/about`
+      return `${connSettings.protocol}://${connSettings.host}:${connSettings.port}${connSettings.path}`
    }
 
    function handleClose() {
@@ -124,14 +124,16 @@ const FormConnSettings = (props) => {
                />
                <Stack 
                   direction='row'
+                  justifyContent='center'
                   spacing={1}
                   sx={{ mt: 1.5, mb: 1, mx: 'auto' }}
                >
                   <Button
                      variant='contained'
                      color='primary'
+                     sx={{width: '25%'}}
                      onClick={() => {
-                        fetch(concatApiHubUrl())
+                        fetch(concatApiHubUrl() + '/about', {mode: 'cors'})
                            .then(resp => resp.json())
                            .then(abt => {
                               let desc = abt.description;
@@ -157,6 +159,7 @@ const FormConnSettings = (props) => {
                   <Button
                      variant='contained'
                      color='primary'
+                     sx={{width: '25%'}}
                      onClick={() => {
                            setSettingsTestSuccess(false);
 
@@ -170,6 +173,7 @@ const FormConnSettings = (props) => {
                   <Button
                      variant='contained'
                      color='primary'
+                     sx={{width: '25%'}}
                      onClick={() => {
                            setSettingsTestSuccess(false);
 

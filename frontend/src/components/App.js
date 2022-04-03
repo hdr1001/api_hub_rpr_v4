@@ -25,6 +25,7 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { styled } from '@mui/material/styles';
 import AhAppBar from './AhAppBar';
+import FormFind from './forms/Find.js'
 import FormConnSettings from './forms/ConnSettings.js';
 import FormSettings from './forms/Settings.js';
 import AhContent from './AhContent';
@@ -45,6 +46,11 @@ export default function App(props) {
 
    const [apiHubUrl, setApiHubUrl] = useState('');
 
+   const [formFindIsOpen, setFormFindIsOpen] = useState(false);
+
+   const openFormFind = () => setFormFindIsOpen(true);
+   const closeFormFind = () => setFormFindIsOpen(false);
+
    const [formConnSettingsIsOpen, setFormConnSettingsIsOpen] = useState(false);
 
    const openFormConnSettings = () => setFormConnSettingsIsOpen(true);
@@ -63,12 +69,18 @@ export default function App(props) {
          <AhAppBar
             apiHubUrl={apiHubUrl}
             handleFileInp={handleFileInp}
+            openFormFind={openFormFind}
             openFormConnSettings={openFormConnSettings}
             openFormSettings={openFormSettings}
          />
          <Offset />
 
          <AhContent arrData={arrData} />
+         <FormFind
+            apiHubUrl={apiHubUrl}
+            formFindIsOpen={formFindIsOpen}
+            closeFormFind={closeFormFind}
+         />
          <FormConnSettings
             formConnSettingsIsOpen={formConnSettingsIsOpen}
             closeFormConnSettings={closeFormConnSettings}
