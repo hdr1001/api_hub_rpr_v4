@@ -24,15 +24,25 @@ import { useState, useReducer } from 'react';
 import {
    Dialog,
    DialogTitle,
+   Menu,
+   MenuItem,
    DialogContent,
    Autocomplete,
    Box,
    TextField,
    IconButton,
    DialogActions,
+   Stack,
    Button,
-   Stack
+   FormGroup,
+   Typography,
+   ToggleButtonGroup,
+   ToggleButton
 } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 
@@ -42,8 +52,14 @@ const FormFind = props => {
       addr1: '',
       addr2: '',
       postalCode: '',
-      city: ''
+      city: '',
+      regNumber: '',
+      telNumber: ''
    };
+
+   const [ anchorMenu, setAnchorMenu ] = useState(null);
+
+   const [ addtnlFields, setAddtnlFields ] = useState(['regNumber']);
 
    const [ addr2Act, setAddr2Act ] = useState(false);
 
@@ -51,6 +67,8 @@ const FormFind = props => {
       (prevState, state) => ( { ...prevState, ...state } ),
       iniCriteriaNameAddr
    );
+
+   const [ matchCandidates, setMatchCandidates ] = useState(null);
 
    const handleOnChange = event => {
       setCriteriaNameAddr( { [event.target.name]: event.target.value } )
@@ -63,7 +81,45 @@ const FormFind = props => {
          open={props.formFindIsOpen}
          onClose={props.closeFormFind}
       >
-         <DialogTitle>Find company</DialogTitle>
+         <DialogTitle>
+            Find a company
+            <IconButton
+               onClick={event => setAnchorMenu(event.currentTarget)}
+               sx={{float: 'right'}}
+            >
+               <MenuIcon />
+            </IconButton>
+         </DialogTitle>
+         <Menu
+            anchorEl={anchorMenu}
+            open={!!anchorMenu}
+            onClose={event => setAnchorMenu(event.currentTarget)}
+            anchorOrigin={{
+               vertical: 'top',
+               horizontal: 'right',
+            }}
+            transformOrigin={{
+               vertical: 'top',
+               horizontal: 'right',
+            }}
+         >
+            <ToggleButtonGroup
+               value={addtnlFields}
+               onChange={(event, updatedAddtnlFields) => setAddtnlFields(updatedAddtnlFields)}
+            >
+               <ToggleButton value='location'><LocationOnOutlinedIcon /></ToggleButton>
+               <ToggleButton value='regNumber'><KeyOutlinedIcon /></ToggleButton>
+               <ToggleButton value='telNumber'><PhoneOutlinedIcon /></ToggleButton>
+            </ToggleButtonGroup>
+            <Stack
+               direction='row'
+               justifyContent='end'
+               sx={{pr: 1, mt: 1}}
+            >
+            <Button onClick={() => setAnchorMenu(null)}>
+               Close
+            </Button></Stack>
+         </Menu>
          <DialogContent>
             <Autocomplete
                id='country-select-demo'
@@ -153,52 +209,103 @@ const FormFind = props => {
                   sx={{width: '60%'}}
                />
             </Stack>
-            <Stack 
-               direction='row'
-               justifyContent='center'
-               spacing={1}
-               sx={{ mt: 2, mb: 1, mx: 'auto' }}
-            >
-               <Button
-                  variant='contained'
-                  color='primary'
-                  sx={{width: '25%'}}
-                  onClick={() => {
-                     const dnbIDR = {};
-
-                     if(criteriaNameAddr.name) { dnbIDR.name = criteriaNameAddr.name }
-                     if(criteriaNameAddr.addr1) { dnbIDR.streetAddressLine1 = criteriaNameAddr.addr1 }
-                     if(criteriaNameAddr.addr2) { dnbIDR.streetAddressLine2 = criteriaNameAddr.addr2 }
-                     if(criteriaNameAddr.postalCode) { dnbIDR.postalCode = criteriaNameAddr.postalCode }
-                     if(criteriaNameAddr.city) { dnbIDR.addressLocality = criteriaNameAddr.city }
-                     dnbIDR.countryISOAlpha2Code = 'NL';
-
-                     console.log(dnbIDR);
-                     fetch(props.apiHubUrl + '/api/dnb/find', {
-                        method: 'POST',
-                        mode: 'cors', 
-                        headers: {
-                           'Accept': 'application/json',
-                           'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(dnbIDR)
-                     })
-                        .then(resp => resp.json())
-                        .then(matchCandidates => console.log(matchCandidates))
-                  }}
+            {addtnlFields.includes('regNumber') &&
+               <TextField
+                  fullWidth
+                  name='regNumber' label='Registration number' 
+                  size='small' margin='dense'
+                  value={criteriaNameAddr.regNumber}
+                  onChange={handleOnChange}
+               />
+            }
+            {addtnlFields.includes('telNumber') &&
+               <TextField
+                  fullWidth
+                  name='telNumber' label='Telephone number' 
+                  size='small' margin='dense'
+                  value={criteriaNameAddr.telNumber}
+                  onChange={handleOnChange}
+               />
+            }
+            {!matchCandidates &&
+               <Stack 
+                  direction='row'
+                  justifyContent='center'
+                  spacing={1}
+                  sx={{ mt: 2, mb: 1, mx: 'auto' }}
                >
-                  Find
-               </Button>
-               <Button
-                  variant='contained'
-                  color='primary'
-                  sx={{width: '25%'}}
-                  onClick={() => setCriteriaNameAddr(iniCriteriaNameAddr)}
-               >
-                  Reset
-               </Button>
-            </Stack>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     sx={{width: '25%'}}
+                     onClick={() => {
+                        const dnbIDR = {};
+
+                        if(criteriaNameAddr.name) { dnbIDR.name = criteriaNameAddr.name }
+                        if(criteriaNameAddr.addr1) { dnbIDR.streetAddressLine1 = criteriaNameAddr.addr1 }
+                        if(criteriaNameAddr.addr2) { dnbIDR.streetAddressLine2 = criteriaNameAddr.addr2 }
+                        if(criteriaNameAddr.postalCode) { dnbIDR.postalCode = criteriaNameAddr.postalCode }
+                        if(criteriaNameAddr.city) { dnbIDR.addressLocality = criteriaNameAddr.city }
+                        if(criteriaNameAddr.regNumber) { dnbIDR.registrationNumber = criteriaNameAddr.regNumber }
+                        if(criteriaNameAddr.telNumber) { dnbIDR.telephoneNumber = criteriaNameAddr.telNumber }
+                        dnbIDR.countryISOAlpha2Code = 'NL';
+
+                        console.log(dnbIDR);
+                        fetch(props.apiHubUrl + '/api/dnb/find', {
+                           method: 'POST',
+                           mode: 'cors', 
+                           headers: {
+                              'Accept': 'application/json',
+                              'Content-Type': 'application/json'
+                           },
+                           body: JSON.stringify(dnbIDR)
+                        })
+                           .then(resp => resp.json())
+                           .then(idrResp => setMatchCandidates(idrResp.matchCandidates));
+                     }}
+                  >
+                     Find
+                  </Button>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     sx={{width: '25%'}}
+                     onClick={() => setCriteriaNameAddr(iniCriteriaNameAddr)}
+                  >
+                     Reset
+                  </Button>
+               </Stack>
+            }
          </DialogContent>
+         {matchCandidates &&
+            <DialogContent>
+               <FormGroup sx={{border:1, p: 1}}>
+                  {matchCandidates.map((mc, idx) => <Typography key={idx}>{mc.organization.primaryName}</Typography>)}
+               </FormGroup>
+               <Stack 
+                  direction='row'
+                  justifyContent='center'
+                  spacing={1}
+                  sx={{ mt: 2, mb: 1, mx: 'auto' }}
+               >
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     sx={{width: '25%'}}
+                  >
+                     Submit
+                  </Button>
+                  <Button
+                     variant='contained'
+                     color='primary'
+                     sx={{width: '25%'}}
+                     onClick={() => setMatchCandidates(null)}
+                  >
+                     Reset
+                  </Button>
+               </Stack>
+            </DialogContent>
+         }
          <DialogActions>
             <Button onClick={props.closeFormFind}>Close</Button>
          </DialogActions>
