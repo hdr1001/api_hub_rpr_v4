@@ -20,12 +20,11 @@
 //
 // *********************************************************************
 
-import { useState, useReducer } from 'react';
+import { useState, useReducer, useRef } from 'react';
 import {
    Dialog,
    DialogTitle,
    Menu,
-   MenuItem,
    DialogContent,
    Autocomplete,
    Box,
@@ -34,6 +33,7 @@ import {
    DialogActions,
    Stack,
    Button,
+   LinearProgress,
    FormGroup,
    Typography,
    ToggleButtonGroup,
@@ -47,7 +47,7 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 
 const FormFind = props => {
-   const iniCriteriaNameAddr = {
+   const iniSearchCriteria = {
       name: '',
       addr1: '',
       addr2: '',
@@ -63,23 +63,45 @@ const FormFind = props => {
 
    const [ addr2Act, setAddr2Act ] = useState(false);
 
-   const [ criteriaNameAddr, setCriteriaNameAddr ] = useReducer(
+   const [ searchCriteria, setSearchCriteria ] = useReducer(
       (prevState, state) => ( { ...prevState, ...state } ),
-      iniCriteriaNameAddr
+      iniSearchCriteria
    );
+
+   const [ awaitingResp, setAwaitingResp ] = useState(false);
 
    const [ matchCandidates, setMatchCandidates ] = useState(null);
 
+   const handleDialogClose = () => {
+      if(awaitingResp) {
+         console.log('Do not close the dialog while awaiting REST response');
+
+         return;
+      }
+
+      console.log('Proceeding to close Find dialog');
+
+      setSearchCriteria(iniSearchCriteria);
+
+      if(matchCandidates) { setMatchCandidates(null) }
+
+      props.closeFormFind();
+   }
+
    const handleOnChange = event => {
-      setCriteriaNameAddr( { [event.target.name]: event.target.value } )
+      if(!awaitingResp && !matchCandidates) {
+         setSearchCriteria( { [event.target.name]: event.target.value } )
+      }
    };
+
+   const refNameTextField = useRef();
 
    return (
       <Dialog
          fullWidth={true}
          maxWidth={'xs'}
          open={props.formFindIsOpen}
-         onClose={props.closeFormFind}
+         onClose={handleDialogClose}
       >
          <DialogTitle>
             Find a company
@@ -116,9 +138,10 @@ const FormFind = props => {
                justifyContent='end'
                sx={{pr: 1, mt: 1}}
             >
-            <Button onClick={() => setAnchorMenu(null)}>
-               Close
-            </Button></Stack>
+               <Button onClick={() => setAnchorMenu(null)}>
+                  Close
+               </Button>
+            </Stack>
          </Menu>
          <DialogContent>
             <Autocomplete
@@ -156,14 +179,15 @@ const FormFind = props => {
                fullWidth
                name='name' label='Company name' 
                size='small' margin='dense'
-               value={criteriaNameAddr.name}
+               autoFocus inputRef={refNameTextField}
+               value={searchCriteria.name}
                onChange={handleOnChange}
             />
             <TextField
                fullWidth
                name='addr1' label='Address line 1' 
                size='small' margin='dense'
-               value={criteriaNameAddr.addr1}
+               value={searchCriteria.addr1}
                onChange={handleOnChange}
                InputProps={{endAdornment: (
                   <IconButton
@@ -180,7 +204,7 @@ const FormFind = props => {
                   fullWidth
                   name='addr2' label='Address line 2' 
                   size='small' margin='dense'
-                  value={criteriaNameAddr.addr2}
+                  value={searchCriteria.addr2}
                   onChange={handleOnChange}
                   InputProps={{endAdornment: (
                      <IconButton
@@ -197,14 +221,14 @@ const FormFind = props => {
                <TextField
                   name='postalCode' label='Postal code' 
                   size='small' margin='dense'
-                  value={criteriaNameAddr.postalCode}
+                  value={searchCriteria.postalCode}
                   onChange={handleOnChange}
                   sx={{width: '40%', mr: 1}}
                />
                <TextField
                   name='city' label='City' 
                   size='small' margin='dense'
-                  value={criteriaNameAddr.city}
+                  value={searchCriteria.city}
                   onChange={handleOnChange}
                   sx={{width: '60%'}}
                />
@@ -214,7 +238,7 @@ const FormFind = props => {
                   fullWidth
                   name='regNumber' label='Registration number' 
                   size='small' margin='dense'
-                  value={criteriaNameAddr.regNumber}
+                  value={searchCriteria.regNumber}
                   onChange={handleOnChange}
                />
             }
@@ -223,11 +247,11 @@ const FormFind = props => {
                   fullWidth
                   name='telNumber' label='Telephone number' 
                   size='small' margin='dense'
-                  value={criteriaNameAddr.telNumber}
+                  value={searchCriteria.telNumber}
                   onChange={handleOnChange}
                />
             }
-            {!matchCandidates &&
+            {!matchCandidates && !awaitingResp &&
                <Stack 
                   direction='row'
                   justifyContent='center'
@@ -241,16 +265,17 @@ const FormFind = props => {
                      onClick={() => {
                         const dnbIDR = {};
 
-                        if(criteriaNameAddr.name) { dnbIDR.name = criteriaNameAddr.name }
-                        if(criteriaNameAddr.addr1) { dnbIDR.streetAddressLine1 = criteriaNameAddr.addr1 }
-                        if(criteriaNameAddr.addr2) { dnbIDR.streetAddressLine2 = criteriaNameAddr.addr2 }
-                        if(criteriaNameAddr.postalCode) { dnbIDR.postalCode = criteriaNameAddr.postalCode }
-                        if(criteriaNameAddr.city) { dnbIDR.addressLocality = criteriaNameAddr.city }
-                        if(criteriaNameAddr.regNumber) { dnbIDR.registrationNumber = criteriaNameAddr.regNumber }
-                        if(criteriaNameAddr.telNumber) { dnbIDR.telephoneNumber = criteriaNameAddr.telNumber }
+                        if(searchCriteria.name) { dnbIDR.name = searchCriteria.name }
+                        if(searchCriteria.addr1) { dnbIDR.streetAddressLine1 = searchCriteria.addr1 }
+                        if(searchCriteria.addr2) { dnbIDR.streetAddressLine2 = searchCriteria.addr2 }
+                        if(searchCriteria.postalCode) { dnbIDR.postalCode = searchCriteria.postalCode }
+                        if(searchCriteria.city) { dnbIDR.addressLocality = searchCriteria.city }
+                        if(searchCriteria.regNumber) { dnbIDR.registrationNumber = searchCriteria.regNumber }
+                        if(searchCriteria.telNumber) { dnbIDR.telephoneNumber = searchCriteria.telNumber }
                         dnbIDR.countryISOAlpha2Code = 'NL';
 
-                        console.log(dnbIDR);
+                        setAwaitingResp(true);
+
                         fetch(props.apiHubUrl + '/api/dnb/find', {
                            method: 'POST',
                            mode: 'cors', 
@@ -261,7 +286,10 @@ const FormFind = props => {
                            body: JSON.stringify(dnbIDR)
                         })
                            .then(resp => resp.json())
-                           .then(idrResp => setMatchCandidates(idrResp.matchCandidates));
+                           .then(idrResp => {
+                              setMatchCandidates(idrResp.matchCandidates);
+                              setAwaitingResp(false);
+                           });
                      }}
                   >
                      Find
@@ -270,11 +298,17 @@ const FormFind = props => {
                      variant='contained'
                      color='primary'
                      sx={{width: '25%'}}
-                     onClick={() => setCriteriaNameAddr(iniCriteriaNameAddr)}
+                     onClick={() => {
+                        setSearchCriteria(iniSearchCriteria);
+                        refNameTextField.current.focus();
+                     }}
                   >
                      Reset
                   </Button>
                </Stack>
+            }
+            {awaitingResp &&
+               <LinearProgress sx={{mt: 2}}/>
             }
          </DialogContent>
          {matchCandidates &&
@@ -299,7 +333,10 @@ const FormFind = props => {
                      variant='contained'
                      color='primary'
                      sx={{width: '25%'}}
-                     onClick={() => setMatchCandidates(null)}
+                     onClick={() => {
+                        setMatchCandidates(null);
+                        refNameTextField.current.focus();
+                     }}
                   >
                      Reset
                   </Button>
@@ -307,7 +344,7 @@ const FormFind = props => {
             </DialogContent>
          }
          <DialogActions>
-            <Button onClick={props.closeFormFind}>Close</Button>
+            <Button onClick={handleDialogClose}>Close</Button>
          </DialogActions>
       </Dialog>
    );
