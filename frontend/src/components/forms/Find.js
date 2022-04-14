@@ -35,7 +35,11 @@ import {
    Button,
    LinearProgress,
    FormGroup,
-   Typography,
+   FormControl,
+   FormLabel,
+   FormControlLabel,
+   RadioGroup,
+   Radio,
    ToggleButtonGroup,
    ToggleButton
 } from '@mui/material';
@@ -72,14 +76,14 @@ const FormFind = props => {
 
    const [ matchCandidates, setMatchCandidates ] = useState(null);
 
+   const [ duns, setDuns ] = useState('')
+
    const handleDialogClose = () => {
       if(awaitingResp) {
          console.log('Do not close the dialog while awaiting REST response');
 
          return;
       }
-
-      console.log('Proceeding to close Find dialog');
 
       setSearchCriteria(iniSearchCriteria);
 
@@ -95,6 +99,7 @@ const FormFind = props => {
    };
 
    const refNameTextField = useRef();
+   const ref1stMC = useRef();
 
    return (
       <Dialog
@@ -143,7 +148,7 @@ const FormFind = props => {
                </Button>
             </Stack>
          </Menu>
-         <DialogContent>
+         <DialogContent sx={{pt: 0.5}}>
             <Autocomplete
                id='country-select-demo'
                options={countries}
@@ -288,6 +293,11 @@ const FormFind = props => {
                            .then(resp => resp.json())
                            .then(idrResp => {
                               setMatchCandidates(idrResp.matchCandidates);
+                              setDuns(idrResp.matchCandidates[0] && idrResp.matchCandidates[0].organization &&
+                                             idrResp.matchCandidates[0].organization.duns
+                                    ? idrResp.matchCandidates[0].organization.duns 
+                                    : '');
+                              ref1stMC.current.focus();
                               setAwaitingResp(false);
                            });
                      }}
@@ -312,9 +322,35 @@ const FormFind = props => {
             }
          </DialogContent>
          {matchCandidates &&
-            <DialogContent>
-               <FormGroup sx={{border:1, p: 1}}>
-                  {matchCandidates.map((mc, idx) => <Typography key={idx}>{mc.organization.primaryName}</Typography>)}
+            <DialogContent sx={{pt: 0.5}}>
+               <FormGroup>
+                  <FormControl
+                     component='fieldset'
+                     sx={{
+                        border: 1,
+                        borderColor: 'rgba(0, 0, 0, 0.23)',
+                        borderRadius: '4px',
+                        px: 2
+                     }}
+                  >
+                     <FormLabel component='legend'>Match candidates</FormLabel>
+                     <RadioGroup
+                        id='optMCs'
+                        value={duns}
+                        onChange={event => setDuns(event.target.value)}
+                        row
+                     >
+                     {matchCandidates.map((mc, idx) => 
+                        <FormControlLabel
+                           value={mc.organization.duns}
+                           key={mc.organization.duns}
+                           name='optMatchCandidate'
+                           control={<Radio inputRef={idx === 0 ? ref1stMC : null} />}
+                           label={mc.organization.primaryName}
+                        />
+                     )}
+                     </RadioGroup>
+                  </FormControl>
                </FormGroup>
                <Stack 
                   direction='row'
