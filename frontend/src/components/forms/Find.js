@@ -41,7 +41,9 @@ import {
    RadioGroup,
    Radio,
    ToggleButtonGroup,
-   ToggleButton
+   ToggleButton,
+   Typography,
+   Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -100,6 +102,111 @@ const FormFind = props => {
 
    const refNameTextField = useRef();
    const ref1stMC = useRef();
+
+   function MatchCandidate(props) {
+      const org = props.mc.organization;
+
+      const [ showTradestyleNames, setShowTradestyleNames ] = useState(false);
+
+      const bTradestyleNames = org.tradeStyleNames && !!org.tradeStyleNames.length;
+
+      function McOOB(props) {
+         return (
+            org.dunsControlStatus &&
+               org.dunsControlStatus.operatingStatus &&
+               org.dunsControlStatus.operatingStatus.dnbCode &&
+               org.dunsControlStatus.operatingStatus.dnbCode === 403
+                  ?  <Tooltip title='Out of business'><span> ⛔️ </span></Tooltip>
+                  :  null
+         )
+      }
+
+      function McBranch(props) {
+         return (
+            org.corporateLinkage && org.corporateLinkage.familytreeRolesPlayed &&
+               org.corporateLinkage.familytreeRolesPlayed[0] && org.corporateLinkage.familytreeRolesPlayed[0].dnbCode &&
+               org.corporateLinkage.familytreeRolesPlayed[0].dnbCode === 9140
+                  ?  <Tooltip title='Branch record'><span>🇧</span></Tooltip>
+                  :  null
+         )
+      }
+
+      function McLineMisc(props) {
+         const regNum =  org.registrationNumbers && org.registrationNumbers[0] && org.registrationNumbers[0].registrationNumber;
+         const tel = org.telephone && org.telephone[0] && org.telephone[0].telephoneNumber;
+         const ceo = org.mostSeniorPrincipals && org.mostSeniorPrincipals[0] && org.mostSeniorPrincipals[0].fullName;
+
+         return (
+            (regNum || tel || ceo)
+               ? <Typography>
+                  {regNum ? <span>🆔 {regNum} </span> : null}
+                  {tel ? <span>☎️ {tel} </span> : null}
+                  {ceo ? <Tooltip title={ceo}><span>👨‍💼 </span></Tooltip> : null}
+                 </Typography>
+               : null
+         )
+      }
+
+      function McLinePostalCodeCity(props) {
+         const postalCode = org.primaryAddress && org.primaryAddress.postalCode;
+         const city = org.primaryAddress && org.primaryAddress.addressLocality && org.primaryAddress.addressLocality.name;
+
+         return (
+            (postalCode || city)
+               ? <Typography>{postalCode ? <span sx={{mr:1}}>{postalCode}</span> : null}{city}</Typography>
+               : null
+         )
+      }
+
+      function McLineAdr(props) {
+         return (
+            org.primaryAddress &&
+               org.primaryAddress.streetAddress &&
+               org.primaryAddress.streetAddress[props.line] &&
+               <Typography>{org.primaryAddress.streetAddress[props.line]}</Typography>
+         )
+      }
+
+      function McTradeStyleNames(props) {
+         if(org.tradeStyleNames && org.tradeStyleNames.length) {
+            return <Typography>{org.tradeStyleNames.map(oName => oName.name).join(', ')}</Typography>
+         } 
+
+         return null;
+      }
+
+      function McLineName(props) {
+         return (
+            org.primaryName
+               ? <Typography>
+                  {org.primaryName}
+                  {props.bTradestyleNames &&
+                     <span
+                        onMouseEnter={() => props.setSTNs(true)}
+                        onMouseLeave={() => props.setSTNs(false)}
+                     > ➕ </span>
+                  }
+                  <McOOB />
+                  <McBranch />
+               </Typography>
+               : null
+         )
+      }
+
+      return (
+         <>
+            <McLineName
+               bTradestyleNames={bTradestyleNames}
+               setSTNs={setShowTradestyleNames}
+            />
+            {showTradestyleNames && <McTradeStyleNames />}
+            <McLineAdr line='line1' />
+            <McLineAdr line='line2' />
+            <McLinePostalCodeCity />
+            <McLineMisc />
+         </>
+      )
+   }
 
    return (
       <Dialog
@@ -340,15 +447,18 @@ const FormFind = props => {
                         onChange={event => setDuns(event.target.value)}
                         row
                      >
-                     {matchCandidates.map((mc, idx) => 
-                        <FormControlLabel
-                           value={mc.organization.duns}
-                           key={mc.organization.duns}
-                           name='optMatchCandidate'
-                           control={<Radio inputRef={idx === 0 ? ref1stMC : null} />}
-                           label={mc.organization.primaryName}
-                        />
-                     )}
+                        {matchCandidates.filter((mc, idx) => idx < 5).map((mc, idx) => 
+                           <FormControlLabel
+                              value={mc.organization.duns}
+                              key={mc.organization.duns}
+                              name='optMatchCandidate'
+                              control={<Radio
+                                 inputRef={idx === 0 ? ref1stMC : null}
+                                 sx={{}}
+                              />}
+                              label={<MatchCandidate mc={mc} />}
+                           />
+                        )}
                      </RadioGroup>
                   </FormControl>
                </FormGroup>
