@@ -150,6 +150,130 @@ const FormFind = props => {
    const refNameTextField = useRef();
    const ref1stMC = useRef();
 
+   function MatchCriteriaInputs(props) {
+      const textFieldOpts = { size: 'small', margin: 'dense' };
+      const textFieldOptsInclFW = { ...textFieldOpts, fullWidth: true };
+
+      return (
+         <>
+            <Autocomplete
+               name='country'
+               { ...textFieldOptsInclFW }
+               options={isoCtrys}
+               isOptionEqualToValue={(option, value) => option.code === value.code}
+               value={searchCriteria.isoCtry}
+               onChange={handleOnChange}
+               renderInput={(params) => (
+                  <TextField {...params} label="Select country" />
+               )}
+               autoSelect
+               sx={{my: 1}}
+            />
+            <TextField
+               name='name' label='Company name'
+               { ...textFieldOptsInclFW }
+               autoFocus inputRef={refNameTextField}
+               value={searchCriteria.name}
+               onChange={handleOnChange}
+            />
+            <TextField
+               name='addr1' label='Address line 1' 
+               { ...textFieldOptsInclFW }
+               size='small' margin='dense'
+               value={searchCriteria.addr1}
+               onChange={handleOnChange}
+               InputProps={{endAdornment: (
+                  <IconButton
+                     edge='end'
+                     disabled={addr2Act}
+                     onClick={() => setAddr2Act(!addr2Act)}
+                  >
+                     <AddCircleOutlineOutlinedIcon />
+                  </IconButton>
+               )}}
+            />
+            {addr2Act && 
+               <TextField
+                  name='addr2' label='Address line 2' 
+                  { ...textFieldOptsInclFW }
+                  value={searchCriteria.addr2}
+                  onChange={handleOnChange}
+                  InputProps={{endAdornment: (
+                     <IconButton
+                        edge='end'
+                        disabled={!addr2Act}
+                        onClick={() => setAddr2Act(!addr2Act)}
+                     >
+                        <RemoveCircleOutlineOutlinedIcon />
+                     </IconButton>
+                  )}}
+               />
+            }
+            <Stack direction='row'>
+               <TextField
+                  name='postalCode' label='Postal code' 
+                  { ...textFieldOpts }
+                  value={searchCriteria.postalCode}
+                  onChange={handleOnChange}
+                  sx={{width: '40%', mr: 1}}
+               />
+               <TextField
+                  name='city' label='City' 
+                  { ...textFieldOpts }
+                  value={searchCriteria.city}
+                  onChange={handleOnChange}
+                  sx={{width: '60%'}}
+               />
+            </Stack>
+            {addtnlFields.includes('regNumber') &&
+               <TextField
+                  name='regNumber' label='Registration number' 
+                  { ...textFieldOptsInclFW }
+                  value={searchCriteria.regNumber}
+                  onChange={handleOnChange}
+               />
+            }
+            {addtnlFields.includes('telNumber') &&
+               <TextField
+                  name='telNumber' label='Telephone number' 
+                  { ...textFieldOptsInclFW }
+                  value={searchCriteria.telNumber}
+                  onChange={handleOnChange}
+               />
+            }
+         </>
+      );
+   }
+
+   function MatchCriteriaBtns(props) {
+      const btnOpts = { variant: 'contained', color: 'primary', sx: {width: '25%'} };
+
+      return (
+         <Stack
+            direction='row'
+            justifyContent='center'
+            spacing={1}
+            sx={{ mt: 2, mb: 1, mx: 'auto' }}
+         >
+            <Button
+               { ... btnOpts }
+               onClick={handleOnFind}
+            >
+               Find
+            </Button>
+            <Button
+               { ... btnOpts }
+               onClick={() => {
+                  setSearchCriteria(iniSearchCriteria);
+                  refNameTextField.current.focus();
+               }}
+            >
+               Reset
+            </Button>
+         </Stack>
+      );
+   }
+
    function MatchCandidate(props) {
       const org = props.mc.organization;
 
@@ -258,7 +382,7 @@ const FormFind = props => {
             <McLinePostalCodeCity />
             <McLineMisc />
          </>
-      )
+      );
    }
 
    return (
@@ -309,123 +433,9 @@ const FormFind = props => {
             </Stack>
          </Menu>
          <DialogContent sx={{pt: 0.5}}>
-            <Autocomplete
-               fullwidth='true'
-               name='country'
-               size='small' margin='dense'
-               options={isoCtrys}
-               isOptionEqualToValue={(option, value) => option.code === value.code}
-               value={searchCriteria.isoCtry}
-               onChange={handleOnChange}
-               renderInput={(params) => (
-                  <TextField {...params} label="Select country" />
-               )}
-               autoSelect
-               sx={{my: 1}}
-            />
-            <TextField
-               fullWidth
-               name='name' label='Company name' 
-               size='small' margin='dense'
-               autoFocus inputRef={refNameTextField}
-               value={searchCriteria.name}
-               onChange={handleOnChange}
-            />
-            <TextField
-               fullWidth
-               name='addr1' label='Address line 1' 
-               size='small' margin='dense'
-               value={searchCriteria.addr1}
-               onChange={handleOnChange}
-               InputProps={{endAdornment: (
-                  <IconButton
-                     edge='end'
-                     disabled={addr2Act}
-                     onClick={() => setAddr2Act(!addr2Act)}
-                  >
-                     <AddCircleOutlineOutlinedIcon />
-                  </IconButton>
-               )}}
-            />
-            {addr2Act && 
-               <TextField
-                  fullWidth
-                  name='addr2' label='Address line 2' 
-                  size='small' margin='dense'
-                  value={searchCriteria.addr2}
-                  onChange={handleOnChange}
-                  InputProps={{endAdornment: (
-                     <IconButton
-                        edge='end'
-                        disabled={!addr2Act}
-                        onClick={() => setAddr2Act(!addr2Act)}
-                     >
-                        <RemoveCircleOutlineOutlinedIcon />
-                     </IconButton>
-                  )}}
-               />
-            }
-            <Stack direction='row'>
-               <TextField
-                  name='postalCode' label='Postal code' 
-                  size='small' margin='dense'
-                  value={searchCriteria.postalCode}
-                  onChange={handleOnChange}
-                  sx={{width: '40%', mr: 1}}
-               />
-               <TextField
-                  name='city' label='City' 
-                  size='small' margin='dense'
-                  value={searchCriteria.city}
-                  onChange={handleOnChange}
-                  sx={{width: '60%'}}
-               />
-            </Stack>
-            {addtnlFields.includes('regNumber') &&
-               <TextField
-                  fullWidth
-                  name='regNumber' label='Registration number' 
-                  size='small' margin='dense'
-                  value={searchCriteria.regNumber}
-                  onChange={handleOnChange}
-               />
-            }
-            {addtnlFields.includes('telNumber') &&
-               <TextField
-                  fullWidth
-                  name='telNumber' label='Telephone number' 
-                  size='small' margin='dense'
-                  value={searchCriteria.telNumber}
-                  onChange={handleOnChange}
-               />
-            }
-            {!matchCandidates && !awaitingResp &&
-               <Stack 
-                  direction='row'
-                  justifyContent='center'
-                  spacing={1}
-                  sx={{ mt: 2, mb: 1, mx: 'auto' }}
-               >
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     sx={{width: '25%'}}
-                     onClick={handleOnFind}
-                  >
-                     Find
-                  </Button>
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     sx={{width: '25%'}}
-                     onClick={() => {
-                        setSearchCriteria(iniSearchCriteria);
-                        refNameTextField.current.focus();
-                     }}
-                  >
-                     Reset
-                  </Button>
-               </Stack>
+            <MatchCriteriaInputs />
+            {!matchCandidates && !awaitingResp && 
+               <MatchCriteriaBtns />
             }
             {awaitingResp &&
                <LinearProgress sx={{mt: 2}}/>
