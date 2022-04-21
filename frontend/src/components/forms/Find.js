@@ -52,339 +52,428 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 
-const FormFind = props => {
-   const iniSearchCriteria = {
-      isoCtry: { label: 'Netherlands', code: 'NL' },
-      name: '',
-      addr1: '',
-      addr2: '',
-      postalCode: '',
-      city: '',
-      regNumber: '',
-      telNumber: ''
-   };
+const iniSearchCriteria = {
+   isoCtry: { label: 'Netherlands', code: 'NL' },
+   name: '',
+   addr1: '',
+   addr2: '',
+   postalCode: '',
+   city: '',
+   regNumber: '',
+   telNumber: ''
+};
 
-   const [ anchorMenu, setAnchorMenu ] = useState(null);
+const handleOnFind = (apiHubUrl, setAwaitingResp, setMatchCandidates, setDuns, searchCriteria, ref1stMC) => {
+   setAwaitingResp(true);
 
-   const [ addtnlFields, setAddtnlFields ] = useState(['regNumber']);
+   const dnbIDR = {};
 
+   if(searchCriteria.isoCtry) { dnbIDR.countryISOAlpha2Code = searchCriteria.isoCtry.code }
+   if(searchCriteria.name) { dnbIDR.name = searchCriteria.name }
+   if(searchCriteria.addr1) { dnbIDR.streetAddressLine1 = searchCriteria.addr1 }
+   if(searchCriteria.addr2) { dnbIDR.streetAddressLine2 = searchCriteria.addr2 }
+   if(searchCriteria.postalCode) { dnbIDR.postalCode = searchCriteria.postalCode }
+   if(searchCriteria.city) { dnbIDR.addressLocality = searchCriteria.city }
+   if(searchCriteria.regNumber) { dnbIDR.registrationNumber = searchCriteria.regNumber }
+   if(searchCriteria.telNumber) { dnbIDR.telephoneNumber = searchCriteria.telNumber }
+
+   fetch(apiHubUrl + '/api/dnb/find', {
+      method: 'POST',
+      mode: 'cors', 
+      headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dnbIDR)
+   })
+      .then(resp => resp.json())
+      .then(idrResp => {
+         setMatchCandidates(idrResp.matchCandidates);
+
+         setDuns(idrResp.matchCandidates[0] && idrResp.matchCandidates[0].organization &&
+                     idrResp.matchCandidates[0].organization.duns
+                  ? idrResp.matchCandidates[0].organization.duns 
+                  : ''
+         );
+
+         if(ref1stMC && ref1stMC.current) { ref1stMC.current.focus() }
+
+         setAwaitingResp(false);
+      });
+
+   return;
+};
+
+function MatchCriteriaInputs(props) {
    const [ addr2Act, setAddr2Act ] = useState(false);
 
-   const [ searchCriteria, setSearchCriteria ] = useReducer(
-      (prevState, state) => ( { ...prevState, ...state } ),
-      iniSearchCriteria
-   );
-
-   const [ awaitingResp, setAwaitingResp ] = useState(false);
-
-   const [ matchCandidates, setMatchCandidates ] = useState(null);
-
-   const [ duns, setDuns ] = useState('');
-
-   const handleDialogClose = () => {
-      if(awaitingResp) {
-         console.log('Do not close the dialog while awaiting REST response');
-
-         return;
-      }
-
-      setSearchCriteria(iniSearchCriteria);
-
-      if(matchCandidates) { setMatchCandidates(null) }
-
-      props.closeFormFind();
-   };
+   const disableInputs = !!(props.awaitingResp || props.matchCandidates);
+   const textFieldOpts = { size: 'small', margin: 'dense', disabled: disableInputs};
+   const textFieldOptsInclFW = { ...textFieldOpts, fullWidth: true };
 
    const handleOnChange = (event, newValue) => {
-      if(!awaitingResp && !matchCandidates) {
-         if(!event.target.name) {
-            setSearchCriteria( { isoCtry: newValue } )
-         }
-         else {
-            setSearchCriteria( { [event.target.name]: event.target.value } )
-         }
+      if(!event.target.name) {
+         props.setSearchCriteria( { isoCtry: newValue } )
+      }
+      else {
+         props.setSearchCriteria( { [event.target.name]: event.target.value } )
       }
    };
 
-   const handleOnFind = () => {
-      const dnbIDR = {};
-
-      setAwaitingResp(true);
-
-      if(searchCriteria.isoCtry) { dnbIDR.countryISOAlpha2Code = searchCriteria.isoCtry.code }
-      if(searchCriteria.name) { dnbIDR.name = searchCriteria.name }
-      if(searchCriteria.addr1) { dnbIDR.streetAddressLine1 = searchCriteria.addr1 }
-      if(searchCriteria.addr2) { dnbIDR.streetAddressLine2 = searchCriteria.addr2 }
-      if(searchCriteria.postalCode) { dnbIDR.postalCode = searchCriteria.postalCode }
-      if(searchCriteria.city) { dnbIDR.addressLocality = searchCriteria.city }
-      if(searchCriteria.regNumber) { dnbIDR.registrationNumber = searchCriteria.regNumber }
-      if(searchCriteria.telNumber) { dnbIDR.telephoneNumber = searchCriteria.telNumber }
-
-      fetch(props.apiHubUrl + '/api/dnb/find', {
-         method: 'POST',
-         mode: 'cors', 
-         headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-         },
-         body: JSON.stringify(dnbIDR)
-      })
-         .then(resp => resp.json())
-         .then(idrResp => {
-            setMatchCandidates(idrResp.matchCandidates);
-
-            setDuns(idrResp.matchCandidates[0] && idrResp.matchCandidates[0].organization &&
-                        idrResp.matchCandidates[0].organization.duns
-                     ? idrResp.matchCandidates[0].organization.duns 
-                     : ''
-            );
-      
-            ref1stMC.current.focus();
-      
-            setAwaitingResp(false);
-         });
-
-      return;
-   };
-
-   const refNameTextField = useRef();
-   const ref1stMC = useRef();
-
-   function MatchCriteriaInputs(props) {
-      const textFieldOpts = { size: 'small', margin: 'dense' };
-      const textFieldOptsInclFW = { ...textFieldOpts, fullWidth: true };
-
-      return (
-         <>
-            <Autocomplete
-               name='country'
-               { ...textFieldOptsInclFW }
-               options={isoCtrys}
-               isOptionEqualToValue={(option, value) => option.code === value.code}
-               value={searchCriteria.isoCtry}
-               onChange={handleOnChange}
-               renderInput={(params) => (
-                  <TextField {...params} label="Select country" />
-               )}
-               autoSelect
-               sx={{my: 1}}
-            />
+   return (
+      <>
+         <Autocomplete
+            name='country'
+            { ...textFieldOptsInclFW }
+            options={isoCtrys}
+            isOptionEqualToValue={(option, value) => option.code === value.code}
+            value={props.searchCriteria.isoCtry}
+            onChange={handleOnChange}
+            renderInput={(params) => (
+               <TextField
+                  {...params}
+                  label="Select country"
+               />
+            )}
+            autoHighlight
+            autoSelect
+            sx={{my: 1}}
+         />
+         <TextField
+            name='name' label='Company name'
+            { ...textFieldOptsInclFW }
+            autoFocus inputRef={props.refNameTextField}
+            value={props.searchCriteria.name}
+            onChange={handleOnChange}
+            onFocus={event => event.target.select()}
+         />
+         <TextField
+            name='addr1' label='Address line 1' 
+            { ...textFieldOptsInclFW }
+            value={props.searchCriteria.addr1}
+            onChange={handleOnChange}
+            InputProps={{endAdornment: (
+               <IconButton
+                  edge='end'
+                  disabled={addr2Act}
+                  onClick={() => setAddr2Act(!addr2Act)}
+               >
+                  <AddCircleOutlineOutlinedIcon />
+               </IconButton>
+            )}}
+         />
+         {addr2Act && 
             <TextField
-               name='name' label='Company name'
+               name='addr2' label='Address line 2' 
                { ...textFieldOptsInclFW }
-               autoFocus inputRef={refNameTextField}
-               value={searchCriteria.name}
-               onChange={handleOnChange}
-            />
-            <TextField
-               name='addr1' label='Address line 1' 
-               { ...textFieldOptsInclFW }
-               size='small' margin='dense'
-               value={searchCriteria.addr1}
+               value={props.searchCriteria.addr2}
                onChange={handleOnChange}
                InputProps={{endAdornment: (
                   <IconButton
                      edge='end'
-                     disabled={addr2Act}
+                     disabled={!addr2Act}
                      onClick={() => setAddr2Act(!addr2Act)}
                   >
-                     <AddCircleOutlineOutlinedIcon />
+                     <RemoveCircleOutlineOutlinedIcon />
                   </IconButton>
                )}}
             />
-            {addr2Act && 
-               <TextField
-                  name='addr2' label='Address line 2' 
-                  { ...textFieldOptsInclFW }
-                  value={searchCriteria.addr2}
-                  onChange={handleOnChange}
-                  InputProps={{endAdornment: (
-                     <IconButton
-                        edge='end'
-                        disabled={!addr2Act}
-                        onClick={() => setAddr2Act(!addr2Act)}
-                     >
-                        <RemoveCircleOutlineOutlinedIcon />
-                     </IconButton>
-                  )}}
-               />
-            }
-            <Stack direction='row'>
-               <TextField
-                  name='postalCode' label='Postal code' 
-                  { ...textFieldOpts }
-                  value={searchCriteria.postalCode}
-                  onChange={handleOnChange}
-                  sx={{width: '40%', mr: 1}}
-               />
-               <TextField
-                  name='city' label='City' 
-                  { ...textFieldOpts }
-                  value={searchCriteria.city}
-                  onChange={handleOnChange}
-                  sx={{width: '60%'}}
-               />
-            </Stack>
-            {addtnlFields.includes('regNumber') &&
-               <TextField
-                  name='regNumber' label='Registration number' 
-                  { ...textFieldOptsInclFW }
-                  value={searchCriteria.regNumber}
-                  onChange={handleOnChange}
-               />
-            }
-            {addtnlFields.includes('telNumber') &&
-               <TextField
-                  name='telNumber' label='Telephone number' 
-                  { ...textFieldOptsInclFW }
-                  value={searchCriteria.telNumber}
-                  onChange={handleOnChange}
-               />
-            }
-         </>
-      );
-   }
-
-   function MatchCriteriaBtns(props) {
-      const btnOpts = { variant: 'contained', color: 'primary', sx: {width: '25%'} };
-
-      return (
-         <Stack
-            direction='row'
-            justifyContent='center'
-            spacing={1}
-            sx={{ mt: 2, mb: 1, mx: 'auto' }}
-         >
-            <Button
-               { ... btnOpts }
-               onClick={handleOnFind}
-            >
-               Find
-            </Button>
-            <Button
-               { ... btnOpts }
-               onClick={() => {
-                  setSearchCriteria(iniSearchCriteria);
-                  refNameTextField.current.focus();
-               }}
-            >
-               Reset
-            </Button>
-         </Stack>
-      );
-   }
-
-   function MatchCandidate(props) {
-      const org = props.mc.organization;
-
-      const [ showTradestyleNames, setShowTradestyleNames ] = useState(false);
-
-      const bTradestyleNames = org.tradeStyleNames && !!org.tradeStyleNames.length;
-
-      function McOOB(props) {
-         return (
-            org.dunsControlStatus &&
-               org.dunsControlStatus.operatingStatus &&
-               org.dunsControlStatus.operatingStatus.dnbCode &&
-               org.dunsControlStatus.operatingStatus.dnbCode === 403
-                  ?  <Tooltip title='Out of business'><span>⛔️ </span></Tooltip>
-                  :  null
-         )
-      }
-
-      function McBranch(props) {
-         return (
-            org.corporateLinkage && org.corporateLinkage.familytreeRolesPlayed &&
-               org.corporateLinkage.familytreeRolesPlayed[0] && org.corporateLinkage.familytreeRolesPlayed[0].dnbCode &&
-               org.corporateLinkage.familytreeRolesPlayed[0].dnbCode === 9140
-                  ?  <Tooltip title='Branch record'><span> 🇧</span></Tooltip>
-                  :  null
-         )
-      }
-
-      function McLineMisc(props) {
-         const regNum =  org.registrationNumbers && org.registrationNumbers[0] && org.registrationNumbers[0].registrationNumber;
-         const tel = org.telephone && org.telephone[0] && org.telephone[0].telephoneNumber;
-         const ceo = org.mostSeniorPrincipals && org.mostSeniorPrincipals[0] && org.mostSeniorPrincipals[0].fullName;
-         const mailAdr = org.mailingAddress && org.mailingAddress.streetAddress && org.mailingAddress.streetAddress.line1
-
-         return (
-            (regNum || tel || ceo || mailAdr)
-               ? <Typography>
-                  {regNum ? <span>🆔 {regNum} </span> : null}
-                  {tel ? <span>☎️ {tel} </span> : null}
-                  {ceo ? <Tooltip title={ceo}><span>👨‍💼 </span></Tooltip> : null}
-                  {mailAdr ? <Tooltip title={mailAdr}><span>📨 </span></Tooltip> : null}
-                 </Typography>
-               : null
-         )
-      }
-
-      function McLinePostalCodeCity(props) {
-         const postalCode = org.primaryAddress && org.primaryAddress.postalCode;
-         const city = org.primaryAddress && org.primaryAddress.addressLocality && org.primaryAddress.addressLocality.name;
-
-         return (
-            (postalCode || city)
-               ? <Typography>{postalCode
-                     ? <span style={{ 'marginRight': '8px' }}>{postalCode}</span>
-                     : null}
-                  {city}
-                 </Typography>
-               : null
-         )
-      }
-
-      function McLineAdr(props) {
-         return (
-            org.primaryAddress &&
-               org.primaryAddress.streetAddress &&
-               org.primaryAddress.streetAddress[props.line] &&
-               <Typography>{org.primaryAddress.streetAddress[props.line]}</Typography>
-         )
-      }
-
-      function McTradeStyleNames(props) {
-         if(org.tradeStyleNames && org.tradeStyleNames.length) {
-            return <Typography>{org.tradeStyleNames.map(oName => oName.name).join(', ')}</Typography>
-         } 
-
-         return null;
-      }
-
-      function McLineName(props) {
-         return (
-            org.primaryName
-               ? <Typography>
-                     <McOOB />
-                     {org.primaryName}
-                     {props.bTradestyleNames &&
-                        <span
-                           onMouseEnter={() => props.setSTNs(true)}
-                           onMouseLeave={() => props.setSTNs(false)}
-                        > ➕ </span>
-                     }
-                     <McBranch />
-                 </Typography>
-               : null
-         )
-      }
-
-      return (
-         <>
-            <McLineName
-               bTradestyleNames={bTradestyleNames}
-               setSTNs={setShowTradestyleNames}
+         }
+         <Stack direction='row'>
+            <TextField
+               name='postalCode' label='Postal code' 
+               { ...textFieldOpts }
+               value={props.searchCriteria.postalCode}
+               onChange={handleOnChange}
+               sx={{width: '40%', mr: 1}}
             />
-            {showTradestyleNames && <McTradeStyleNames />}
-            <McLineAdr line='line1' />
-            <McLineAdr line='line2' />
-            <McLinePostalCodeCity />
-            <McLineMisc />
-         </>
-      );
+            <TextField
+               name='city' label='City' 
+               { ...textFieldOpts }
+               value={props.searchCriteria.city}
+               onChange={handleOnChange}
+               sx={{width: '60%'}}
+            />
+         </Stack>
+         {props.addtnlFields.includes('regNumber') &&
+            <TextField
+               name='regNumber' label='Registration number' 
+               { ...textFieldOptsInclFW }
+               value={props.searchCriteria.regNumber}
+               onChange={handleOnChange}
+            />
+         }
+         {props.addtnlFields.includes('telNumber') &&
+            <TextField
+               name='telNumber' label='Telephone number' 
+               { ...textFieldOptsInclFW }
+               value={props.searchCriteria.telNumber}
+               onChange={handleOnChange}
+            />
+         }
+      </>
+   );
+}
+
+function MatchCriteriaBtns(props) {
+   const btnOpts = { variant: 'contained', color: 'primary', sx: {width: '25%'} };
+
+   return (
+      <Stack
+         direction='row'
+         justifyContent='center'
+         spacing={1}
+         sx={{ mt: 2, mb: 1, mx: 'auto' }}
+      >
+         <Button
+            { ... btnOpts }
+            onClick={() => handleOnFind(props.apiHubUrl, props.setAwaitingResp, props.setMatchCandidates, props.setDuns, props.searchCriteria, props.ref1stMC)}
+         >
+            Find
+         </Button>
+         <Button
+            { ... btnOpts }
+            onClick={() => {
+               props.setSearchCriteria(iniSearchCriteria);
+               if(props.refNameTextField && props.refNameTextField.current) {
+                  props.refNameTextField.current.focus();
+               }
+            }}
+         >
+            Reset
+         </Button>
+      </Stack>
+   );
+}
+
+function MatchCandidate(props) {
+   const org = props.mc.organization;
+
+   const [ showTradestyleNames, setShowTradestyleNames ] = useState(false);
+
+   const bTradestyleNames = org.tradeStyleNames && !!org.tradeStyleNames.length;
+
+   function McOOB(props) {
+      return (
+         org.dunsControlStatus &&
+            org.dunsControlStatus.operatingStatus &&
+            org.dunsControlStatus.operatingStatus.dnbCode &&
+            org.dunsControlStatus.operatingStatus.dnbCode === 403
+               ?  <Tooltip title='Out of business'><span>⛔️ </span></Tooltip>
+               :  null
+      )
    }
 
+   function McBranch(props) {
+      return (
+         org.corporateLinkage && org.corporateLinkage.familytreeRolesPlayed &&
+            org.corporateLinkage.familytreeRolesPlayed[0] && org.corporateLinkage.familytreeRolesPlayed[0].dnbCode &&
+            org.corporateLinkage.familytreeRolesPlayed[0].dnbCode === 9140
+               ?  <Tooltip title='Branch record'><span> 🇧</span></Tooltip>
+               :  null
+      )
+   }
+
+   function McLineMisc(props) {
+      const regNum =  org.registrationNumbers && org.registrationNumbers[0] && org.registrationNumbers[0].registrationNumber;
+      const tel = org.telephone && org.telephone[0] && org.telephone[0].telephoneNumber;
+      const ceo = org.mostSeniorPrincipals && org.mostSeniorPrincipals[0] && org.mostSeniorPrincipals[0].fullName;
+      const mailAdr = org.mailingAddress && org.mailingAddress.streetAddress && org.mailingAddress.streetAddress.line1
+
+      return (
+         (regNum || tel || ceo || mailAdr)
+            ? <Typography>
+               {regNum ? <span>🆔 {regNum} </span> : null}
+               {tel ? <span>☎️ {tel} </span> : null}
+               {ceo ? <Tooltip title={ceo}><span>👨‍💼 </span></Tooltip> : null}
+               {mailAdr ? <Tooltip title={mailAdr}><span>📨 </span></Tooltip> : null}
+              </Typography>
+            : null
+      )
+   }
+
+   function McLinePostalCodeCity(props) {
+      const postalCode = org.primaryAddress && org.primaryAddress.postalCode;
+      const city = org.primaryAddress && org.primaryAddress.addressLocality && org.primaryAddress.addressLocality.name;
+
+      return (
+         (postalCode || city)
+            ? <Typography>{postalCode
+                  ? <span style={{ 'marginRight': '8px' }}>{postalCode}</span>
+                  : null}
+               {city}
+              </Typography>
+            : null
+      )
+   }
+
+   function McLineAdr(props) {
+      return (
+         org.primaryAddress &&
+            org.primaryAddress.streetAddress &&
+            org.primaryAddress.streetAddress[props.line] &&
+            <Typography>{org.primaryAddress.streetAddress[props.line]}</Typography>
+      )
+   }
+
+   function McTradeStyleNames(props) {
+      if(org.tradeStyleNames && org.tradeStyleNames.length) {
+         return <Typography>{org.tradeStyleNames.map(oName => oName.name).join(', ')}</Typography>
+      } 
+
+      return null;
+   }
+
+   function McLineName(props) {
+      return (
+         org.primaryName
+            ? <Typography>
+                  <McOOB />
+                  {org.primaryName}
+                  {props.bTradestyleNames &&
+                     <span
+                        onMouseEnter={() => props.setSTNs(true)}
+                        onMouseLeave={() => props.setSTNs(false)}
+                     > ➕ </span>
+                  }
+                  <McBranch />
+              </Typography>
+            : null
+      )
+   }
+
+   return (
+      <>
+         <McLineName
+            bTradestyleNames={bTradestyleNames}
+            setSTNs={setShowTradestyleNames}
+         />
+         {showTradestyleNames && <McTradeStyleNames />}
+         <McLineAdr line='line1' />
+         <McLineAdr line='line2' />
+         <McLinePostalCodeCity />
+         <McLineMisc />
+      </>
+   );
+}
+
+function MatchCandidateOpts(props) {
+   const fldSet = {border: 1, borderColor: 'rgba(0, 0, 0, 0.23)', borderRadius: '4px'};
+
+   return (
+      <FormGroup>
+         <FormControl
+            component='fieldset'
+            sx={{
+               ...fldSet,
+               px: 2
+            }}
+         >
+            <FormLabel component='legend'>Match candidates</FormLabel>
+            <RadioGroup
+               id='optMCs'
+               value={props.duns}
+               onChange={event => props.setDuns(event.target.value)}
+               row
+            >
+               {props.matchCandidates.filter((mc, idx) => idx < 5).map((mc, idx) => 
+                  <FormControlLabel
+                     value={mc.organization.duns}
+                     key={mc.organization.duns}
+                     name='optMatchCandidate'
+                     control={<Radio
+                        inputRef={idx === 0 ? props.ref1stMC : null}
+                        sx={{ pt: 0.2, pl: 0.5 }}
+                     />}
+                     label={<MatchCandidate mc={mc} />}
+                     sx={{
+                        ...fldSet,
+                        mx: 0.2,
+                        my: 0.4,
+                        p: 0.5,
+                        width: '100%',
+                        alignItems: 'start'
+                     }}
+                  />
+               )}
+            </RadioGroup>
+         </FormControl>
+      </FormGroup>
+   );
+}
+
+function MatchCandidateBtns(props) {
+   const btnOpts = { variant: 'contained', color: 'primary', sx: {width: '25%'} };
+
+   return (
+      <Stack
+         direction='row'
+         justifyContent='center'
+         spacing={1}
+         sx={{ mt: 2, mb: 1, mx: 'auto' }}
+      >
+         <Button
+            { ... btnOpts }
+            onClick={() => {}}
+         >
+            Submit
+         </Button>
+         <Button
+            { ... btnOpts }
+            onClick={() => {
+               const processQueue1st = () => {
+                  if(props.refNameTextField && props.refNameTextField.current) {
+                     props.refNameTextField.current.focus();
+                  }
+               }
+
+               props.setMatchCandidates(null);
+               setTimeout(processQueue1st, 0);
+            }}
+         >
+            Reset
+         </Button>
+      </Stack>
+   )
+}
+
+const FormFind = props => {
+   //Component state 
+   const [ anchorMenu, setAnchorMenu ] = useState(null);
+
+   const [ addtnlFields, setAddtnlFields ] = useState(['regNumber']);
+   
+   const [ searchCriteria, setSearchCriteria ] = useReducer(
+      (prevState, state) => ( { ...prevState, ...state } ),
+      iniSearchCriteria
+   );
+   
+   const [ awaitingResp, setAwaitingResp ] = useState(false);
+   
+   const [ matchCandidates, setMatchCandidates ] = useState(null);
+   
+   const [ duns, setDuns ] = useState('');
+
+   //Component references
+   const refNameTextField = useRef();
+
+   const ref1stMC = useRef();
+
+   const handleDialogClose = () => {
+      if(awaitingResp) {
+         console.log('Do not close the dialog while awaiting REST response');
+   
+         return;
+      }
+   
+      setSearchCriteria(iniSearchCriteria);
+   
+      if(matchCandidates) { setMatchCandidates(null) }
+   
+      props.closeFormFind();
+   };
+   
+   //The find component
    return (
       <Dialog
          fullWidth={true}
@@ -433,9 +522,25 @@ const FormFind = props => {
             </Stack>
          </Menu>
          <DialogContent sx={{pt: 0.5}}>
-            <MatchCriteriaInputs />
+            <MatchCriteriaInputs
+               awaitingResp={awaitingResp}
+               matchCandidates={matchCandidates}
+               searchCriteria={searchCriteria}
+               setSearchCriteria={setSearchCriteria}
+               addtnlFields={addtnlFields}
+               refNameTextField={refNameTextField}
+            />
             {!matchCandidates && !awaitingResp && 
-               <MatchCriteriaBtns />
+               <MatchCriteriaBtns
+                  apiHubUrl={props.apiHubUrl}
+                  setAwaitingResp={setAwaitingResp}
+                  setMatchCandidates={setMatchCandidates}
+                  setDuns={setDuns}
+                  setSearchCriteria={setSearchCriteria}
+                  searchCriteria={searchCriteria}
+                  refNameTextField={refNameTextField}
+                  ref1stMC={ref1stMC}
+               />
             }
             {awaitingResp &&
                <LinearProgress sx={{mt: 2}}/>
@@ -443,73 +548,17 @@ const FormFind = props => {
          </DialogContent>
          {matchCandidates &&
             <DialogContent sx={{pt: 0.5}}>
-               <FormGroup>
-                  <FormControl
-                     component='fieldset'
-                     sx={{
-                        border: 1,
-                        borderColor: 'rgba(0, 0, 0, 0.23)',
-                        borderRadius: '4px',
-                        px: 2
-                     }}
-                  >
-                     <FormLabel component='legend'>Match candidates</FormLabel>
-                     <RadioGroup
-                        id='optMCs'
-                        value={duns}
-                        onChange={event => setDuns(event.target.value)}
-                        row
-                     >
-                        {matchCandidates.filter((mc, idx) => idx < 5).map((mc, idx) => 
-                           <FormControlLabel
-                              value={mc.organization.duns}
-                              key={mc.organization.duns}
-                              name='optMatchCandidate'
-                              control={<Radio
-                                 inputRef={idx === 0 ? ref1stMC : null}
-                                 sx={{ pt: 0.2, pl: 0.5 }}
-                              />}
-                              label={<MatchCandidate mc={mc} />}
-                              sx={{
-                                 border: 1,
-                                 borderColor: 'rgba(0, 0, 0, 0.23)',
-                                 borderRadius: '4px',
-                                 mx: 0.2,
-                                 my: 0.4,
-                                 p: 0.5,
-                                 width: '100%',
-                                 alignItems: 'start'
-                              }}
-                           />
-                        )}
-                     </RadioGroup>
-                  </FormControl>
-               </FormGroup>
-               <Stack 
-                  direction='row'
-                  justifyContent='center'
-                  spacing={1}
-                  sx={{ mt: 2, mb: 1, mx: 'auto' }}
-               >
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     sx={{width: '25%'}}
-                  >
-                     Submit
-                  </Button>
-                  <Button
-                     variant='contained'
-                     color='primary'
-                     sx={{width: '25%'}}
-                     onClick={() => {
-                        setMatchCandidates(null);
-                        refNameTextField.current.focus();
-                     }}
-                  >
-                     Reset
-                  </Button>
-               </Stack>
+               <MatchCandidateOpts
+                  matchCandidates={matchCandidates}
+                  duns={duns}
+                  setDuns={setDuns}
+                  ref1stMC={ref1stMC}
+               />
+               <MatchCandidateBtns
+                  matchCandidates={matchCandidates}
+                  setMatchCandidates={setMatchCandidates}
+                  refNameTextField={refNameTextField}
+               />
             </DialogContent>
          }
          <DialogActions>
