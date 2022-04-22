@@ -63,7 +63,7 @@ const iniSearchCriteria = {
    telNumber: ''
 };
 
-const handleOnFind = (apiHubUrl, setAwaitingResp, setMatchCandidates, setDuns, searchCriteria, ref1stMC) => {
+const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, ref1stMC) => {
    setAwaitingResp(true);
 
    const dnbIDR = {};
@@ -86,12 +86,22 @@ const handleOnFind = (apiHubUrl, setAwaitingResp, setMatchCandidates, setDuns, s
       },
       body: JSON.stringify(dnbIDR)
    })
-      .then(resp => resp.json())
+      .then(resp => {
+         return new Promise((resolve, reject) => {
+            resp.json().then(oIdrResp => {
+               oIdrResp.ahRpr = {
+                  httpStatus: parseInt(resp.headers.get('X-AHRPR-API-HTTP-Status')),
+                  idrID: parseInt(resp.headers.get('X-AHRPR-API-IDR-ID'))
+               };
+               resolve(oIdrResp);
+            })
+         })
+      })
       .then(idrResp => {
-         setMatchCandidates(idrResp.matchCandidates);
+         setIdrResp(idrResp);
 
-         setDuns(idrResp.matchCandidates[0] && idrResp.matchCandidates[0].organization &&
-                     idrResp.matchCandidates[0].organization.duns
+         setDuns(idrResp.matchCandidates && idrResp.matchCandidates[0] && 
+                        idrResp.matchCandidates[0].organization && idrResp.matchCandidates[0].organization.duns
                   ? idrResp.matchCandidates[0].organization.duns 
                   : ''
          );
@@ -107,7 +117,7 @@ const handleOnFind = (apiHubUrl, setAwaitingResp, setMatchCandidates, setDuns, s
 function MatchCriteriaInputs(props) {
    const [ addr2Act, setAddr2Act ] = useState(false);
 
-   const disableInputs = !!(props.awaitingResp || props.matchCandidates);
+   const disableInputs = !!(props.awaitingResp || props.idrResp);
    const textFieldOpts = { size: 'small', margin: 'dense', disabled: disableInputs};
    const textFieldOptsInclFW = { ...textFieldOpts, fullWidth: true };
 
@@ -227,7 +237,7 @@ function MatchCriteriaBtns(props) {
       >
          <Button
             { ... btnOpts }
-            onClick={() => handleOnFind(props.apiHubUrl, props.setAwaitingResp, props.setMatchCandidates, props.setDuns, props.searchCriteria, props.ref1stMC)}
+            onClick={() => handleOnFind(props.apiHubUrl, props.setAwaitingResp, props.setIdrResp, props.setDuns, props.searchCriteria, props.ref1stMC)}
          >
             Find
          </Button>
@@ -376,7 +386,7 @@ function MatchCandidateOpts(props) {
                onChange={event => props.setDuns(event.target.value)}
                row
             >
-               {props.matchCandidates.filter((mc, idx) => idx < 5).map((mc, idx) => 
+               {props.idrResp.matchCandidates.filter((mc, idx) => idx < 5).map((mc, idx) => 
                   <FormControlLabel
                      value={mc.organization.duns}
                      key={mc.organization.duns}
@@ -414,7 +424,7 @@ function MatchCandidateBtns(props) {
       >
          <Button
             { ... btnOpts }
-            onClick={() => {}}
+            onClick={() => {console.log('props.idrResp.ahRpr.idrID = ' + props.idrResp.ahRpr.idrID)}}
          >
             Submit
          </Button>
@@ -427,7 +437,7 @@ function MatchCandidateBtns(props) {
                   }
                }
 
-               props.setMatchCandidates(null);
+               props.setIdrResp(null);
                setTimeout(processQueue1st, 0);
             }}
          >
@@ -450,7 +460,7 @@ const FormFind = props => {
    
    const [ awaitingResp, setAwaitingResp ] = useState(false);
    
-   const [ matchCandidates, setMatchCandidates ] = useState(null);
+   const [ idrResp, setIdrResp ] = useState(null);
    
    const [ duns, setDuns ] = useState('');
 
@@ -468,7 +478,7 @@ const FormFind = props => {
    
       setSearchCriteria(iniSearchCriteria);
    
-      if(matchCandidates) { setMatchCandidates(null) }
+      if(idrResp) { setIdrResp(null) }
    
       props.closeFormFind();
    };
@@ -524,17 +534,17 @@ const FormFind = props => {
          <DialogContent sx={{pt: 0.5}}>
             <MatchCriteriaInputs
                awaitingResp={awaitingResp}
-               matchCandidates={matchCandidates}
+               idrResp={idrResp}
                searchCriteria={searchCriteria}
                setSearchCriteria={setSearchCriteria}
                addtnlFields={addtnlFields}
                refNameTextField={refNameTextField}
             />
-            {!matchCandidates && !awaitingResp && 
+            {!idrResp && !awaitingResp && 
                <MatchCriteriaBtns
                   apiHubUrl={props.apiHubUrl}
                   setAwaitingResp={setAwaitingResp}
-                  setMatchCandidates={setMatchCandidates}
+                  setIdrResp={setIdrResp}
                   setDuns={setDuns}
                   setSearchCriteria={setSearchCriteria}
                   searchCriteria={searchCriteria}
@@ -546,17 +556,17 @@ const FormFind = props => {
                <LinearProgress sx={{mt: 2}}/>
             }
          </DialogContent>
-         {matchCandidates &&
+         {idrResp &&
             <DialogContent sx={{pt: 0.5}}>
                <MatchCandidateOpts
-                  matchCandidates={matchCandidates}
+                  idrResp={idrResp}
                   duns={duns}
                   setDuns={setDuns}
                   ref1stMC={ref1stMC}
                />
                <MatchCandidateBtns
-                  matchCandidates={matchCandidates}
-                  setMatchCandidates={setMatchCandidates}
+                  idrResp={idrResp}
+                  setIdrResp={setIdrResp}
                   refNameTextField={refNameTextField}
                />
             </DialogContent>

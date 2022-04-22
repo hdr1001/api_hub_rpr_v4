@@ -94,6 +94,7 @@ router.post('/find', (req, resp) => {
                   .setHeader('X-AHRPR-Cache', false)
                   .setHeader('X-AHRPR-Obtained-At', obtainedAt)
                   .setHeader('X-AHRPR-API-HTTP-Status', httpStatus)
+                  .setHeader('X-AHRPR-API-IDR-ID', idIDR)
                   .set('Content-Type', 'application/json')
                   .send(apiResp.body);
 

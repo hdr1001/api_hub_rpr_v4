@@ -35,7 +35,9 @@ const port = process.env.APP_PORT || 3000;
 
 //Allow Cross-Origin Resource Sharing (https://bit.ly/2MHOCHG)
 app.use(cors({
-   exposedHeaders: ['Content-Length'],
+   methods: ['GET', 'POST', 'OPTIONS'],
+   allowedHeaders: ['Content-Type', 'Content-Length'],
+   exposedHeaders: ['X-AHRPR-API-HTTP-Status', 'X-AHRPR-API-IDR-ID']
 }));
 
 app.use(express.json());
