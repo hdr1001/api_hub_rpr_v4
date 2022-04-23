@@ -63,6 +63,10 @@ const iniSearchCriteria = {
    telNumber: ''
 };
 
+const processQueue1st = refFormField => {
+   if(refFormField && refFormField.current) { refFormField.current.focus() }
+}
+
 const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, ref1stMC) => {
    setAwaitingResp(true);
 
@@ -113,6 +117,37 @@ const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCri
 
    return;
 };
+
+function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, setSearchCriteria, refNameTextField) {
+   fetch(apiHubUrl + '/api/dnb/find/duns', {
+      method: 'POST',
+      mode: 'cors', 
+      headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: idrResp.ahRpr.idrID, duns: duns})
+   })
+   .then(httpResp => httpResp.json())
+   .then(oResp => {
+      if(oResp.success) {
+         console.log(`Successfully persisted IDR DUNS ${duns} for id ${idrResp.ahRpr.idrID}`)
+      }
+      else {
+         throw new Error(`IDR update using id ${idrResp.ahRpr.idrID} and duns ${duns} was not successful 🤔`)
+      }
+   })
+   .catch(err => 
+      console.error(`Error:${err.message}`)
+   )
+
+   setIdrResp(null);
+   setDuns('');
+
+   setSearchCriteria(iniSearchCriteria);
+
+   setTimeout(() => processQueue1st(refNameTextField), 0);
+}
 
 function MatchCriteriaInputs(props) {
    const [ addr2Act, setAddr2Act ] = useState(false);
@@ -424,21 +459,16 @@ function MatchCandidateBtns(props) {
       >
          <Button
             { ... btnOpts }
-            onClick={() => {console.log('props.idrResp.ahRpr.idrID = ' + props.idrResp.ahRpr.idrID)}}
+            onClick={() => handleOnSubmit(props.apiHubUrl, props.idrResp, props.setIdrResp,
+                                             props.duns, props.setDuns, props.setSearchCriteria, props.refNameTextField)}
          >
             Submit
          </Button>
          <Button
             { ... btnOpts }
             onClick={() => {
-               const processQueue1st = () => {
-                  if(props.refNameTextField && props.refNameTextField.current) {
-                     props.refNameTextField.current.focus();
-                  }
-               }
-
                props.setIdrResp(null);
-               setTimeout(processQueue1st, 0);
+               setTimeout(() => processQueue1st(props.refNameTextField), 0);
             }}
          >
             Reset
@@ -565,8 +595,12 @@ const FormFind = props => {
                   ref1stMC={ref1stMC}
                />
                <MatchCandidateBtns
+                  apiHubUrl={props.apiHubUrl}
                   idrResp={idrResp}
                   setIdrResp={setIdrResp}
+                  duns={duns}
+                  setDuns={setDuns}
+                  setSearchCriteria={setSearchCriteria}
                   refNameTextField={refNameTextField}
                />
             </DialogContent>
