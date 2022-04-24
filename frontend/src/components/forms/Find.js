@@ -118,7 +118,7 @@ const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCri
    return;
 };
 
-function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, setSearchCriteria, refNameTextField) {
+function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, isoCtry, setSearchCriteria, refNameTextField) {
    fetch(apiHubUrl + '/api/dnb/find/duns', {
       method: 'POST',
       mode: 'cors', 
@@ -144,7 +144,7 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, setSearch
    setIdrResp(null);
    setDuns('');
 
-   setSearchCriteria(iniSearchCriteria);
+   setSearchCriteria( { ...iniSearchCriteria, isoCtry: isoCtry });
 
    setTimeout(() => processQueue1st(refNameTextField), 0);
 }
@@ -460,7 +460,8 @@ function MatchCandidateBtns(props) {
          <Button
             { ... btnOpts }
             onClick={() => handleOnSubmit(props.apiHubUrl, props.idrResp, props.setIdrResp,
-                                             props.duns, props.setDuns, props.setSearchCriteria, props.refNameTextField)}
+                                             props.duns, props.setDuns, props.isoCtry,
+                                             props.setSearchCriteria, props.refNameTextField)}
          >
             Submit
          </Button>
@@ -600,6 +601,7 @@ const FormFind = props => {
                   setIdrResp={setIdrResp}
                   duns={duns}
                   setDuns={setDuns}
+                  isoCtry={ {...searchCriteria.isoCtry} }
                   setSearchCriteria={setSearchCriteria}
                   refNameTextField={refNameTextField}
                />
