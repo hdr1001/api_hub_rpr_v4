@@ -52,22 +52,30 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 
+const defaultCtry = { label: 'Netherlands', code: 'NL' };
+
 const iniSearchCriteria = {
-   isoCtry: { label: 'Netherlands', code: 'NL' },
+   isoCtry: { ...defaultCtry },
    name: '',
    addr1: '',
    addr2: '',
    postalCode: '',
    city: '',
    regNumber: '',
-   telNumber: ''
+   telNumber: '',
+   iniState: true
 };
 
 const processQueue1st = refFormField => {
    if(refFormField && refFormField.current) { refFormField.current.focus() }
 }
 
-const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, ref1stMC) => {
+const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, ref1stMC) => {
+   if(formValidate.exec() === false) {
+      console.log('Form validates false');
+      return; //No match candidates will be fetched
+   }
+
    setAwaitingResp(true);
 
    const dnbIDR = {};
@@ -118,7 +126,8 @@ const handleOnFind = (apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCri
    return;
 };
 
-function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, isoCtry, setSearchCriteria, refNameTextField) {
+function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
+                           setDuns, isoCtry, setSearchCriteria, refNameTextField) {
    fetch(apiHubUrl + '/api/dnb/find/duns', {
       method: 'POST',
       mode: 'cors', 
@@ -144,7 +153,7 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns, setDuns, isoCtry, 
    setIdrResp(null);
    setDuns('');
 
-   setSearchCriteria( { ...iniSearchCriteria, isoCtry: isoCtry });
+   setSearchCriteria( { ...iniSearchCriteria, isoCtry: isoCtry } );
 
    setTimeout(() => processQueue1st(refNameTextField), 0);
 }
@@ -158,10 +167,10 @@ function MatchCriteriaInputs(props) {
 
    const handleOnChange = (event, newValue) => {
       if(!event.target.name) {
-         props.setSearchCriteria( { isoCtry: newValue } )
+         props.setSearchCriteria( { isoCtry: newValue, iniState: false } )
       }
       else {
-         props.setSearchCriteria( { [event.target.name]: event.target.value } )
+         props.setSearchCriteria( { [event.target.name]: event.target.value, iniState: false } )
       }
    };
 
@@ -176,8 +185,10 @@ function MatchCriteriaInputs(props) {
             onChange={handleOnChange}
             renderInput={(params) => (
                <TextField
-                  {...params}
+                  { ...params }
                   label="Select country"
+                  required
+                  { ...props.formValidate.validate[props.formValidate.isoCtry]() }
                />
             )}
             autoHighlight
@@ -190,6 +201,7 @@ function MatchCriteriaInputs(props) {
             autoFocus inputRef={props.refNameTextField}
             value={props.searchCriteria.name}
             onChange={handleOnChange}
+            { ...props.formValidate.validate[props.formValidate.nameOrRegNumber]() }
             onFocus={event => event.target.select()}
          />
          <TextField
@@ -246,6 +258,7 @@ function MatchCriteriaInputs(props) {
                { ...textFieldOptsInclFW }
                value={props.searchCriteria.regNumber}
                onChange={handleOnChange}
+               { ...props.formValidate.validate[props.formValidate.nameOrRegNumber]() }
             />
          }
          {props.addtnlFields.includes('telNumber') &&
@@ -272,14 +285,18 @@ function MatchCriteriaBtns(props) {
       >
          <Button
             { ... btnOpts }
-            onClick={() => handleOnFind(props.apiHubUrl, props.setAwaitingResp, props.setIdrResp, props.setDuns, props.searchCriteria, props.ref1stMC)}
+            onClick={() => handleOnFind(props.formValidate, props.apiHubUrl, props.setAwaitingResp,
+                                          props.setIdrResp, props.setDuns, props.searchCriteria, props.ref1stMC)}
          >
             Find
          </Button>
          <Button
             { ... btnOpts }
             onClick={() => {
-               props.setSearchCriteria(iniSearchCriteria);
+               const isoCtry = props.searchCriteria.isoCtry
+                                 ? { ...props.searchCriteria.isoCtry }
+                                 : { ...defaultCtry }
+               props.setSearchCriteria({ ...iniSearchCriteria, isoCtry: isoCtry });
                if(props.refNameTextField && props.refNameTextField.current) {
                   props.refNameTextField.current.focus();
                }
@@ -513,7 +530,27 @@ const FormFind = props => {
    
       props.closeFormFind();
    };
-   
+
+   const formValidate = {
+      isoCtry: 0,
+      nameOrRegNumber: 1,
+
+      validate: [
+         (force) => (force || !searchCriteria.iniState) && searchCriteria.isoCtry === null
+                  ? {error: true, helperText: 'Valid country is required'}
+                  : null,
+         (force) => (force || !searchCriteria.iniState) && !(searchCriteria.name || searchCriteria.regNumber)
+                  ? {error: true, helperText: 'Valid name or registration number is required'}
+                  : null
+      ],
+
+      exec: function() {
+         setSearchCriteria( { iniState: false } );
+
+         return this.validate.every(f => f(true) === null)
+      }
+   };
+
    //The find component
    return (
       <Dialog
@@ -570,6 +607,7 @@ const FormFind = props => {
                setSearchCriteria={setSearchCriteria}
                addtnlFields={addtnlFields}
                refNameTextField={refNameTextField}
+               formValidate={formValidate}
             />
             {!idrResp && !awaitingResp && 
                <MatchCriteriaBtns
@@ -581,6 +619,7 @@ const FormFind = props => {
                   searchCriteria={searchCriteria}
                   refNameTextField={refNameTextField}
                   ref1stMC={ref1stMC}
+                  formValidate={formValidate}
                />
             }
             {awaitingResp &&
