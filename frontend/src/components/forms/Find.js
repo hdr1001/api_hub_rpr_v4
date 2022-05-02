@@ -29,6 +29,7 @@ import {
    DialogContent,
    Autocomplete,
    TextField,
+   Alert,
    IconButton,
    DialogActions,
    Stack,
@@ -63,14 +64,15 @@ const iniSearchCriteria = {
    city: '',
    regNumber: '',
    telNumber: '',
-   iniState: true
+   iniState: true,
+   apiErrResp: ''
 };
 
 const processQueue1st = refFormField => {
    if(refFormField && refFormField.current) { refFormField.current.focus() }
 }
 
-const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, ref1stMC) => {
+const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, setSearchCriteria, ref1stMC) => {
    if(formValidate.exec() === false) {
       console.log('Form validates false');
       return; //No match candidates will be fetched
@@ -159,7 +161,8 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setD
       setAwaitingResp(false);
    })
    .catch(err => {
-      console.log(err)
+      setSearchCriteria( { apiErrResp: err } );
+
       setAwaitingResp(false);
    });
 
@@ -207,10 +210,12 @@ function MatchCriteriaInputs(props) {
 
    const handleOnChange = (event, newValue) => {
       if(!event.target.name) {
-         props.setSearchCriteria( { isoCtry: newValue, iniState: false } )
+         props.setSearchCriteria( { isoCtry: newValue, iniState: false, apiErrResp: '' } )
       }
       else {
-         props.setSearchCriteria( { [event.target.name]: event.target.value, iniState: false } )
+         props.setSearchCriteria( 
+            { [event.target.name]: event.target.value, iniState: false, apiErrResp: '' }
+         )
       }
    };
 
@@ -309,6 +314,18 @@ function MatchCriteriaInputs(props) {
                onChange={handleOnChange}
             />
          }
+         {props.searchCriteria.apiErrResp.length > 0 && 
+            <Alert
+               severity="error"
+               onClose={() => {
+                  props.refNameTextField.current.focus();
+                  props.setSearchCriteria( { apiErrResp: '' } );
+               }}
+               sx={{mt: 1}}
+            >
+               {props.searchCriteria.apiErrResp}
+            </Alert>
+         }
       </>
    );
 }
@@ -326,7 +343,7 @@ function MatchCriteriaBtns(props) {
          <Button
             { ... btnOpts }
             onClick={() => handleOnFind(props.formValidate, props.apiHubUrl, props.setAwaitingResp,
-                                          props.setIdrResp, props.setDuns, props.searchCriteria, props.ref1stMC)}
+                                          props.setIdrResp, props.setDuns, props.searchCriteria, props.setSearchCriteria, props.ref1stMC)}
          >
             Find
          </Button>
@@ -547,7 +564,7 @@ const FormFind = props => {
    );
    
    const [ awaitingResp, setAwaitingResp ] = useState(false);
-   
+
    const [ idrResp, setIdrResp ] = useState(null);
    
    const [ duns, setDuns ] = useState('');
@@ -567,7 +584,7 @@ const FormFind = props => {
       setSearchCriteria(iniSearchCriteria);
    
       if(idrResp) { setIdrResp(null) }
-   
+
       props.closeFormFind();
    };
 
@@ -581,6 +598,9 @@ const FormFind = props => {
                   : null,
          (force) => (force || !searchCriteria.iniState) && !(searchCriteria.name || searchCriteria.regNumber)
                   ? {error: true, helperText: 'Valid name or registration number is required'}
+                  : null,
+         () => searchCriteria.apiErrResp.length > 0
+                  ? {error: true, helperText: 'API match candidate request resulted in an error'}
                   : null
       ],
 

@@ -26,6 +26,7 @@ import DbCompanyInfo from './DplCompanyInfo';
 import DbHierarchiesConn from './DplHierarchiesConn';
 import DbPrincipals from './DplPrincipalsContacts'
 import DbFinStrength from './DplFinStrength';
+import DbGlobBusRanking from './DplGlobBusRanking'
 import DbPaymInsights from './DplPaymInsights';
 import DbFilingsEvents from './DplFilingsEvents';
 
@@ -136,6 +137,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['financialstrengthinsight'] &&
                   <DbFinStrength content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['globalbusinessranking'] &&
+                  <DbGlobBusRanking content={props.oDBs} />
                }
                {dataBlocks.blockIDs['paymentinsight'] &&
                   <DbPaymInsights content={props.oDBs} />

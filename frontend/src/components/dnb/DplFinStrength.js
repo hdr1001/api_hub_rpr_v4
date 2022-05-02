@@ -24,7 +24,7 @@ import React from 'react';
 import { B2BDataTable, B2BDataTableRow, bIsEmptyObj } from '../AhUtils';
 import { oCurrOpts } from '../style'
 
-//Data block Hierarchies & Connections component
+//Data block Financial Strength Insights component
 export default function DbFinStrength(props) {
    if(!(props.content && props.content.organization)) {
       return null
