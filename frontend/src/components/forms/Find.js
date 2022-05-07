@@ -72,7 +72,8 @@ const processQueue1st = refFormField => {
    if(refFormField && refFormField.current) { refFormField.current.focus() }
 }
 
-const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setDuns, searchCriteria, setSearchCriteria, ref1stMC) => {
+const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
+                        setIdrResp, setDuns, searchCriteria, setSearchCriteria, refNameTextField, ref1stMC) => {
    if(formValidate.exec() === false) {
       console.log('Form validates false');
       return; //No match candidates will be fetched
@@ -156,14 +157,18 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp, setIdrResp, setD
                : ''
       );
 
-      if(ref1stMC && ref1stMC.current) { ref1stMC.current.focus() }
-
       setAwaitingResp(false);
+
+      if(ref1stMC && ref1stMC.current) { ref1stMC.current.focus() }
    })
    .catch(err => {
       setSearchCriteria( { apiErrResp: err } );
 
       setAwaitingResp(false);
+
+      if(refNameTextField && refNameTextField.current) {
+         refNameTextField.current.focus();
+      }
    });
 
    return;
@@ -342,8 +347,8 @@ function MatchCriteriaBtns(props) {
       >
          <Button
             { ... btnOpts }
-            onClick={() => handleOnFind(props.formValidate, props.apiHubUrl, props.setAwaitingResp,
-                                          props.setIdrResp, props.setDuns, props.searchCriteria, props.setSearchCriteria, props.ref1stMC)}
+            onClick={() => handleOnFind(props.formValidate, props.apiHubUrl, props.setAwaitingResp, props.setIdrResp,
+                                          props.setDuns, props.searchCriteria, props.setSearchCriteria, props.refNameTextField, props.ref1stMC)}
          >
             Find
          </Button>
@@ -618,6 +623,38 @@ const FormFind = props => {
          maxWidth={'xs'}
          open={props.formFindIsOpen}
          onClose={handleDialogClose}
+         onKeyDown={event => {
+            if(event.ctrlKey && event.code === "KeyS") {
+               event.stopPropagation(); event.preventDefault();
+
+               if(!awaitingResp && !idrResp) {
+                  handleOnFind(formValidate, props.apiHubUrl, setAwaitingResp, setIdrResp,
+                                    setDuns, searchCriteria, setSearchCriteria, refNameTextField, ref1stMC)
+               }
+
+               if(!awaitingResp && idrResp) {
+                  handleOnSubmit(props.apiHubUrl, idrResp, setIdrResp, duns, setDuns, 
+                                       { ...searchCriteria.isoCtry }, setSearchCriteria, refNameTextField)
+               }
+            }
+
+            if(event.ctrlKey && event.code === "KeyR") {
+               event.stopPropagation(); event.preventDefault();
+
+               if(!awaitingResp && !idrResp) {
+                  setSearchCriteria({ ...iniSearchCriteria, isoCtry: { ...searchCriteria.isoCtry } });
+
+                  if(refNameTextField && refNameTextField.current) {
+                     refNameTextField.current.focus();
+                  }
+               }
+
+               if(!awaitingResp && idrResp) {
+                  setIdrResp(null);
+                  setTimeout(() => processQueue1st(refNameTextField), 0);
+               }
+            }
+         }}
       >
          <DialogTitle>
             Find a company

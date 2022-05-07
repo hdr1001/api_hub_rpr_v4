@@ -33,9 +33,9 @@ const contentBox = {
 };
 
 const arrFilesBox = {
-   width: 385,
+   minWidth: '320px',
    m: 1,
-   float: 'right'
+   float: 'left'
 };
 
 const horizontalPadding = {

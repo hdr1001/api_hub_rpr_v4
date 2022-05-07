@@ -20,28 +20,30 @@
 //
 // *********************************************************************
 
-import Box from '@mui/system/Box';
+import Grid from '@mui/material/Grid';
 import DnbDplDBs from './AhDnbDplDBs';
 import { contentBox, arrFilesBox } from './style';
 
 export default function AhContent(props) {
    return (
-      <Box
+      <Grid
+         container
          sx={contentBox}
       >
          {
             props.arrData.map(data => 
-               <Box
+               <Grid item
                   key={data.uuid}
                   sx={arrFilesBox}
+                  xs={12} sm={5} md={4} lg={1}
                >
                   <DnbDplDBs
                      file={data.file}
                      uuid={data.uuid}
                   />
-               </Box>
+               </Grid>
             )
          }
-      </Box>
+      </Grid>
    )
 }
