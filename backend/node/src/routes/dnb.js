@@ -28,8 +28,44 @@ import getHttpRespPromise from '../ah_rpr_http.js';
 
 const router = express.Router();
 
+function getDUNS(sKey) {
+   let sRet = '';
+
+   if(typeof sKey !== 'string') { return sRet }
+   
+   sKey = sKey.trim();
+
+   if(sKey.length === 0) { return sRet }
+
+   if(sKey.length === 11 && sKey.slice(2, 3) === '-' && sKey.slice(6, 7) === '-') {
+      sKey = sKey.slice(0, 2) + sKey.slice(3, 6) + sKey.slice(7);
+   }
+
+   if(sKey.length > 9) { return sRet }
+
+   const reg = /^\d+$/; //Only numbers allowed
+
+   if(!reg.test(sKey)) { return sRet }
+
+   sRet = '000000000'.slice(0, 9 - sKey.length) + sKey
+
+   return sRet;
+}
+
 router.get('/', (req, resp) => {
     resp.json({api: ahProviders[ahProviderCodes.dnb] , key: ahKeys[ahKeyCodes.duns]})
+});
+
+router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
+   const sDUNS = getDUNS(req.params.key);
+
+   if(!sDUNS) {
+      const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, 'DUNS submitted is not valid');
+
+      resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
+   }
+
+   resp.json({DUNS: sDUNS})
 });
 
 router.post('/find', (req, resp) => {
