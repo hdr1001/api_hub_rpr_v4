@@ -21,6 +21,7 @@
 -- *********************************************************************
 
 -- DROP TABLE public.dnb_dpl_idr;
+-- DROP TABLE public.products_dnb;
 -- DROP TABLE public.auth_tokens_dpl;
 -- DROP TABLE public.ah_errors;
 -- DROP TABLE public.products_gleif;
@@ -90,6 +91,19 @@ CREATE TABLE public.auth_tokens_dpl
 )
 WITH (
     OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+-- Create table for storing D&B data products
+CREATE TABLE public.products_dnb (
+   duns character varying(9) COLLATE pg_catalog."default",
+   dbs_01 JSONB,
+   dbs_01_obtained_at bigint,
+   dbs_01_http_status smallint,
+   CONSTRAINT products_dnb_pkey PRIMARY KEY (duns)
+)
+WITH (
+   OIDS = false
 )
 TABLESPACE pg_default;
 

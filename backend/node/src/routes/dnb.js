@@ -22,6 +22,7 @@
 
 import express from 'express';
 import { ahProviders, ahProviderCodes, ahKeys, ahKeyCodes, ahErrCodes, httpSuccess, dplAuthToken } from '../ah_rpr_globs.js';
+import ahReqPersistResp from '../ah_rpr_core.js';
 import ApiHubErr from '../ah_rpr_err.js';
 import db from '../ah_rpr_pg.js';
 import getHttpRespPromise from '../ah_rpr_http.js';
@@ -65,7 +66,25 @@ router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
-   resp.json({DUNS: sDUNS})
+   const ahReq = {
+      key: sDUNS,
+      http: {
+         method: 'GET',
+         host: 'plus.dnb.com',
+         headers: {
+            'Content-Type': 'application/json',
+            Authorization: dplAuthToken.toString()
+         },
+         path: '/v1/data/duns/' + sDUNS + '?blockIDs=companyinfo_L2_v1'
+      },
+      forceNew: (req.query.forceNew !== undefined && req.query.forceNew !== 'false') ? true : false,
+      sql: {
+         select: 'SELECT duns AS key, dbs_01 AS product, dbs_01_obtained_at AS poa, dbs_01_http_status AS api_http_status FROM products_dnb WHERE duns = $1;',
+         insert: 'INSERT INTO products_dnb (duns, dbs_01, dbs_01_obtained_at, dbs_01_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (duns) DO UPDATE SET dbs_01 = $2, dbs_01_obtained_at = $3, dbs_01_http_status = $4;'
+      }
+   };
+
+   ahReqPersistResp(req, resp, ahReq);
 });
 
 router.post('/find', (req, resp) => {
