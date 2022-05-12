@@ -97,6 +97,9 @@ TABLESPACE pg_default;
 -- Create table for storing D&B data products
 CREATE TABLE public.products_dnb (
    duns character varying(9) COLLATE pg_catalog."default",
+   dbs_00 JSONB,
+   dbs_00_obtained_at bigint,
+   dbs_00_http_status smallint,
    dbs_01 JSONB,
    dbs_01_obtained_at bigint,
    dbs_01_http_status smallint,

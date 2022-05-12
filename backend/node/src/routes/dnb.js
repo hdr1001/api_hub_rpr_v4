@@ -29,28 +29,33 @@ import getHttpRespPromise from '../ah_rpr_http.js';
 
 const router = express.Router();
 
-function getDUNS(sKey) {
-   let sRet = '';
+const dataBlockCollections = {
+   '00': ['companyinfo_L2_v1', 'principalscontacts_L3_v2', 'hierarchyconnections_L1_v1'],
+   '01': ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
+};
 
-   if(typeof sKey !== 'string') { return sRet }
+function getDUNS(sKey) {
+   if(typeof sKey !== 'string') { return '' }
    
    sKey = sKey.trim();
 
-   if(sKey.length === 0) { return sRet }
+   if(sKey.length === 0) { return '' }
 
    if(sKey.length === 11 && sKey.slice(2, 3) === '-' && sKey.slice(6, 7) === '-') {
       sKey = sKey.slice(0, 2) + sKey.slice(3, 6) + sKey.slice(7);
    }
 
-   if(sKey.length > 9) { return sRet }
+   if(sKey.length > 9) { return '' }
 
    const reg = /^\d+$/; //Only numbers allowed
 
-   if(!reg.test(sKey)) { return sRet }
+   if(!reg.test(sKey)) { return '' }
 
-   sRet = '000000000'.slice(0, 9 - sKey.length) + sKey
+   if(sKey.length < 9) {
+      sKey = '000000000'.slice(0, 9 - sKey.length) + sKey
+   }
 
-   return sRet;
+   return sKey;
 }
 
 router.get('/', (req, resp) => {
@@ -66,6 +71,22 @@ router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
       resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
    }
 
+   let dbCollID = '00';
+
+   if(req.query.dbCollID) {
+      dbCollID = req.query.dbCollID.length === 1 ? '0' + req.query.dbCollID : req.query.dbCollID
+   }
+
+   if(!dataBlockCollections[dbCollID]) {
+      const ahErr = new ApiHubErr(ahErrCodes.invalidParameter, 'Data block collection ID specified is not valid');
+
+      resp.status(ahErr.apiHubErr.http.status).json(ahErr); return;
+   }
+
+   const qryParameters = {
+      blockIDs: dataBlockCollections[dbCollID].join(',')
+   };
+
    const ahReq = {
       key: sDUNS,
       http: {
@@ -75,12 +96,12 @@ router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
             'Content-Type': 'application/json',
             Authorization: dplAuthToken.toString()
          },
-         path: '/v1/data/duns/' + sDUNS + '?blockIDs=companyinfo_L2_v1'
+         path: `/v1/data/duns/${sDUNS}?${(new URLSearchParams(qryParameters)).toString()}`
       },
       forceNew: (req.query.forceNew !== undefined && req.query.forceNew !== 'false') ? true : false,
       sql: {
-         select: 'SELECT duns AS key, dbs_01 AS product, dbs_01_obtained_at AS poa, dbs_01_http_status AS api_http_status FROM products_dnb WHERE duns = $1;',
-         insert: 'INSERT INTO products_dnb (duns, dbs_01, dbs_01_obtained_at, dbs_01_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (duns) DO UPDATE SET dbs_01 = $2, dbs_01_obtained_at = $3, dbs_01_http_status = $4;'
+         select: `SELECT duns AS key, dbs_${dbCollID} AS product, dbs_${dbCollID}_obtained_at AS poa, dbs_${dbCollID}_http_status AS api_http_status FROM products_dnb WHERE duns = $1;`,
+         insert: `INSERT INTO products_dnb (duns, dbs_${dbCollID}, dbs_${dbCollID}_obtained_at, dbs_${dbCollID}_http_status) VALUES ($1, $2, $3, $4) ON CONFLICT (duns) DO UPDATE SET dbs_${dbCollID} = $2, dbs_${dbCollID}_obtained_at = $3, dbs_${dbCollID}_http_status = $4;`
       }
    };
 

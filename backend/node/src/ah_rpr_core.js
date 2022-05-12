@@ -34,7 +34,7 @@ export default function ahReqPersistResp(req, resp, ahReq) {
    )
       .then(dbResp => {
          if(dbResp) {
-            if(dbResp.rows.length > 0) { //Available on the database
+            if(dbResp.rows.length > 0 && dbResp.rows[0].product) { //Available on the database
                resp
                   .setHeader('X-AHRPR-Cache', true)
                   .setHeader('X-AHRPR-Obtained-At', new Date(dbResp.rows[0].poa))
