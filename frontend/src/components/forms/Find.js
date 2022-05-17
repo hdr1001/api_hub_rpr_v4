@@ -490,7 +490,8 @@ function MatchCandidateOpts(props) {
             component='fieldset'
             sx={{
                ...fldSet,
-               px: 2
+               px: 2,
+               py: 0.5
             }}
          >
             <FormLabel component='legend'>Match candidates</FormLabel>
@@ -574,6 +575,8 @@ const FormFind = props => {
    
    const [ duns, setDuns ] = useState('');
 
+   const [ formOrientation, setFormOrientation ] = useState('row')
+
    //Component references
    const refNameTextField = useRef();
 
@@ -620,7 +623,7 @@ const FormFind = props => {
    return (
       <Dialog
          fullWidth={true}
-         maxWidth={'xs'}
+         maxWidth={idrResp && formOrientation === 'row' ? 'lg' : 'xs'}
          open={props.formFindIsOpen}
          onClose={handleDialogClose}
          onKeyDown={event => {
@@ -696,7 +699,10 @@ const FormFind = props => {
                </Button>
             </Stack>
          </Menu>
-         <DialogContent sx={{pt: 0.5}}>
+         <Stack
+            direction={formOrientation}
+         >
+         <DialogContent sx={{py: 0.5, width: formOrientation === 'row' ? '50%' : '100%'}}>
             <MatchCriteriaInputs
                awaitingResp={awaitingResp}
                idrResp={idrResp}
@@ -724,7 +730,13 @@ const FormFind = props => {
             }
          </DialogContent>
          {idrResp &&
-            <DialogContent sx={{pt: 0.5}}>
+            <DialogContent
+               sx={{
+                  py: 0.5,
+                  mt: formOrientation === 'row' ? 0 : 2,
+                  width: formOrientation === 'row' ? '50%' : '100%'
+               }}
+            >
                <MatchCandidateOpts
                   idrResp={idrResp}
                   duns={duns}
@@ -743,7 +755,8 @@ const FormFind = props => {
                />
             </DialogContent>
          }
-         <DialogActions>
+         </Stack>
+         <DialogActions sx={{py: 0.5}}>
             <Button onClick={handleDialogClose}>Close</Button>
          </DialogActions>
       </Dialog>
