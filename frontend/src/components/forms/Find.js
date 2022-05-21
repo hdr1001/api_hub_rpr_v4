@@ -52,6 +52,8 @@ import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';;
 
 const defaultCtry = { label: 'Netherlands', code: 'NL' };
 
@@ -67,6 +69,19 @@ const iniSearchCriteria = {
    iniState: true,
    apiErrResp: ''
 };
+
+const mcSxRow = {
+   py: 0.5,
+   pl: 0,
+   mt: 0,
+   width: '50%'
+}
+
+const mcSxCol = {
+   py: 0.5,
+   mt: 2,
+   width: '100%'
+}
 
 const processQueue1st = refFormField => {
    if(refFormField && refFormField.current) { refFormField.current.focus() }
@@ -204,6 +219,62 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
    setSearchCriteria( { ...iniSearchCriteria, isoCtry: isoCtry } );
 
    setTimeout(() => processQueue1st(refNameTextField), 0);
+}
+
+function DialogMenuContent(props) {
+   const sxLabel = {justifyContent: 'space-between'};
+
+   return (
+      <>
+         <Stack spacing={1} sx={{mx: 2, my: 1}}>
+            <Typography
+               variant='h6'
+               gutterBottom
+            >
+               Find a company form settings
+            </Typography>
+            <FormControlLabel control={
+                  <ToggleButtonGroup
+                     value={props.addtnlFields}
+                     onChange={(event, updatedAddtnlFields) => props.setAddtnlFields(updatedAddtnlFields)}
+                     sx={{pl: 1}}
+                  >
+                     <ToggleButton value='location'><LocationOnOutlinedIcon /></ToggleButton>
+                     <ToggleButton value='regNumber'><KeyOutlinedIcon /></ToggleButton>
+                     <ToggleButton value='telNumber'><PhoneOutlinedIcon /></ToggleButton>
+                  </ToggleButtonGroup>
+               }
+               label='Optional criteria fields'
+               labelPlacement='start'
+               sx={sxLabel}
+            />
+            <FormControlLabel control={
+                  <ToggleButtonGroup
+                     value={props.formOrientation}
+                     exclusive
+                     onChange={(event, newOrientation) => props.setFormOrientation(newOrientation)}
+                     sx={{pl: 1}}
+                  >
+                     <ToggleButton value='column'><ArrowDownwardIcon /></ToggleButton>
+                     <ToggleButton value='row'><ArrowForwardIcon /></ToggleButton>
+                  </ToggleButtonGroup>
+               }
+               label='Match candidate orientation'
+               labelPlacement='start'
+               sx={sxLabel}
+            />
+         </Stack>
+         <Stack
+            direction='row'
+            justifyContent='end'
+            sx={{pr: 1, mt: 1}}
+         >
+            <Button onClick={() => props.setDialogSettingsMenu(null)}>
+               Close
+            </Button>
+         </Stack>
+      </>
+   )
 }
 
 function MatchCriteriaInputs(props) {
@@ -560,10 +631,12 @@ function MatchCandidateBtns(props) {
 
 const FormFind = props => {
    //Component state 
-   const [ anchorMenu, setAnchorMenu ] = useState(null);
+   const [ dialogSettingsMenu, setDialogSettingsMenu ] = useState(null);
 
    const [ addtnlFields, setAddtnlFields ] = useState(['regNumber']);
-   
+
+   const [ formOrientation, setFormOrientation ] = useState('row');
+
    const [ searchCriteria, setSearchCriteria ] = useReducer(
       (prevState, state) => ( { ...prevState, ...state } ),
       iniSearchCriteria
@@ -574,8 +647,6 @@ const FormFind = props => {
    const [ idrResp, setIdrResp ] = useState(null);
    
    const [ duns, setDuns ] = useState('');
-
-   const [ formOrientation, setFormOrientation ] = useState('row')
 
    //Component references
    const refNameTextField = useRef();
@@ -662,18 +733,22 @@ const FormFind = props => {
          <DialogTitle>
             Find a company
             <IconButton
-               onClick={event => setAnchorMenu(event.currentTarget)}
+               aria-controls={!!dialogSettingsMenu ? 'dialog-settings-menu' : undefined}
+               aria-haspopup={true}
+               aria-expanded={!!dialogSettingsMenu ? true : undefined}
+               onClick={event => setDialogSettingsMenu(event.currentTarget)}
                sx={{float: 'right'}}
             >
                <MenuIcon />
             </IconButton>
          </DialogTitle>
          <Menu
-            anchorEl={anchorMenu}
-            open={!!anchorMenu}
-            onClose={event => setAnchorMenu(event.currentTarget)}
+            id='dialog-settings-menu'
+            anchorEl={dialogSettingsMenu}
+            open={!!dialogSettingsMenu}
+            onClose={() => setDialogSettingsMenu(null)}
             anchorOrigin={{
-               vertical: 'top',
+               vertical: 'bottom',
                horizontal: 'right',
             }}
             transformOrigin={{
@@ -681,23 +756,13 @@ const FormFind = props => {
                horizontal: 'right',
             }}
          >
-            <ToggleButtonGroup
-               value={addtnlFields}
-               onChange={(event, updatedAddtnlFields) => setAddtnlFields(updatedAddtnlFields)}
-            >
-               <ToggleButton value='location'><LocationOnOutlinedIcon /></ToggleButton>
-               <ToggleButton value='regNumber'><KeyOutlinedIcon /></ToggleButton>
-               <ToggleButton value='telNumber'><PhoneOutlinedIcon /></ToggleButton>
-            </ToggleButtonGroup>
-            <Stack
-               direction='row'
-               justifyContent='end'
-               sx={{pr: 1, mt: 1}}
-            >
-               <Button onClick={() => setAnchorMenu(null)}>
-                  Close
-               </Button>
-            </Stack>
+            <DialogMenuContent
+               setDialogSettingsMenu={setDialogSettingsMenu}
+               addtnlFields={addtnlFields}
+               setAddtnlFields={setAddtnlFields}
+               formOrientation={formOrientation}
+               setFormOrientation={setFormOrientation}
+            />
          </Menu>
          <Stack
             direction={formOrientation}
@@ -731,11 +796,7 @@ const FormFind = props => {
          </DialogContent>
          {idrResp &&
             <DialogContent
-               sx={{
-                  py: 0.5,
-                  mt: formOrientation === 'row' ? 0 : 2,
-                  width: formOrientation === 'row' ? '50%' : '100%'
-               }}
+               sx={formOrientation === 'row' ? mcSxRow : mcSxCol}
             >
                <MatchCandidateOpts
                   idrResp={idrResp}
