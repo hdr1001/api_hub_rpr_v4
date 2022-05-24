@@ -62,6 +62,7 @@ const iniSearchCriteria = {
    name: '',
    addr1: '',
    addr2: '',
+   state: '',
    postalCode: '',
    city: '',
    regNumber: '',
@@ -102,6 +103,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
    if(searchCriteria.name) { dnbIDR.name = searchCriteria.name }
    if(searchCriteria.addr1) { dnbIDR.streetAddressLine1 = searchCriteria.addr1 }
    if(searchCriteria.addr2) { dnbIDR.streetAddressLine2 = searchCriteria.addr2 }
+   if(searchCriteria.state) { dnbIDR.addressRegion = searchCriteria.state }
    if(searchCriteria.postalCode) { dnbIDR.postalCode = searchCriteria.postalCode }
    if(searchCriteria.city) { dnbIDR.addressLocality = searchCriteria.city }
    if(searchCriteria.regNumber) { dnbIDR.registrationNumber = searchCriteria.regNumber }
@@ -330,33 +332,58 @@ function MatchCriteriaInputs(props) {
             { ...textFieldOptsInclFW }
             value={props.searchCriteria.addr1}
             onChange={handleOnChange}
-            InputProps={{endAdornment: (
-               <IconButton
-                  edge='end'
-                  disabled={addr2Act}
-                  onClick={() => setAddr2Act(!addr2Act)}
-               >
-                  <AddCircleOutlineOutlinedIcon />
-               </IconButton>
-            )}}
+            InputProps={props.addtnlFields.includes('location')
+               ?
+                  null
+               :
+                  {endAdornment: (
+                     <IconButton
+                        edge='end'
+                        disabled={addr2Act || disableInputs}
+                        onClick={() => setAddr2Act(!addr2Act)}
+                     >
+                        <AddCircleOutlineOutlinedIcon />
+                     </IconButton>
+                  )}
+            }
          />
-         {addr2Act && 
-            <TextField
-               name='addr2' label='Address line 2' 
-               { ...textFieldOptsInclFW }
-               value={props.searchCriteria.addr2}
-               onChange={handleOnChange}
-               InputProps={{endAdornment: (
-                  <IconButton
-                     edge='end'
-                     disabled={!addr2Act}
-                     onClick={() => setAddr2Act(!addr2Act)}
-                  >
-                     <RemoveCircleOutlineOutlinedIcon />
-                  </IconButton>
-               )}}
-            />
-         }
+         <Stack direction='row'>
+            {(props.addtnlFields.includes('location') || addr2Act) && 
+               <TextField
+                  name='addr2' label='Address line 2' 
+                  { ...textFieldOptsInclFW }
+                  value={props.searchCriteria.addr2}
+                  onChange={handleOnChange}
+                  InputProps={props.addtnlFields.includes('location')
+                     ?
+                        null
+                     :
+                        {endAdornment: (
+                           <IconButton
+                              edge='end'
+                              disabled={!addr2Act || disableInputs}
+                              onClick={() => setAddr2Act(!addr2Act)}
+                           >
+                              <RemoveCircleOutlineOutlinedIcon />
+                           </IconButton>
+                        )}
+                  }
+                  sx={{
+                     width: props.addtnlFields.includes('location') ? '80%' : '100%',
+                     mr: props.addtnlFields.includes('location') ? 1 : 0
+                  }}
+               />
+            }
+            {(props.addtnlFields.includes('location')) &&
+               <TextField
+                  name='state' label='State' 
+                  { ...textFieldOpts }
+                  value={props.searchCriteria.state}
+                  onChange={handleOnChange}
+                  sx={{width: '20%'}}
+               />
+            }
+         </Stack>
          <Stack direction='row'>
             <TextField
                name='postalCode' label='Postal code' 
@@ -506,8 +533,11 @@ function MatchCandidate(props) {
       return (
          org.primaryAddress &&
             org.primaryAddress.streetAddress &&
-            org.primaryAddress.streetAddress[props.line] &&
+            org.primaryAddress.streetAddress[props.line]
+         ?
             <Typography>{org.primaryAddress.streetAddress[props.line]}</Typography>
+         :
+            null
       )
    }
 
