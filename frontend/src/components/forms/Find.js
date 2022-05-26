@@ -45,6 +45,8 @@ import {
    ToggleButton,
    Typography,
    Tooltip,
+   Select,
+   MenuItem
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -54,6 +56,9 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';;
+
+const maxRefFields = 3; //D&B Direct+ allows for max 5
+const refFieldOpts = [ ...Array(maxRefFields + 1).keys() ];
 
 const defaultCtry = { label: 'Netherlands', code: 'NL' };
 
@@ -68,8 +73,10 @@ const iniSearchCriteria = {
    regNumber: '',
    telNumber: '',
    iniState: true,
-   apiErrResp: ''
+   apiErrResp: '',
 };
+
+refFieldOpts.forEach(opt => {if(opt < maxRefFields) { iniSearchCriteria[`refField${opt}`] = '' }});
 
 const mcSxRow = {
    py: 0.5,
@@ -108,6 +115,11 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
    if(searchCriteria.city) { dnbIDR.addressLocality = searchCriteria.city }
    if(searchCriteria.regNumber) { dnbIDR.registrationNumber = searchCriteria.regNumber }
    if(searchCriteria.telNumber) { dnbIDR.telephoneNumber = searchCriteria.telNumber }
+   refFieldOpts.forEach(opt => {
+      if(opt < maxRefFields) {
+         if(searchCriteria[`refField${opt}`]) { dnbIDR[`customerReference${opt + 1}`] = searchCriteria[`refField${opt}`] }
+      }
+   });
 
    fetch(apiHubUrl + '/api/dnb/find', {
       method: 'POST',
@@ -251,6 +263,19 @@ function DialogMenuContent(props) {
                sx={sxLabel}
             />
             <FormControlLabel control={
+                  <Select
+                     size='small'
+                     value={props.numRefFields}
+                     onChange={event => props.setNumRefFields(event.target.value)}
+                  >
+                     {refFieldOpts.map(opt => <MenuItem value={opt} key={opt}>{opt}</MenuItem>)}
+                  </Select>
+               }
+               label='Number of reference fields'
+               labelPlacement='start'
+               sx={sxLabel}
+            />
+            <FormControlLabel control={
                   <ToggleButtonGroup
                      value={props.formOrientation}
                      exclusive
@@ -269,7 +294,7 @@ function DialogMenuContent(props) {
          <Stack
             direction='row'
             justifyContent='end'
-            sx={{pr: 1, mt: 1}}
+            sx={{pr: 1, mt: 2}}
          >
             <Button onClick={() => props.setDialogSettingsMenu(null)}>
                Close
@@ -416,6 +441,22 @@ function MatchCriteriaInputs(props) {
                value={props.searchCriteria.telNumber}
                onChange={handleOnChange}
             />
+         }
+         {props.numRefFields > 0 &&
+               refFieldOpts.map(opt =>
+                  opt < props.numRefFields
+                     ?
+                        <TextField
+                           name={`refField${opt}`}
+                           label={`Reference field ${opt + 1}`} 
+                           { ...textFieldOptsInclFW }
+                           value={props.searchCriteria[`refField${opt}`]}
+                           onChange={handleOnChange}
+                           key={opt}
+                        />
+                     :
+                        null
+               )
          }
          {props.searchCriteria.apiErrResp.length > 0 && 
             <Alert
@@ -665,6 +706,8 @@ const FormFind = props => {
 
    const [ addtnlFields, setAddtnlFields ] = useState(['regNumber']);
 
+   const [ numRefFields, setNumRefFields ] = useState(refFieldOpts[0]);
+
    const [ formOrientation, setFormOrientation ] = useState('row');
 
    const [ searchCriteria, setSearchCriteria ] = useReducer(
@@ -790,6 +833,8 @@ const FormFind = props => {
                setDialogSettingsMenu={setDialogSettingsMenu}
                addtnlFields={addtnlFields}
                setAddtnlFields={setAddtnlFields}
+               numRefFields={numRefFields}
+               setNumRefFields={setNumRefFields}
                formOrientation={formOrientation}
                setFormOrientation={setFormOrientation}
             />
@@ -804,6 +849,7 @@ const FormFind = props => {
                searchCriteria={searchCriteria}
                setSearchCriteria={setSearchCriteria}
                addtnlFields={addtnlFields}
+               numRefFields={numRefFields}
                refNameTextField={refNameTextField}
                formValidate={formValidate}
             />
