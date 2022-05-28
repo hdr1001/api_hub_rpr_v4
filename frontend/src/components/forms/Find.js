@@ -29,6 +29,7 @@ import {
    DialogContent,
    Autocomplete,
    TextField,
+   InputAdornment,
    Alert,
    IconButton,
    DialogActions,
@@ -49,6 +50,7 @@ import {
    MenuItem
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -96,7 +98,8 @@ const processQueue1st = refFormField => {
 }
 
 const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
-                        setIdrResp, setDuns, searchCriteria, setSearchCriteria, refNameTextField, ref1stMC) => {
+                        setIdrResp, setDuns, searchCriteria, setSearchCriteria, billRef,
+                        refNameTextField, ref1stMC) => {
    if(formValidate.exec() === false) {
       console.log('Form validates false');
       return; //No match candidates will be fetched
@@ -120,6 +123,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
          if(searchCriteria[`refField${opt}`]) { dnbIDR[`customerReference${opt + 1}`] = searchCriteria[`refField${opt}`] }
       }
    });
+   if(billRef) {dnbIDR.customerBillingEndorsement = billRef}
 
    fetch(apiHubUrl + '/api/dnb/find', {
       method: 'POST',
@@ -238,6 +242,8 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
 function DialogMenuContent(props) {
    const sxLabel = {justifyContent: 'space-between'};
 
+   const [ txtFldBillRef, setTxtFldBillRef ] = useState(props.billRef)
+
    return (
       <>
          <Stack spacing={1} sx={{mx: 2, my: 1}}>
@@ -289,6 +295,18 @@ function DialogMenuContent(props) {
                label='Match candidate orientation'
                labelPlacement='start'
                sx={sxLabel}
+            />
+            <TextField
+               name='billRef' label='Billing reference'
+               size='small' margin='dense'
+               value={txtFldBillRef}
+               onChange={event => setTxtFldBillRef(event.target.value)}
+               InputProps={{
+                  endAdornment:
+                     <InputAdornment position="end">
+                        <SaveOutlinedIcon onClick={() => {props.setBillRef(txtFldBillRef)}} />
+                     </InputAdornment>
+               }}
             />
          </Stack>
          <Stack
@@ -487,7 +505,8 @@ function MatchCriteriaBtns(props) {
          <Button
             { ... btnOpts }
             onClick={() => handleOnFind(props.formValidate, props.apiHubUrl, props.setAwaitingResp, props.setIdrResp,
-                                          props.setDuns, props.searchCriteria, props.setSearchCriteria, props.refNameTextField, props.ref1stMC)}
+                                          props.setDuns, props.searchCriteria, props.setSearchCriteria, props.billRef,
+                                          props.refNameTextField, props.ref1stMC)}
          >
             Find
          </Button>
@@ -715,6 +734,8 @@ const FormFind = props => {
       iniSearchCriteria
    );
    
+   const [ billRef, setBillRef ] = useState('');
+
    const [ awaitingResp, setAwaitingResp ] = useState(false);
 
    const [ idrResp, setIdrResp ] = useState(null);
@@ -776,7 +797,8 @@ const FormFind = props => {
 
                if(!awaitingResp && !idrResp) {
                   handleOnFind(formValidate, props.apiHubUrl, setAwaitingResp, setIdrResp,
-                                    setDuns, searchCriteria, setSearchCriteria, refNameTextField, ref1stMC)
+                                    setDuns, searchCriteria, setSearchCriteria, billRef,
+                                    refNameTextField, ref1stMC)
                }
 
                if(!awaitingResp && idrResp) {
@@ -837,6 +859,8 @@ const FormFind = props => {
                setNumRefFields={setNumRefFields}
                formOrientation={formOrientation}
                setFormOrientation={setFormOrientation}
+               billRef={billRef}
+               setBillRef={setBillRef}
             />
          </Menu>
          <Stack
@@ -861,6 +885,7 @@ const FormFind = props => {
                   setDuns={setDuns}
                   setSearchCriteria={setSearchCriteria}
                   searchCriteria={searchCriteria}
+                  billRef={billRef}
                   refNameTextField={refNameTextField}
                   ref1stMC={ref1stMC}
                   formValidate={formValidate}
