@@ -239,13 +239,51 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
    setTimeout(() => processQueue1st(refNameTextField), 0);
 }
 
-function DialogMenuContent(props) {
+function DialogSettingsMenu(props) {
    const sxLabel = {justifyContent: 'space-between'};
 
-   const [ txtFldBillRef, setTxtFldBillRef ] = useState(props.billRef)
+   const [ menuBillRef, setMenuBillRef ] = useState(props.billRef);
+   const [ billRefSavedSuccess, setBillRefSavedSuccess ] = useState(false);
+   const [ billRefNotSavedAlert, setBillRefNotSavedAlert ] = useState(false);
+
+   function handleMenuClose() {
+      if(menuBillRef !== props.billRef) {
+         setBillRefNotSavedAlert(true);
+
+         return;
+      }
+
+      props.setDialogSettingsMenu(null)
+   }
+
+   function alertSaveDismiss(doSaveBillRef) {
+      setBillRefNotSavedAlert(false);
+
+      if(doSaveBillRef) {
+         props.setBillRef(menuBillRef)
+      }
+      else {
+         setMenuBillRef(props.billRef)
+      }
+
+      props.setDialogSettingsMenu(null)
+   }
 
    return (
-      <>
+      <Menu
+         id='dialog-settings-menu'
+         anchorEl={props.dialogSettingsMenu}
+         open={!!props.dialogSettingsMenu}
+         onClose={handleMenuClose}
+         anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+         }}
+         transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+         }}
+      >
          <Stack spacing={1} sx={{mx: 2, my: 1}}>
             <Typography
                variant='h6'
@@ -299,12 +337,24 @@ function DialogMenuContent(props) {
             <TextField
                name='billRef' label='Billing reference'
                size='small' margin='dense'
-               value={txtFldBillRef}
-               onChange={event => setTxtFldBillRef(event.target.value)}
+               value={menuBillRef}
+               onChange={event => setMenuBillRef(event.target.value)}
                InputProps={{
                   endAdornment:
-                     <InputAdornment position="end">
-                        <SaveOutlinedIcon onClick={() => {props.setBillRef(txtFldBillRef)}} />
+                     <InputAdornment position='end'>
+                        <SaveOutlinedIcon
+                           onClick={() => {
+                              props.setBillRef(menuBillRef);
+
+                              if(billRefSavedSuccess !== true) {
+                                 setBillRefSavedSuccess(true);
+
+                                 setTimeout(() => setBillRefSavedSuccess(false), 1500);
+                              }
+                           }}
+
+                           color={billRefSavedSuccess ? 'success' : 'inherit'}
+                        />
                      </InputAdornment>
                }}
             />
@@ -312,13 +362,38 @@ function DialogMenuContent(props) {
          <Stack
             direction='row'
             justifyContent='end'
-            sx={{pr: 1, mt: 2}}
+            sx={{mx: 2, mt: 2}}
          >
-            <Button onClick={() => props.setDialogSettingsMenu(null)}>
-               Close
-            </Button>
+            {billRefNotSavedAlert
+               ?
+                  <Alert
+                     severity='warning'
+                     action={
+                        <Stack direction='row'>
+                           <Button
+                              color='inherit' size='small'
+                              onClick={() => alertSaveDismiss(false)}
+                           >
+                              Dismiss
+                           </Button>
+                           <Button
+                              color='inherit' size='small'
+                              onClick={() => alertSaveDismiss(true)}
+                           >
+                              Save
+                           </Button>
+                        </Stack>
+                     }
+                  >
+                     Billing reference changed
+                  </Alert>
+               :
+                  <Button onClick={handleMenuClose}>
+                     Close
+                  </Button>
+            }
          </Stack>
-      </>
+      </Menu>
    )
 }
 
@@ -352,7 +427,7 @@ function MatchCriteriaInputs(props) {
             renderInput={(params) => (
                <TextField
                   { ...params }
-                  label="Select country"
+                  label='Select country'
                   required
                   { ...props.formValidate.validate[props.formValidate.isoCtry]() }
                />
@@ -478,7 +553,7 @@ function MatchCriteriaInputs(props) {
          }
          {props.searchCriteria.apiErrResp.length > 0 && 
             <Alert
-               severity="error"
+               severity='error'
                onClose={() => {
                   props.refNameTextField.current.focus();
                   props.setSearchCriteria( { apiErrResp: '' } );
@@ -792,7 +867,7 @@ const FormFind = props => {
          open={props.formFindIsOpen}
          onClose={handleDialogClose}
          onKeyDown={event => {
-            if(event.ctrlKey && event.code === "KeyS") {
+            if(event.ctrlKey && event.code === 'KeyS') {
                event.stopPropagation(); event.preventDefault();
 
                if(!awaitingResp && !idrResp) {
@@ -807,7 +882,7 @@ const FormFind = props => {
                }
             }
 
-            if(event.ctrlKey && event.code === "KeyR") {
+            if(event.ctrlKey && event.code === 'KeyR') {
                event.stopPropagation(); event.preventDefault();
 
                if(!awaitingResp && !idrResp) {
@@ -837,32 +912,18 @@ const FormFind = props => {
                <MenuIcon />
             </IconButton>
          </DialogTitle>
-         <Menu
-            id='dialog-settings-menu'
-            anchorEl={dialogSettingsMenu}
-            open={!!dialogSettingsMenu}
-            onClose={() => setDialogSettingsMenu(null)}
-            anchorOrigin={{
-               vertical: 'bottom',
-               horizontal: 'right',
-            }}
-            transformOrigin={{
-               vertical: 'top',
-               horizontal: 'right',
-            }}
-         >
-            <DialogMenuContent
-               setDialogSettingsMenu={setDialogSettingsMenu}
-               addtnlFields={addtnlFields}
-               setAddtnlFields={setAddtnlFields}
-               numRefFields={numRefFields}
-               setNumRefFields={setNumRefFields}
-               formOrientation={formOrientation}
-               setFormOrientation={setFormOrientation}
-               billRef={billRef}
-               setBillRef={setBillRef}
-            />
-         </Menu>
+         <DialogSettingsMenu
+            dialogSettingsMenu={dialogSettingsMenu}
+            setDialogSettingsMenu={setDialogSettingsMenu}
+            addtnlFields={addtnlFields}
+            setAddtnlFields={setAddtnlFields}
+            numRefFields={numRefFields}
+            setNumRefFields={setNumRefFields}
+            formOrientation={formOrientation}
+            setFormOrientation={setFormOrientation}
+            billRef={billRef}
+            setBillRef={setBillRef}
+         />
          <Stack
             direction={formOrientation}
          >
@@ -918,7 +979,7 @@ const FormFind = props => {
             </DialogContent>
          }
          </Stack>
-         <DialogActions sx={{py: 0.5}}>
+         <DialogActions sx={{mx:2, py: 0.5}}>
             <Button onClick={handleDialogClose}>Close</Button>
          </DialogActions>
       </Dialog>
