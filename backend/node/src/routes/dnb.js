@@ -30,7 +30,7 @@ import getHttpRespPromise from '../ah_rpr_http.js';
 const router = express.Router();
 
 const dataBlockCollections = {
-   '00': ['companyinfo_L2_v1', 'principalscontacts_L3_v2', 'hierarchyconnections_L1_v1'],
+   '00': ['companyinfo_L2_v1', 'principalscontacts_L3_v1', 'hierarchyconnections_L1_v1'],
    '01': ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
 };
 

@@ -28,10 +28,14 @@ import DplDBsMain from './dnb/DplDBsMain';
 import { horizontalPadding } from './style';
 
 export default memo(function DnbDplDBs(props) {
-   const [oDbData, setObjDbData] = useState(null);
+   const [oDbData, setObjDbData] = useState(props.oDbData ? props.oDbData : null);
    const [errMsg, setErrMsg] = useState('');
 
    useEffect(() => {
+      if(!props.file) {
+         return;
+      }
+
       const fileReader = new FileReader();
    
       fileReader.onload = evnt => {

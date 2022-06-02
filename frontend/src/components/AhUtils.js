@@ -261,4 +261,4 @@ function getArrAddr(oAddr) {
    return arrAddr;
 }
 
-export { B2BDataTable, B2BDataTableRowFilter, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr }
+export { B2BDataTable, B2BDataTableRowFilter, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr };

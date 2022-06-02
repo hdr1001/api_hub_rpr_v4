@@ -39,6 +39,7 @@ export default function AhContent(props) {
                >
                   <DnbDplDBs
                      file={data.file}
+                     oDbData={data.oDbData}
                      uuid={data.uuid}
                   />
                </Grid>

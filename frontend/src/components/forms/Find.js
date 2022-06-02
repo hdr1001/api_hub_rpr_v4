@@ -22,6 +22,7 @@
 
 import { useState, useReducer, useRef } from 'react';
 import isoCtrys from '../../common/isoCtrys.json';
+import { ahDnbGenerateMcs } from '../../components/ahCalls';
 import {
    Dialog,
    DialogTitle,
@@ -125,63 +126,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
    });
    if(billRef) {dnbIDR.customerBillingEndorsement = billRef}
 
-   fetch(apiHubUrl + '/api/dnb/find', {
-      method: 'POST',
-      mode: 'cors', 
-      headers: {
-         'Accept': 'application/json',
-         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(dnbIDR)
-   })
-   .then(resp => {
-      return new Promise((resolve, reject) => {
-         resp.json()
-            .then(oIdrResp => {
-               if(resp.ok) {
-                  oIdrResp.ahRpr = {
-                     httpStatus: parseInt(resp.headers.get('X-AHRPR-API-HTTP-Status')),
-                     idrID: parseInt(resp.headers.get('X-AHRPR-API-IDR-ID'))
-                  };
-
-                  resolve(oIdrResp);
-               }
-               else {
-                  let errMsg = '', errCode = '';
-                  let httpStatus = resp.headers.get('X-AHRPR-API-HTTP-Status');
-
-                  const extnlApiResp = oIdrResp && oIdrResp.apiHubErr && oIdrResp.apiHubErr.externalApi;
-
-                  if(extnlApiResp) {
-                     if(!httpStatus) { httpStatus = extnlApiResp.status }
-
-                     const extnlApiErr = extnlApiResp.body && extnlApiResp.body.error;
-
-                     if(extnlApiErr) {
-                        if(extnlApiErr.errorMessage) { errMsg = extnlApiErr.errorMessage }
-                        if(extnlApiErr.errorCode) { errCode = extnlApiErr.errorCode }
-                     }
-                  }
-
-                  if(!httpStatus) { httpStatus = resp.status + ''}
-
-                  if(!errMsg) { errMsg = 'API request returned a HTTP status code outside of the 2XX range' }
-
-                  let addtnlInfo = httpStatus ? ` (HTTP status ${httpStatus}` : '';
-
-                  if(errCode) {
-                     addtnlInfo += addtnlInfo.length ? `, error code ${errCode})` : ` (error code ${errCode})`
-                  }
-                  else {
-                     addtnlInfo += addtnlInfo.length ? ')' : ''
-                  }
-                  
-                  reject(`${errMsg}${addtnlInfo}`);
-               }
-            })
-      })
-   })
-   .then(idrResp => {
+   ahDnbGenerateMcs(apiHubUrl, dnbIDR).then(idrResp => {
       setIdrResp(idrResp);
 
       setDuns(idrResp.matchCandidates && idrResp.matchCandidates[0] && 
@@ -195,7 +140,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
       if(ref1stMC && ref1stMC.current) { ref1stMC.current.focus() }
    })
    .catch(err => {
-      setSearchCriteria( { apiErrResp: err } );
+      setSearchCriteria( { apiErrResp: err.message } );
 
       setAwaitingResp(false);
 
@@ -208,7 +153,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
 };
 
 function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
-                           setDuns, isoCtry, setSearchCriteria, refNameTextField) {
+                           setDuns, isoCtry, setSearchCriteria, refNameTextField, handleApiInp) {
    fetch(apiHubUrl + '/api/dnb/find/duns', {
       method: 'POST',
       mode: 'cors', 
@@ -230,6 +175,8 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
    .catch(err => 
       console.error(`Error:${err.message}`)
    )
+
+   handleApiInp(apiHubUrl, duns);
 
    setIdrResp(null);
    setDuns('');
@@ -777,7 +724,8 @@ function MatchCandidateBtns(props) {
             { ... btnOpts }
             onClick={() => handleOnSubmit(props.apiHubUrl, props.idrResp, props.setIdrResp,
                                              props.duns, props.setDuns, props.isoCtry,
-                                             props.setSearchCriteria, props.refNameTextField)}
+                                             props.setSearchCriteria, props.refNameTextField,
+                                             props.handleApiInp)}
          >
             Submit
          </Button>
@@ -878,7 +826,8 @@ const FormFind = props => {
 
                if(!awaitingResp && idrResp) {
                   handleOnSubmit(props.apiHubUrl, idrResp, setIdrResp, duns, setDuns, 
-                                       { ...searchCriteria.isoCtry }, setSearchCriteria, refNameTextField)
+                                       { ...searchCriteria.isoCtry }, setSearchCriteria, refNameTextField,
+                                       props.handleApiInp)
                }
             }
 
@@ -975,6 +924,7 @@ const FormFind = props => {
                   isoCtry={ {...searchCriteria.isoCtry} }
                   setSearchCriteria={setSearchCriteria}
                   refNameTextField={refNameTextField}
+                  handleApiInp={props.handleApiInp}
                />
             </DialogContent>
          }

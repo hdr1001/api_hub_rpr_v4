@@ -29,6 +29,7 @@ import FormFind from './forms/Find.js'
 import FormConnSettings from './forms/ConnSettings.js';
 import FormSettings from './forms/Settings.js';
 import AhContent from './AhContent';
+import { ahDnbGetDBs } from './ahCalls';
 
 export const DataContext = React.createContext(); 
 
@@ -38,7 +39,13 @@ export default function App(props) {
    const [arrData, setArrData] = useState([]);
  
    const handleFileInp = e => 
-   setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
+      setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
+
+   const handleApiInp = (apiHubUrl, duns) => {
+      ahDnbGetDBs(apiHubUrl, duns)
+         .then(oDbData => setArrData([ ...arrData , { oDbData, uuid: uuidv4() } ]))
+         .catch(err => console.log(err.message))
+   }
 
    const handleDeleteData = (e, uuid) => {
       setArrData(arrData.filter(oData => oData.uuid !== uuid))
@@ -80,6 +87,7 @@ export default function App(props) {
             apiHubUrl={apiHubUrl}
             formFindIsOpen={formFindIsOpen}
             closeFormFind={closeFormFind}
+            handleApiInp={handleApiInp}
          />
          <FormConnSettings
             formConnSettingsIsOpen={formConnSettingsIsOpen}
