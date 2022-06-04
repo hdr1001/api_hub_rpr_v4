@@ -21,6 +21,7 @@
 // *********************************************************************
 
 import { useState, useReducer } from 'react';
+import { ahDnbGetAbout } from '../../components/ahCalls';
 import {
   Dialog,
   DialogTitle,
@@ -133,13 +134,10 @@ const FormConnSettings = (props) => {
                      color='primary'
                      sx={{width: '25%'}}
                      onClick={() => {
-                        fetch(concatApiHubUrl() + '/about', {mode: 'cors'})
-                           .then(resp => resp.json())
+                        ahDnbGetAbout(concatApiHubUrl())
                            .then(abt => {
-                              let desc = abt.description;
-
                               try{
-                                 if(desc.substr(desc.length - 3, 2) === 'v4') {
+                                 if(abt.description.substr(abt.description.length - 3, 2) === 'v4') {
                                     setSettingsTestSuccess(true); return;
                                  }
                               }

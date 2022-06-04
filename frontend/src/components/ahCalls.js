@@ -105,6 +105,32 @@ const ahDnbGenerateMcs = (apiHubUrl, findParameters) => {
    })
 }
 
+const ahAssignDnbDuns = (apiHubUrl, dunsParameters) => {
+   const httpParameters = {
+      url: `${apiHubUrl}/api/dnb/find/duns`,
+      opts: {
+         method: 'POST',
+         mode: 'cors', 
+         headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(dunsParameters)
+      }
+   }
+
+   return new Promise((resolve, reject) => {
+      fetch(httpParameters.url, httpParameters.opts)
+         .then(resp => {
+            if(!resp.ok) { throw resp }
+
+            return resp.json();
+         })
+         .then(oAssignDunsResp => { resolve(oAssignDunsResp) })
+         .catch(resp => rejectInclError(resp, reject, `IDR update using id ${dunsParameters.id} and duns ${dunsParameters.duns} was not successful 🤔`));
+   })
+}
+
 const ahDnbGetDBs = (apiHubUrl, duns) => {
    const httpParameters = {
       url: `${apiHubUrl}/api/dnb/duns/${duns}`,
@@ -128,4 +154,27 @@ const ahDnbGetDBs = (apiHubUrl, duns) => {
    })
 }
 
-export { ahDnbGenerateMcs, ahDnbGetDBs };
+const ahDnbGetAbout = apiHubUrl => {
+   const httpParameters = {
+      url: `${apiHubUrl}/about`,
+      opts: {
+         mode: 'cors', 
+         headers: {
+            'Accept': 'application/json'
+         }
+      }
+   }
+
+   return new Promise((resolve, reject) => {
+      fetch(httpParameters.url, httpParameters.opts)
+         .then(resp => {
+            if(!resp.ok) { throw resp }
+
+            return resp.json();
+         })
+         .then(oAbt => resolve(oAbt))
+         .catch(resp => rejectInclError(resp, reject, `Error occurred while accessing the API Hub`));
+   })
+}
+
+export { ahDnbGenerateMcs, ahAssignDnbDuns, ahDnbGetDBs, ahDnbGetAbout };

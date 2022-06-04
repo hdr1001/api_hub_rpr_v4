@@ -33,7 +33,7 @@ const contentBox = {
 };
 
 const arrFilesBox = {
-   minWidth: '320px',
+   maxWidth: '370px',
    m: 1,
    float: 'left'
 };

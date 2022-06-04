@@ -22,7 +22,7 @@
 
 import { useState, useReducer, useRef } from 'react';
 import isoCtrys from '../../common/isoCtrys.json';
-import { ahDnbGenerateMcs } from '../../components/ahCalls';
+import { ahDnbGenerateMcs, ahAssignDnbDuns } from '../../components/ahCalls';
 import {
    Dialog,
    DialogTitle,
@@ -154,27 +154,12 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
 
 function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
                            setDuns, isoCtry, setSearchCriteria, refNameTextField, handleApiInp) {
-   fetch(apiHubUrl + '/api/dnb/find/duns', {
-      method: 'POST',
-      mode: 'cors', 
-      headers: {
-         'Accept': 'application/json',
-         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({id: idrResp.ahRpr.idrID, duns: duns})
-   })
-   .then(httpResp => httpResp.json())
-   .then(oResp => {
-      if(oResp.success) {
-         console.log(`Successfully persisted IDR DUNS ${duns} for id ${idrResp.ahRpr.idrID}`)
-      }
-      else {
-         throw new Error(`IDR update using id ${idrResp.ahRpr.idrID} and duns ${duns} was not successful 🤔`)
-      }
-   })
-   .catch(err => 
-      console.error(`Error:${err.message}`)
-   )
+                              
+   ahAssignDnbDuns(apiHubUrl, {id: idrResp.ahRpr.idrID, duns})
+      .then(oResp => { console.log(`Successfully persisted IDR DUNS ${duns} for id ${idrResp.ahRpr.idrID}`)})
+      .catch(err => 
+         console.error(`Error: ${err.message}`)
+      )
 
    handleApiInp(apiHubUrl, duns);
 

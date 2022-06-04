@@ -35,7 +35,6 @@ export default function AhContent(props) {
                <Grid item
                   key={data.uuid}
                   sx={arrFilesBox}
-                  xs={12} sm={5} md={4} lg={1}
                >
                   <DnbDplDBs
                      file={data.file}
