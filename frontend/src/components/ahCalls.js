@@ -131,9 +131,13 @@ const ahAssignDnbDuns = (apiHubUrl, dunsParameters) => {
    })
 }
 
-const ahDnbGetDBs = (apiHubUrl, duns) => {
+const ahDnbGetDBs = (apiHubUrl, duns, qryParams) => {
+   let sQryParams = '';
+
+   if(qryParams) { sQryParams = (new URLSearchParams(qryParams)).toString() }
+
    const httpParameters = {
-      url: `${apiHubUrl}/api/dnb/duns/${duns}`,
+      url: `${apiHubUrl}/api/dnb/duns/${duns}${sQryParams ? `?${sQryParams}` : ''}`,
       opts: {
          mode: 'cors', 
          headers: {

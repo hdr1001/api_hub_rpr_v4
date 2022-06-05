@@ -30,8 +30,20 @@ import getHttpRespPromise from '../ah_rpr_http.js';
 const router = express.Router();
 
 const dataBlockCollections = {
-   '00': ['companyinfo_L2_v1', 'principalscontacts_L3_v1', 'hierarchyconnections_L1_v1'],
-   '01': ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
+   '00': {
+            desc: 'Master data',
+            dataBlocks: ['companyinfo_L2_v1', 'principalscontacts_L3_v1', 'hierarchyconnections_L1_v1']
+         },
+
+   '01': {
+            desc: 'D&B ratings',
+            dataBlocks: ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
+         },
+
+   '02': {
+            desc: 'Principals',
+            dataBlocks: ['principalscontacts_L3_v1']
+         }
 };
 
 function getDUNS(sKey) {
@@ -62,6 +74,10 @@ router.get('/', (req, resp) => {
     resp.json({api: ahProviders[ahProviderCodes.dnb] , key: ahKeys[ahKeyCodes.duns]})
 });
 
+router.get('/collections', (req, resp) => {
+   resp.json(dataBlockCollections)
+})
+
 router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
    const sDUNS = getDUNS(req.params.key);
 
@@ -84,7 +100,7 @@ router.get(`/${ahKeys[ahKeyCodes.duns]}/:key`, (req, resp) => {
    }
 
    const qryParameters = {
-      blockIDs: dataBlockCollections[dbCollID].join(',')
+      blockIDs: dataBlockCollections[dbCollID].dataBlocks.join(',')
    };
 
    const ahReq = {

@@ -41,9 +41,15 @@ export default function App(props) {
    const handleFileInp = e => 
       setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
 
-   const handleApiInp = (apiHubUrl, duns) => {
-      ahDnbGetDBs(apiHubUrl, duns)
+   const handleApiInp = (apiHubUrl, duns, oQryParams) => {
+      ahDnbGetDBs(apiHubUrl, duns, oQryParams)
          .then(oDbData => setArrData([ ...arrData , { oDbData, uuid: uuidv4() } ]))
+         .catch(err => console.log(err.message))
+   }
+
+   const handleApiInputs = arrInps => {
+      Promise.all(arrInps.map(callParams => ahDnbGetDBs(callParams.apiHubUrl, callParams.duns, callParams.oQryParams) ))
+         .then(arrObjDbData => setArrData([ ...arrData , ...arrObjDbData.map(oDbData => ({ oDbData,  uuid: uuidv4() }) )]))
          .catch(err => console.log(err.message))
    }
 
@@ -87,7 +93,7 @@ export default function App(props) {
             apiHubUrl={apiHubUrl}
             formFindIsOpen={formFindIsOpen}
             closeFormFind={closeFormFind}
-            handleApiInp={handleApiInp}
+            handleApiInputs={handleApiInputs}
          />
          <FormConnSettings
             formConnSettingsIsOpen={formConnSettingsIsOpen}
