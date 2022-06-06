@@ -30,7 +30,6 @@ import {
    DialogContent,
    Autocomplete,
    TextField,
-   InputAdornment,
    Alert,
    IconButton,
    DialogActions,
@@ -51,7 +50,6 @@ import {
    MenuItem
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -175,39 +173,12 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
 function DialogSettingsMenu(props) {
    const sxLabel = {justifyContent: 'space-between'};
 
-   const [ menuBillRef, setMenuBillRef ] = useState(props.billRef);
-   const [ billRefSavedSuccess, setBillRefSavedSuccess ] = useState(false);
-   const [ billRefNotSavedAlert, setBillRefNotSavedAlert ] = useState(false);
-
-   function handleMenuClose() {
-      if(menuBillRef !== props.billRef) {
-         setBillRefNotSavedAlert(true);
-
-         return;
-      }
-
-      props.setDialogSettingsMenu(null)
-   }
-
-   function alertSaveDismiss(doSaveBillRef) {
-      setBillRefNotSavedAlert(false);
-
-      if(doSaveBillRef) {
-         props.setBillRef(menuBillRef)
-      }
-      else {
-         setMenuBillRef(props.billRef)
-      }
-
-      props.setDialogSettingsMenu(null)
-   }
-
    return (
       <Menu
          id='dialog-settings-menu'
          anchorEl={props.dialogSettingsMenu}
          open={!!props.dialogSettingsMenu}
-         onClose={handleMenuClose}
+         onClose={() => props.setDialogSettingsMenu(null)}
          anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'right',
@@ -267,64 +238,15 @@ function DialogSettingsMenu(props) {
                labelPlacement='start'
                sx={sxLabel}
             />
-            <TextField
-               name='billRef' label='Billing reference'
-               size='small' margin='dense'
-               value={menuBillRef}
-               onChange={event => setMenuBillRef(event.target.value)}
-               InputProps={{
-                  endAdornment:
-                     <InputAdornment position='end'>
-                        <SaveOutlinedIcon
-                           onClick={() => {
-                              props.setBillRef(menuBillRef);
-
-                              if(billRefSavedSuccess !== true) {
-                                 setBillRefSavedSuccess(true);
-
-                                 setTimeout(() => setBillRefSavedSuccess(false), 1500);
-                              }
-                           }}
-
-                           color={billRefSavedSuccess ? 'success' : 'inherit'}
-                        />
-                     </InputAdornment>
-               }}
-            />
          </Stack>
          <Stack
             direction='row'
             justifyContent='end'
             sx={{mx: 2, mt: 2}}
          >
-            {billRefNotSavedAlert
-               ?
-                  <Alert
-                     severity='warning'
-                     action={
-                        <Stack direction='row'>
-                           <Button
-                              color='inherit' size='small'
-                              onClick={() => alertSaveDismiss(false)}
-                           >
-                              Dismiss
-                           </Button>
-                           <Button
-                              color='inherit' size='small'
-                              onClick={() => alertSaveDismiss(true)}
-                           >
-                              Save
-                           </Button>
-                        </Stack>
-                     }
-                  >
-                     Billing reference changed
-                  </Alert>
-               :
-                  <Button onClick={handleMenuClose}>
-                     Close
-                  </Button>
-            }
+            <Button onClick={() => props.setDialogSettingsMenu(null)}>
+               Close
+            </Button>
          </Stack>
       </Menu>
    )
@@ -743,8 +665,6 @@ const FormFind = props => {
       iniSearchCriteria
    );
    
-   const [ billRef, setBillRef ] = useState('');
-
    const [ awaitingResp, setAwaitingResp ] = useState(false);
 
    const [ idrResp, setIdrResp ] = useState(null);
@@ -806,7 +726,7 @@ const FormFind = props => {
 
                if(!awaitingResp && !idrResp) {
                   handleOnFind(formValidate, props.apiHubUrl, setAwaitingResp, setIdrResp,
-                                    setDuns, searchCriteria, setSearchCriteria, billRef,
+                                    setDuns, searchCriteria, setSearchCriteria, props.billRef,
                                     refNameTextField, ref1stMC)
                }
 
@@ -856,8 +776,6 @@ const FormFind = props => {
             setNumRefFields={setNumRefFields}
             formOrientation={formOrientation}
             setFormOrientation={setFormOrientation}
-            billRef={billRef}
-            setBillRef={setBillRef}
          />
          <Stack
             direction={formOrientation}
@@ -881,7 +799,7 @@ const FormFind = props => {
                   setDuns={setDuns}
                   setSearchCriteria={setSearchCriteria}
                   searchCriteria={searchCriteria}
-                  billRef={billRef}
+                  billRef={props.billRef}
                   refNameTextField={refNameTextField}
                   ref1stMC={ref1stMC}
                   formValidate={formValidate}

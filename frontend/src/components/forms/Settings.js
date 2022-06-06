@@ -29,17 +29,54 @@ import {
   DialogActions,
   Button,
   Tabs,
-  Tab
+  Tab,
+  Stack,
+  TextField,
+  InputAdornment,
+  Alert
 } from "@mui/material";
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 const FormSettings = props => {
    const [ tabIdx, setTabIdx ] = useState(0);
+   const [ settingsBillRef, setSettingsBillRef ] = useState(props.billRef);
+   const [ billRefSavedSuccess, setBillRefSavedSuccess ] = useState(false);
+   const [ billRefNotSavedAlert, setBillRefNotSavedAlert ] = useState(false);
+
+   function handleMenuClose() {
+      if(settingsBillRef !== props.billRef) {
+         setBillRefNotSavedAlert(true);
+
+         return;
+      }
+
+      props.closeFormSettings();
+   }
+
+   function alertSaveDismiss(doSaveBillRef) {
+      setBillRefNotSavedAlert(false);
+
+      if(doSaveBillRef) {
+         props.setBillRef(settingsBillRef)
+      }
+      else {
+         setSettingsBillRef(props.billRef)
+      }
+
+      props.closeFormSettings();
+   }
 
    return (
-      <Dialog open={props.formSettingsIsOpen} onClose={props.closeFormSettings}>
+      <Dialog
+         open={props.formSettingsIsOpen}
+         onClose={handleMenuClose}
+         fullWidth={true}
+         maxWidth={'xs'}
+      >
          <DialogTitle>API Hub (v4)</DialogTitle>
 
          <DialogContent>
+
             <Tabs
                value={tabIdx}
                onChange={(event, newTabIdx) => setTabIdx(newTabIdx)}
@@ -47,6 +84,35 @@ const FormSettings = props => {
                <Tab label="Find" id={0} />
                <Tab label="About" id={1} />
             </Tabs>
+
+            {tabIdx === 0 &&
+               <Stack sx={{ mt: 3 }}>
+                  <TextField
+                     name='billRef' label='Billing reference'
+                     size='small' margin='dense'
+                     value={settingsBillRef}
+                     onChange={event => setSettingsBillRef(event.target.value)}
+                     InputProps={{
+                        endAdornment:
+                           <InputAdornment position='end'>
+                              <SaveOutlinedIcon
+                                 onClick={() => {
+                                    props.setBillRef(settingsBillRef);
+
+                                    if(billRefSavedSuccess !== true) {
+                                       setBillRefSavedSuccess(true);
+
+                                       setTimeout(() => setBillRefSavedSuccess(false), 1500);
+                                    }
+                                 }}
+
+                                 color={billRefSavedSuccess ? 'success' : 'inherit'}
+                              />
+                           </InputAdornment>
+                     }}
+                  />
+               </Stack>
+            }
 
             {tabIdx === 1 &&
                <DialogContentText sx={{ mt: 3 }}>
@@ -65,7 +131,35 @@ const FormSettings = props => {
             }
 
             <DialogActions>
-               <Button onClick={props.closeFormSettings}>Close</Button>
+               {billRefNotSavedAlert
+                  ?
+                     <Alert
+                        severity='warning'
+                        action={
+                           <Stack direction='row'>
+                              <Button
+                                 color='inherit' size='small'
+                                 onClick={() => alertSaveDismiss(false)}
+                              >
+                                 Dismiss
+                              </Button>
+                              <Button
+                                 color='inherit' size='small'
+                                 onClick={() => alertSaveDismiss(true)}
+                              >
+                                 Save
+                              </Button>
+                           </Stack>
+                        }
+                        sx={{ mx: 'auto' }}
+                     >
+                        Billing reference changed
+                     </Alert>
+                  :
+                     <Button onClick={handleMenuClose}>
+                        Close
+                     </Button>
+               }
             </DialogActions>
 
          </DialogContent>

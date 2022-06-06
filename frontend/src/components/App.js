@@ -41,12 +41,6 @@ export default function App(props) {
    const handleFileInp = e => 
       setArrData([...arrData, ...Array.from(e.target.files).map(file => ({file, uuid: uuidv4()}))])
 
-   const handleApiInp = (apiHubUrl, duns, oQryParams) => {
-      ahDnbGetDBs(apiHubUrl, duns, oQryParams)
-         .then(oDbData => setArrData([ ...arrData , { oDbData, uuid: uuidv4() } ]))
-         .catch(err => console.log(err.message))
-   }
-
    const handleApiInputs = arrInps => {
       Promise.all(arrInps.map(callParams => ahDnbGetDBs(callParams.apiHubUrl, callParams.duns, callParams.oQryParams) ))
          .then(arrObjDbData => setArrData([ ...arrData , ...arrObjDbData.map(oDbData => ({ oDbData,  uuid: uuidv4() }) )]))
@@ -63,6 +57,8 @@ export default function App(props) {
 
    const openFormFind = () => setFormFindIsOpen(true);
    const closeFormFind = () => setFormFindIsOpen(false);
+
+   const [ billRef, setBillRef ] = useState('');
 
    const [formConnSettingsIsOpen, setFormConnSettingsIsOpen] = useState(false);
 
@@ -91,6 +87,7 @@ export default function App(props) {
          <AhContent arrData={arrData} />
          <FormFind
             apiHubUrl={apiHubUrl}
+            billRef={billRef}
             formFindIsOpen={formFindIsOpen}
             closeFormFind={closeFormFind}
             handleApiInputs={handleApiInputs}
@@ -101,6 +98,8 @@ export default function App(props) {
             setApiHubUrl={setApiHubUrl}
          />
          <FormSettings
+            billRef={billRef}
+            setBillRef={setBillRef}
             formSettingsIsOpen={formSettingsIsOpen}
             closeFormSettings={closeFormSettings}
          />
