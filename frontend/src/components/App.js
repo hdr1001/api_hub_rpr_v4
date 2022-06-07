@@ -98,6 +98,7 @@ export default function App(props) {
             setApiHubUrl={setApiHubUrl}
          />
          <FormSettings
+            apiHubUrl={apiHubUrl}
             billRef={billRef}
             setBillRef={setBillRef}
             formSettingsIsOpen={formSettingsIsOpen}

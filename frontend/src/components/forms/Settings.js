@@ -81,11 +81,27 @@ const FormSettings = props => {
                value={tabIdx}
                onChange={(event, newTabIdx) => setTabIdx(newTabIdx)}
             >
-               <Tab label="Find" id={0} />
-               <Tab label="About" id={1} />
+               <Tab label="About" id={0} />
+               {props.apiHubUrl && <Tab label="Find" id={1} />}
             </Tabs>
 
             {tabIdx === 0 &&
+               <DialogContentText sx={{ mt: 3 }}>
+                  API Hub - Request, Persist & Respond<br />
+                  © Hans de Rooij<br /><br />
+                  <Button
+                     variant='Text'
+                     sx={{ mx: 0, px: 0 }}
+                     href='https://github.com/hdr1001/api_hub_rpr_v4'
+                     target='_blank'
+                     rel='noopener noreferrer'
+                  >
+                     Github Repository
+                  </Button>
+               </DialogContentText>
+            }
+
+            {tabIdx === 1 && props.apiHubUrl &&
                <Stack sx={{ mt: 3 }}>
                   <TextField
                      name='billRef' label='Billing reference'
@@ -112,22 +128,6 @@ const FormSettings = props => {
                      }}
                   />
                </Stack>
-            }
-
-            {tabIdx === 1 &&
-               <DialogContentText sx={{ mt: 3 }}>
-                  API Hub - Request, Persist & Respond<br />
-                  © Hans de Rooij<br /><br />
-                  <Button
-                     variant='Text'
-                     sx={{ mx: 0, px: 0 }}
-                     href='https://github.com/hdr1001/api_hub_rpr_v4'
-                     target='_blank'
-                     rel='noopener noreferrer'
-                  >
-                     Github Repository
-                  </Button>
-               </DialogContentText>
             }
 
             <DialogActions>
