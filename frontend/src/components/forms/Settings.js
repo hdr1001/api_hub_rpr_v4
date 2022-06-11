@@ -20,7 +20,8 @@
 //
 // *********************************************************************
 
-import { useState } from "react";
+import { useState } from 'react';
+import { MuiOutlinedDiv } from '../AhUtils';
 import {
   Dialog,
   DialogTitle,
@@ -33,8 +34,10 @@ import {
   Stack,
   TextField,
   InputAdornment,
+  FormControlLabel,
+  Checkbox,
   Alert
-} from "@mui/material";
+} from '@mui/material';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 const FormSettings = props => {
@@ -65,7 +68,7 @@ const FormSettings = props => {
 
       props.closeFormSettings();
    }
-
+   
    return (
       <Dialog
          open={props.formSettingsIsOpen}
@@ -81,8 +84,8 @@ const FormSettings = props => {
                value={tabIdx}
                onChange={(event, newTabIdx) => setTabIdx(newTabIdx)}
             >
-               <Tab label="About" id={0} />
-               {props.apiHubUrl && <Tab label="Find" id={1} />}
+               <Tab label='About' id={0} />
+               {props.apiHubUrl && <Tab label='Find' id={1} />}
             </Tabs>
 
             {tabIdx === 0 &&
@@ -102,7 +105,7 @@ const FormSettings = props => {
             }
 
             {tabIdx === 1 && props.apiHubUrl &&
-               <Stack sx={{ mt: 3 }}>
+               <Stack sx={{ mt: 3 }} spacing={2}>
                   <TextField
                      name='billRef' label='Billing reference'
                      size='small' margin='dense'
@@ -127,6 +130,29 @@ const FormSettings = props => {
                            </InputAdornment>
                      }}
                   />
+                 <MuiOutlinedDiv label="Append data collections">
+                     <Stack>
+                        {Object.keys(props.ahDnbDbColl).map((collID, idx) => (
+                           <FormControlLabel
+                           key={idx}
+                           label={props.ahDnbDbColl[collID].desc}
+                           value={collID}
+                           control={
+                              <Checkbox
+                                 checked={props.findDnbDbColl.includes(collID)}
+                                 onChange={event => {
+                                    if (event.target.checked) {
+                                       props.setFindDnbDbColl([...props.findDnbDbColl, event.target.value]);
+                                    } else {
+                                       props.setFindDnbDbColl(props.findDnbDbColl.filter(collID => collID !== event.target.value));
+                                    }
+                                 }}
+                              />
+                           }
+                           />
+                        ))}
+                     </Stack>
+                  </MuiOutlinedDiv>
                </Stack>
             }
 

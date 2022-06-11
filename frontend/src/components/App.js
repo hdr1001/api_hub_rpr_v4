@@ -51,7 +51,11 @@ export default function App(props) {
       setArrData(arrData.filter(oData => oData.uuid !== uuid))
    }
 
-   const [apiHubUrl, setApiHubUrl] = useState('');
+   const [ apiHubUrl, setApiHubUrl ] = useState('');
+
+   const [ ahDnbDbColl, setDnbDbColl ] = useState(null);
+
+   const [ findDnbDbColl, setFindDnbDbColl ] = useState([]);
 
    const [formFindIsOpen, setFormFindIsOpen] = useState(false);
 
@@ -88,19 +92,25 @@ export default function App(props) {
          <FormFind
             apiHubUrl={apiHubUrl}
             billRef={billRef}
+            handleApiInputs={handleApiInputs}
+            findDnbDbColl={findDnbDbColl}
             formFindIsOpen={formFindIsOpen}
             closeFormFind={closeFormFind}
-            handleApiInputs={handleApiInputs}
          />
          <FormConnSettings
+            apiHubUrl={apiHubUrl}
+            setApiHubUrl={setApiHubUrl}
+            setDnbDbColl={setDnbDbColl}
             formConnSettingsIsOpen={formConnSettingsIsOpen}
             closeFormConnSettings={closeFormConnSettings}
-            setApiHubUrl={setApiHubUrl}
          />
          <FormSettings
             apiHubUrl={apiHubUrl}
             billRef={billRef}
             setBillRef={setBillRef}
+            ahDnbDbColl={ahDnbDbColl}
+            findDnbDbColl={findDnbDbColl}
+            setFindDnbDbColl={setFindDnbDbColl}
             formSettingsIsOpen={formSettingsIsOpen}
             closeFormSettings={closeFormSettings}
          />

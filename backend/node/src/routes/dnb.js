@@ -38,12 +38,8 @@ const dataBlockCollections = {
    '01': {
             desc: 'D&B ratings',
             dataBlocks: ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
-         },
-
-   '02': {
-            desc: 'Principals',
-            dataBlocks: ['principalscontacts_L3_v1']
          }
+
 };
 
 function getDUNS(sKey) {

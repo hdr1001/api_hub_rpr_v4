@@ -35,6 +35,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
@@ -261,4 +262,30 @@ function getArrAddr(oAddr) {
    return arrAddr;
 }
 
-export { B2BDataTable, B2BDataTableRowFilter, B2BDataTableRow, ErrPaper, bIsEmptyObj, getArrAddr };
+//https://bit.ly/3xpbN0J 🙏
+const InputComponent = React.forwardRef(( props, ref ) => <div { ...props } ref={ref} />);
+
+const MuiOutlinedDiv = ({ children, label }) => {
+  return (
+    <TextField
+      variant="outlined"
+      label={label}
+      multiline
+      InputLabelProps={{ shrink: true }}
+      InputProps={{
+        inputComponent: InputComponent
+      }}
+      inputProps={{ children: children }}
+    />
+  );
+};
+
+export { 
+   B2BDataTable,
+   B2BDataTableRowFilter,
+   B2BDataTableRow,
+   ErrPaper,
+   bIsEmptyObj,
+   getArrAddr,
+   MuiOutlinedDiv
+};

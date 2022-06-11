@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import { useState, useReducer } from 'react';
-import { ahDnbGetAbout } from '../../components/ahCalls';
+import { ahDnbGetAbout, ahDnbGetCollections } from '../../components/ahCalls';
 import {
   Dialog,
   DialogTitle,
@@ -177,7 +177,13 @@ const FormConnSettings = (props) => {
 
                            setResetConnSettings(connSettings);
 
-                           props.setApiHubUrl(concatApiHubUrl());
+                           const url = concatApiHubUrl();
+
+                           props.setApiHubUrl(url);
+
+                           ahDnbGetCollections(url)
+                              .then( oDnbDbColl => props.setDnbDbColl(oDnbDbColl) )
+                              .catch( err => console.error(err.message) )
                         }
                      }
                      disabled={!(settingsTestSuccess && settingsChanged())}

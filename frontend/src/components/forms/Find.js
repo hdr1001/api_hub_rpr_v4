@@ -151,7 +151,7 @@ const handleOnFind = (formValidate, apiHubUrl, setAwaitingResp,
 };
 
 function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
-                           setDuns, isoCtry, setSearchCriteria, refNameTextField, handleApiInputs) {
+                           setDuns, isoCtry, setSearchCriteria, refNameTextField, findDnbDbColl, handleApiInputs) {
                               
    ahAssignDnbDuns(apiHubUrl, {id: idrResp.ahRpr.idrID, duns})
       .then(oResp => { console.log(`Successfully persisted IDR DUNS ${duns} for id ${idrResp.ahRpr.idrID}`)})
@@ -159,8 +159,7 @@ function handleOnSubmit(apiHubUrl, idrResp, setIdrResp, duns,
          console.error(`Error: ${err.message}`)
       )
 
-   
-   handleApiInputs([ { apiHubUrl, duns }, { apiHubUrl, duns, oQryParams: { dbCollID: '01' } } ]);
+   handleApiInputs( findDnbDbColl.map(collID => ({ apiHubUrl, duns, oQryParams: { dbCollID: collID } })) );
 
    setIdrResp(null);
    setDuns('');
@@ -633,7 +632,7 @@ function MatchCandidateBtns(props) {
             onClick={() => handleOnSubmit(props.apiHubUrl, props.idrResp, props.setIdrResp,
                                              props.duns, props.setDuns, props.isoCtry,
                                              props.setSearchCriteria, props.refNameTextField,
-                                             props.handleApiInputs)}
+                                             props.findDnbDbColl, props.handleApiInputs)}
          >
             Submit
          </Button>
@@ -733,7 +732,7 @@ const FormFind = props => {
                if(!awaitingResp && idrResp) {
                   handleOnSubmit(props.apiHubUrl, idrResp, setIdrResp, duns, setDuns, 
                                        { ...searchCriteria.isoCtry }, setSearchCriteria, refNameTextField,
-                                       props.handleApiInputs)
+                                       props.findDnbDbColl, props.handleApiInputs)
                }
             }
 
@@ -828,6 +827,7 @@ const FormFind = props => {
                   isoCtry={ {...searchCriteria.isoCtry} }
                   setSearchCriteria={setSearchCriteria}
                   refNameTextField={refNameTextField}
+                  findDnbDbColl={props.findDnbDbColl}
                   handleApiInputs={props.handleApiInputs}
                />
             </DialogContent>

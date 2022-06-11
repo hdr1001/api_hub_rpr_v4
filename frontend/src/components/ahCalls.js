@@ -158,6 +158,29 @@ const ahDnbGetDBs = (apiHubUrl, duns, qryParams) => {
    })
 }
 
+const ahDnbGetCollections = apiHubUrl => {
+   const httpParameters = {
+      url: `${apiHubUrl}/api/dnb/collections`,
+      opts: {
+         mode: 'cors', 
+         headers: {
+            'Accept': 'application/json'
+         }
+      }
+   }
+
+   return new Promise((resolve, reject) => {
+      fetch(httpParameters.url, httpParameters.opts)
+         .then(resp => {
+            if(!resp.ok) { throw resp }
+
+            return resp.json();
+         })
+         .then(oAbt => resolve(oAbt))
+         .catch(resp => rejectInclError(resp, reject, `Error occurred retrieving D&B data block collections`));
+   })
+}
+
 const ahDnbGetAbout = apiHubUrl => {
    const httpParameters = {
       url: `${apiHubUrl}/about`,
@@ -181,4 +204,4 @@ const ahDnbGetAbout = apiHubUrl => {
    })
 }
 
-export { ahDnbGenerateMcs, ahAssignDnbDuns, ahDnbGetDBs, ahDnbGetAbout };
+export { ahDnbGenerateMcs, ahAssignDnbDuns, ahDnbGetDBs, ahDnbGetCollections, ahDnbGetAbout };
