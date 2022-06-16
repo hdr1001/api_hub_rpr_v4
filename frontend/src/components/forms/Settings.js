@@ -130,26 +130,33 @@ const FormSettings = props => {
                            </InputAdornment>
                      }}
                   />
-                 <MuiOutlinedDiv label="Append data collections">
+                  <MuiOutlinedDiv label="Append data collections">
                      <Stack>
                         {Object.keys(props.ahDnbDbColl).map((collID, idx) => (
-                           <FormControlLabel
-                           key={idx}
-                           label={props.ahDnbDbColl[collID].desc}
-                           value={collID}
-                           control={
-                              <Checkbox
-                                 checked={props.findDnbDbColl.includes(collID)}
-                                 onChange={event => {
-                                    if (event.target.checked) {
-                                       props.setFindDnbDbColl([...props.findDnbDbColl, event.target.value]);
-                                    } else {
-                                       props.setFindDnbDbColl(props.findDnbDbColl.filter(collID => collID !== event.target.value));
+                           props.ahDnbDbColl[collID].findAppend
+                              ?
+                                 <FormControlLabel
+                                    key={idx}
+                                    label={props.ahDnbDbColl[collID].desc}
+                                    value={collID}
+                                    control={
+                                       <Checkbox
+                                          checked={props.findDnbDbColl.includes(collID)}
+                                          onChange={event => {
+                                             //Preserve original order when adding IDs
+                                             if (event.target.checked) {
+                                                props.setFindDnbDbColl(Object.keys(props.ahDnbDbColl).filter(
+                                                   ID => props.findDnbDbColl.includes(ID) || ID === event.target.value
+                                                ));
+                                             } else {
+                                                props.setFindDnbDbColl(props.findDnbDbColl.filter(collID => collID !== event.target.value));
+                                             }
+                                          }}
+                                       />
                                     }
-                                 }}
-                              />
-                           }
-                           />
+                                 />
+                              :
+                                 null
                         ))}
                      </Stack>
                   </MuiOutlinedDiv>

@@ -103,6 +103,18 @@ CREATE TABLE public.products_dnb (
    dbs_01 JSONB,
    dbs_01_obtained_at bigint,
    dbs_01_http_status smallint,
+   dbs_02 JSONB,
+   dbs_02_obtained_at bigint,
+   dbs_02_http_status smallint,
+   dbs_03 JSONB,
+   dbs_03_obtained_at bigint,
+   dbs_03_http_status smallint,
+   dbs_04 JSONB,
+   dbs_04_obtained_at bigint,
+   dbs_04_http_status smallint,
+   dbs_05 JSONB,
+   dbs_05_obtained_at bigint,
+   dbs_05_http_status smallint,
    CONSTRAINT products_dnb_pkey PRIMARY KEY (duns)
 )
 WITH (

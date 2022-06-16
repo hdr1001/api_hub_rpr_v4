@@ -251,10 +251,15 @@ function getArrAddr(oAddr) {
    if(!bIsEmptyObj(oAddr.addressLocality)) {
       str.length > 0 ? str += ' ' + oAddr.addressLocality.name : str = oAddr.addressLocality.name
    }
+   if(!bIsEmptyObj(oAddr.addressRegion) && oAddr.addressRegion.abbreviatedName) {
+      str.length > 0 ? str += ' (' + oAddr.addressRegion.abbreviatedName + ')' : str = oAddr.addressRegion.abbreviatedName
+   }
    if(str.length > 0) {arrAddr.push(str)}
 
+   //Country
    if(oAddr.addressCountry && oAddr.addressCountry.name) {arrAddr.push(oAddr.addressCountry.name)}
 
+   //Is registered address
    if(oAddr.isRegisteredAddress) {
       arrAddr.push('Entity registered at this address');
    }

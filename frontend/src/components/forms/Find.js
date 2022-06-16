@@ -506,13 +506,20 @@ function MatchCandidate(props) {
    function McLinePostalCodeCity(props) {
       const postalCode = org.primaryAddress && org.primaryAddress.postalCode;
       const city = org.primaryAddress && org.primaryAddress.addressLocality && org.primaryAddress.addressLocality.name;
+      const state = org.primaryAddress && org.primaryAddress.addressRegion &&
+                        org.primaryAddress.addressRegion.abbreviatedName;
 
       return (
          (postalCode || city)
-            ? <Typography>{postalCode
+            ? <Typography>
+               {postalCode
                   ? <span style={{ 'marginRight': '8px' }}>{postalCode}</span>
                   : null}
                {city}
+               {state
+                  ? <span style={{ 'marginLeft': '8px' }}>({state})</span>
+                  : null
+               }
               </Typography>
             : null
       )

@@ -32,14 +32,27 @@ const router = express.Router();
 const dataBlockCollections = {
    '00': {
             desc: 'Master data',
-            dataBlocks: ['companyinfo_L2_v1', 'principalscontacts_L3_v1', 'hierarchyconnections_L1_v1']
+            dataBlocks: ['companyinfo_L2_v1', 'principalscontacts_L3_v1', 'hierarchyconnections_L1_v1'],
+            findAppend: true
          },
 
    '01': {
             desc: 'D&B ratings',
-            dataBlocks: ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1']
-         }
+            dataBlocks: ['financialstrengthinsight_L2_v1', 'paymentinsight_L1_v1'],
+            findAppend: true
+         },
 
+   '02': {
+            desc: 'Principals',
+            dataBlocks: ['principalscontacts_L3_v1'],
+            findAppend: true
+         },
+
+   '03': {
+            desc: 'Global financials',
+            dataBlocks: ['globalfinancials_L2_v1'],
+            findAppend: false
+         }
 };
 
 function getDUNS(sKey) {

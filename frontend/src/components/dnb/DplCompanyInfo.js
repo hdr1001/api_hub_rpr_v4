@@ -332,26 +332,28 @@ export default function DbCompanyInfo(props) {
 
       const { primaryAddress, registeredAddress, mailingAddress } = props.content.organization;
 
-      const primaryAddrIsRegisteredAddr = primaryAddress && primaryAddress.isRegisteredAddress;
+      const arrPrimaryAddr = getArrAddr(primaryAddress);
+      const arrRegisteredAddr = primaryAddress && primaryAddress.isRegisteredAddress ? [] : getArrAddr(registeredAddress);
+      const arrMailAddr = getArrAddr(mailingAddress);
 
       return (
          <B2BDataTable caption='Address'>
-            {!bIsEmptyObj(primaryAddress) &&
+            {arrPrimaryAddr.length > 0 &&
                <B2BDataTableRow
                   label='Primary address'
-                  content={getArrAddr(primaryAddress)}
+                  content={arrPrimaryAddr}
                />
             }
-            {!primaryAddrIsRegisteredAddr && !bIsEmptyObj(registeredAddress) &&
+            {arrRegisteredAddr.length > 0 &&
                <B2BDataTableRow
                   label='Registered address'
-                  content={getArrAddr(registeredAddress)}
+                  content={arrRegisteredAddr}
                />
             }
-            {!bIsEmptyObj(mailingAddress) &&
+            {arrMailAddr.length > 0 &&
                <B2BDataTableRow
                   label='Mail address'
-                  content={getArrAddr(mailingAddress)}
+                  content={arrMailAddr}
                />
             }
          </B2BDataTable>
