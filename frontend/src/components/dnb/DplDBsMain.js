@@ -29,6 +29,7 @@ import DbFinStrength from './DplFinStrength';
 import DbGlobBusRanking from './DplGlobBusRanking'
 import DbPaymInsights from './DplPaymInsights';
 import DbFilingsEvents from './DplFilingsEvents';
+import DbEsgInsight from './DplEsgInsight';
 
 export default function DplDBsMain(props) {
    //Echo the Direct+ data block request details
@@ -146,6 +147,9 @@ export default function DplDBsMain(props) {
                }
                {dataBlocks.blockIDs['eventfilings'] &&
                   <DbFilingsEvents content={props.oDBs} />
+               }
+               {dataBlocks.blockIDs['esginsight'] &&
+                  <DbEsgInsight content={props.oDBs} />
                }
             </>
 
