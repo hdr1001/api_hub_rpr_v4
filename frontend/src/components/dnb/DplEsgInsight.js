@@ -23,6 +23,20 @@
 import React from 'react';
 import { B2BDataTable, B2BDataTableRow, bIsEmptyObj } from '../AhUtils';
 
+//https://stackoverflow.com/questions/9083037/convert-a-number-into-a-roman-numeral-in-javascript 
+const romanMatrix = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], 
+                        [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+ 
+function convertToRoman(num) {
+   let sRet = '';
+
+   if(num < 1) { return '' }
+
+   romanMatrix.forEach(romanDigit => sRet += num >= romanDigit[0] ? romanDigit[1] + convertToRoman(num - romanDigit[0]) : '');
+
+   return sRet;
+}
+
 //Data block Financial Strength Insights component
 export default function DbEsgInsight(props) {
    if(!(props.content && props.content.organization)) {
@@ -35,10 +49,17 @@ export default function DbEsgInsight(props) {
       if(!(org.esgIndustryCategories && org.esgIndustryCategories.length > 0)) { return null }
 
       return (
-         <B2BDataTable caption='ESG industry category'>
-               <B2BDataTableRow label='Category' content={org.esgIndustryCategories[0].category} />
-               <B2BDataTableRow label='Industry' content={org.esgIndustryCategories[0].industry} />
-         </B2BDataTable>
+         org.esgIndustryCategories
+            .sort((first, second) => first.priority - second.priority)
+            .map(indCat => 
+               <B2BDataTable
+                  caption={`ESG industry category (${convertToRoman(indCat.priority)})`}
+                  key={indCat.priority}
+               >
+                  <B2BDataTableRow label='Category' content={indCat.category} />
+                  <B2BDataTableRow label='Industry' content={indCat.industry} />
+               </B2BDataTable>
+            )
       )
    }
 
