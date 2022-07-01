@@ -68,9 +68,43 @@ export default function DbEsgInsight(props) {
       )
    }
 
+   function EsgSummary(props) {
+      return (
+         <B2BDataTable caption={'ESG Ranking: ' + props.caption} >
+            {props.ranking.scoreDate && <B2BDataTableRow label='Score date' content={props.ranking.scoreDate} />}
+            {props.ranking.score && <B2BDataTableRow label='Score' content={props.ranking.score} />}
+            {props.ranking.peerPercentileGroup && <B2BDataTableRow label='Peer percentile group' content={props.ranking.peerPercentileGroup} />}
+            {props.ranking.averagePeerScore && <B2BDataTableRow label='Average peer score' content={props.ranking.averagePeerScore} />}
+            {!bIsEmptyObj(props.ranking.dataDepth) && props.ranking.dataDepth.indicator &&
+               <B2BDataTableRow label='Data depth' content={props.ranking.dataDepth.indicator} />
+            }
+         </B2BDataTable>
+      )
+   }
+
+   function EsgRanking(props) {
+      const org = props.org;
+      
+      if(bIsEmptyObj(org.esgRanking)) { return null }
+
+      const sections = [
+         {caption: 'Environmental', property: 'environmentalRanking'},
+         {caption: 'Social', property: 'socialRanking'},
+         {caption: 'Governance', property: 'governanceRanking'}
+      ]
+
+      return (
+         <>
+            <EsgSummary ranking={org.esgRanking} caption='Overall' />
+            {sections.map((section, idx) => <EsgSummary ranking={org.esgRanking[section.property]} caption={section.caption} key={idx} />)}
+         </>
+      )
+   }
+
    return (
       <>
          <EsgIndustryCategory org={props.content.organization} />
+         <EsgRanking org={props.content.organization} />
       </>
    );
 }
