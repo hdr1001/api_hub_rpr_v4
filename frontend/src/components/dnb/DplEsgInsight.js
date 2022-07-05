@@ -1,7 +1,8 @@
 // *********************************************************************
 //
-// API Hub, D&B D+ Financial Strength Insights data block component
-// JavaScript code file: DplFinStrength.js
+// API Hub, D&B D+ Environmental, Social & Governance insight data
+// block component
+// JavaScript code file: DplEsgInsight.js
 //
 // Copyright 2021 Hans de Rooij
 //
@@ -37,9 +38,79 @@ function convertToRoman(num) {
    }
 }
 
-//Data block Financial Strength Insights component
+//D&B's ESG proposition is made up of 3 sections which, in turn, are made up of themes & topics
+const esgSections = [
+
+   {caption: 'Environmental', property: 'environmentalRanking', themes: [
+      {label: 'Natural resources', property: 'naturalResources', topics: [
+         {label: 'Energy management', property: 'energyManagement'},
+         {label: 'Land use & biodiversity', property: 'landUseBiodiversity'},
+         {label: 'Materials sourcing management', property: 'materialsSourcingManagement'},
+         {label: 'Pollution prevention management', property: 'pollutionPreventionManagement'},
+         {label: 'Waste hazards management', property: 'wasteHazardsManagement'},
+         {label: 'Water management', property: 'waterManagement'}
+      ]},
+      {label: 'Emissions & climate', property: 'emissionsClimate', topics: [
+         {label: 'Climate risk', property: 'climateRisk'},
+         {label: 'GHG emissions', property: 'ghgEmissions'}
+      ]},
+      {label: 'Risk', property: 'risk', topics: [
+         {label: 'Environmental compliance', property: 'environmentalCompliance'}
+      ]},
+      {label: 'Opportunities', property: 'opportunities', topics: [
+         {label: 'Environmental certifications', property: 'environmentalCertifications'},
+         {label: 'Environmental opportunities', property: 'environmentalOpportunities'}
+      ]}
+   ]},
+
+   {caption: 'Social', property: 'socialRanking', themes: [
+      {label: 'Community', property: 'community', topics: [
+         {label: 'Community engagement', property: 'communityEngagement'},
+         {label: 'Corporate philanthropy', property: 'corporatePhilanthropy'}
+      ]},
+      {label: 'Customers', property: 'customers', topics: [
+         {label: 'Product service', property: 'productService'},
+         {label: 'Data privacy', property: 'dataPrivacy'}
+      ]},
+      {label: 'Human capital', property: 'humanCapital', topics: [
+         {label: 'Diversity inclusion', property: 'diversityInclusion'},
+         {label: 'Health & safety', property: 'healthSafety'},
+         {label: 'Human rights abuses', property: 'humanRightsAbuses'},
+         {label: 'Labor relations', property: 'laborRelations'},
+         {label: 'Training education', property: 'trainingEducation'}
+      ]},
+      {label: 'Product service', property: 'productService', topics: [
+         {label: 'Cyber risk', property: 'cyberRisk'},
+         {label: 'Product quality management', property: 'productQualityManagement'}
+      ]},
+      {label: 'Supplier', property: 'supplier', topics: [
+         {label: 'Supplier engagement', property: 'supplierEngagement'}
+      ]},
+      {label: 'Certifications', property: 'certifications', topics: [
+         {label: 'Social related certs', property: 'socialRelatedCertifications'}
+      ]}
+   ]},
+
+   {caption: 'Governance', property: 'governanceRanking', themes: [
+      {label: 'Business resilience', property: 'businessResilience', topics: [
+         {label: 'Business resilience sustainability', property: 'businessResilienceSustainability'}
+      ]},
+      {label: 'Corporate behavior', property: 'corporateBehavior', topics: [
+         {label: 'Corporate compliance behaviors', property: 'corporateComplianceBehaviors'},
+         {label: 'Governance related certs', property: 'governanceRelatedCertifications'}
+      ]},
+      {label: 'Corporate governance', property: 'corporateGovernance', topics: [
+         {label: 'Board accountability', property: 'boardAccountability'},
+         {label: 'Business ethics', property: 'businessEthics'},
+         {label: 'Business transparency', property: 'businessTransparency'},
+         {label: 'Shareholder rights', property: 'shareholderRights'}
+      ]}
+   ]}
+];
+
+//Data block ESG Insight component
 export default function DbEsgInsight(props) {
-   if(!(props.content && props.content.organization)) {
+   if(!props.content || bIsEmptyObj(props.content.organization)) {
       return null
    }
 
@@ -98,13 +169,11 @@ export default function DbEsgInsight(props) {
 
    function EsgThemes(props) {
       const topicBullet = '\u00A0\u00A0\u00A0\u00A0• ';
-      const ranking = props.ranking;
+      const { ranking, themes } = props;
 
       const topicProperty = sProperty => sProperty === 'energyManagement' ? 'energyManagementscore' : sProperty + 'Score';
 
       if(bIsEmptyObj(ranking)) { return null }
-
-      const themes = props.themes;
 
       return (
          <B2BDataTable caption={props.caption} >
@@ -118,11 +187,11 @@ export default function DbEsgInsight(props) {
                   }
                   {theme.topics.map((topic, idx) => 
                      ranking[theme.property + 'Topics'] && ranking[theme.property + 'Topics'][topicProperty(topic.property)] &&
-                     <B2BDataTableRow
-                        label={`${topicBullet}${topic.label}`}
-                        content={ranking[theme.property + 'Topics'][topicProperty(topic.property)]}
-                        key={idx}
-                     />
+                        <B2BDataTableRow
+                           label={`${topicBullet}${topic.label}`}
+                           content={ranking[theme.property + 'Topics'][topicProperty(topic.property)]}
+                           key={idx}
+                        />
                   )}
                </React.Fragment>
             )}
@@ -135,85 +204,19 @@ export default function DbEsgInsight(props) {
       
       if(bIsEmptyObj(org.esgRanking)) { return null }
 
-      const sections = [
-         {caption: 'Environmental', property: 'environmentalRanking', themes: [
-            {label: 'Natural resources', property: 'naturalResources', topics: [
-               {label: 'Energy management', property: 'energyManagement'},
-               {label: 'Land use & biodiversity', property: 'landUseBiodiversity'},
-               {label: 'Materials sourcing management', property: 'materialsSourcingManagement'},
-               {label: 'Pollution prevention management', property: 'pollutionPreventionManagement'},
-               {label: 'Waste hazards management', property: 'wasteHazardsManagement'},
-               {label: 'Water management', property: 'waterManagement'}
-            ]},
-            {label: 'Emissions & climate', property: 'emissionsClimate', topics: [
-               {label: 'Climate risk', property: 'climateRisk'},
-               {label: 'GHG emissions', property: 'ghgEmissions'}
-            ]},
-            {label: 'Risk', property: 'risk', topics: [
-               {label: 'Environmental compliance', property: 'environmentalCompliance'}
-            ]},
-            {label: 'Opportunities', property: 'opportunities', topics: [
-               {label: 'Environmental certifications', property: 'environmentalCertifications'},
-               {label: 'Environmental opportunities', property: 'environmentalOpportunities'}
-            ]}
-         ]},
-         {caption: 'Social', property: 'socialRanking', themes: [
-            {label: 'Community', property: 'community', topics: [
-               {label: 'Community engagement', property: 'communityEngagement'},
-               {label: 'Corporate philanthropy', property: 'corporatePhilanthropy'}
-            ]},
-            {label: 'Customers', property: 'customers', topics: [
-               {label: 'Product service', property: 'productService'},
-               {label: 'Data privacy', property: 'dataPrivacy'}
-            ]},
-            {label: 'Human capital', property: 'humanCapital', topics: [
-               {label: 'Diversity inclusion', property: 'diversityInclusion'},
-               {label: 'Health & safety', property: 'healthSafety'},
-               {label: 'Human rights abuses', property: 'humanRightsAbuses'},
-               {label: 'Labor relations', property: 'laborRelations'},
-               {label: 'Training education', property: 'trainingEducation'}
-            ]},
-            {label: 'Product service', property: 'productService', topics: [
-               {label: 'Cyber risk', property: 'cyberRisk'},
-               {label: 'Product quality management', property: 'productQualityManagement'}
-            ]},
-            {label: 'Supplier', property: 'supplier', topics: [
-               {label: 'Supplier engagement', property: 'supplierEngagement'}
-            ]},
-            {label: 'Certifications', property: 'certifications', topics: [
-               {label: 'Social related certs', property: 'socialRelatedCertifications'}
-            ]}
-         ]},
-         {caption: 'Governance', property: 'governanceRanking', themes: [
-            {label: 'Business resilience', property: 'businessResilience', topics: [
-               {label: 'Business resilience sustainability', property: 'businessResilienceSustainability'}
-            ]},
-            {label: 'Corporate behavior', property: 'corporateBehavior', topics: [
-               {label: 'Corporate compliance behaviors', property: 'corporateComplianceBehaviors'},
-               {label: 'Governance related certs', property: 'governanceRelatedCertifications'}
-            ]},
-            {label: 'Corporate governance', property: 'corporateGovernance', topics: [
-               {label: 'Board accountability', property: 'boardAccountability'},
-               {label: 'Business ethics', property: 'businessEthics'},
-               {label: 'Business transparency', property: 'businessTransparency'},
-               {label: 'Shareholder rights', property: 'shareholderRights'}
-            ]}
-         ]}
-      ]
-
       return (
          <>
             <EsgSummary ranking={org.esgRanking} caption='Overall' />
-            {sections.map((section, idx) => 
+            {esgSections.map((esgSection, idx) => 
                <React.Fragment key={idx}>
                   <EsgSummary
-                     ranking={org.esgRanking[section.property]}
-                     caption={section.caption}
+                     ranking={org.esgRanking[esgSection.property]}
+                     caption={esgSection.caption}
                   />
-                 <EsgThemes
-                     ranking={org.esgRanking[section.property]}
-                     themes={section.themes}
-                     caption={`${section.caption} themes`}
+                  <EsgThemes
+                     ranking={org.esgRanking[esgSection.property]}
+                     themes={esgSection.themes}
+                     caption={`${esgSection.caption} themes`}
                   />
                </React.Fragment>
             )}
