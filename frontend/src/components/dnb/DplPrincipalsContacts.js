@@ -134,15 +134,22 @@ export default function DbPrincipals(props) {
          return null
       }
 
-      const { currentPrincipals, mostSeniorPrincipals } = props.content.organization;
+      //mostSeniorPrincipals is a v1 array, mostSeniorPrincipal is a v2 object
+      const { currentPrincipals, mostSeniorPrincipals, mostSeniorPrincipal } = props.content.organization;
 
-      let arrPrincipals = null;
+      let arrPrincipals = [];
       
       if(mostSeniorPrincipals && mostSeniorPrincipals.length > 0) {
          arrPrincipals = mostSeniorPrincipals.map(principal => {
             principal.isMostSenior = true;
             return principal;
          })
+      }
+      else {
+         if(!bIsEmptyObj(mostSeniorPrincipal)) {
+            mostSeniorPrincipal.isMostSenior = true;
+            arrPrincipals.push(mostSeniorPrincipal);
+         }
       }
 
       if(currentPrincipals && currentPrincipals.length > 0) {
